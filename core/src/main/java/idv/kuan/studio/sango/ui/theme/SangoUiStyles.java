@@ -45,6 +45,10 @@ public final class SangoUiStyles {
     ) {
         Skin skin = Sui.resources.manager().getSkin();
         TextButton.TextButtonStyle style = new TextButton.TextButtonStyle(button.getStyle());
+
+        // SimpleUI 已為每個 TextButton 產生包含中文字形的動態字型。
+        // TextButton#setStyle 會以 style.font 覆寫 Label 的字型，因此必須先保留它。
+        style.font = button.getLabel().getStyle().font;
         style.up = drawable(skin, upColor);
         style.over = drawable(skin, overColor);
         style.down = drawable(skin, downColor);

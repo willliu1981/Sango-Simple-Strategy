@@ -2,6 +2,8 @@
 
 ## Passed in delivery environment
 
+- Dynamic font atlas page raised to `256 × 256`; this avoids the `118 px` title glyph exceeding the former `128 × 128` page.
+
 - Java 17 core source compilation with `javac --release 17 -Xlint:all`.
 - `StartupHelper` compilation with `javac --release 17 -Xlint:all`.
 - Desktop and Android launcher syntax compilation against minimal API stubs.

@@ -7,7 +7,7 @@
         <entry name="lobby_intro" value="從一座城、一支軍與一名君主開始。以回合推進內政、任命、行軍與戰鬥，逐步完成一套輕量三國策略遊戲。" description="Lobby introduction" />
         <entry name="lobby_main_menu" value="主選單" description="Main menu" />
         <entry name="lobby_prototype" value="FIRST PLAYABLE LOBBY" description="Prototype label" />
-        <entry name="lobby_version" value="Prototype 0.1.0" description="Version label" />
+        <entry name="lobby_version" value="Prototype 0.1.3" description="Version label" />
         <entry name="button_continue" value="繼續遊戲" description="Continue game" />
         <entry name="button_new_game" value="開始新局" description="New game" />
         <entry name="button_load_game" value="讀取存檔" description="Load game" />

@@ -39,8 +39,8 @@ public final class SangoAppContextConfigProvider implements ApplicationContextCo
             .setResourceManagerConfiguration(
                 new ResourceManager.ResourceManagerConfiguration(
                     "skin/default/uiskin.json",
-                    128,
-                    128,
+                    256,
+                    256,
                     true
                 )
             )

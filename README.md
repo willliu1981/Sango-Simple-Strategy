@@ -21,6 +21,7 @@ Java 17 + LibGDX 的輕量三國策略遊戲原型。本次交付以 StudyRoutin
 - Desktop `1280 × 720`；內部 `FitViewport(1920, 1080)`。
 - Android 橫向 Manifest、Theme 與沉浸模式。
 - SimpleUI JAR 會先排除內含的 `com/badlogic/**`，避免與專案 LibGDX dependency 發生 duplicate class 或版本衝突。
+- 動態字型 atlas page 使用 `256 × 256`，可容納 Lobby 的 `118 px` Source Han Sans Heavy glyph。
 
 ## 第一次執行前：準備中文字型
 
