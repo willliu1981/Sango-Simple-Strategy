@@ -1,0 +1,18 @@
+{
+  "scenarios": [
+    {
+      "id": "prototype_warlords",
+      "nameKey": "scenario_prototype_name",
+      "descriptionKey": "scenario_prototype_description",
+      "startYear": 190,
+      "startMonth": 1,
+      "initialTurn": 1,
+      "actionPointsPerTurn": 3,
+      "factionIds": [
+        "cao_cao",
+        "liu_bei",
+        "sun_ce"
+      ]
+    }
+  ]
+}

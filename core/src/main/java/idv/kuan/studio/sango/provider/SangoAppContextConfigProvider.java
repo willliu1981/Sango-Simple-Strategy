@@ -11,7 +11,8 @@ import idv.kuan.studio.libgdx.simpleui.resource.FontChars;
 import idv.kuan.studio.libgdx.simpleui.resource.ResourceManager;
 import idv.kuan.studio.libgdx.simpleui.validation.ValidationMode;
 import idv.kuan.studio.sango.ui.LobbyScreen;
-import idv.kuan.studio.sango.ui.PrototypeCampaignScreen;
+import idv.kuan.studio.sango.ui.CityScreen;
+import idv.kuan.studio.sango.ui.NewGameScreen;
 import idv.kuan.studio.sango.ui.id.ScreenId;
 
 /**
@@ -49,8 +50,9 @@ public final class SangoAppContextConfigProvider implements ApplicationContextCo
             .skipToRegisterCharacters()
             .skipToDefaultStage()
             .setDefaultStage(() -> new Stage(new FitViewport(DESIGN_WIDTH, DESIGN_HEIGHT)))
-            .registerScreen(ScreenId.LOBBY, LobbyScreen::new, true)
-            .registerScreen(ScreenId.PROTOTYPE_CAMPAIGN, PrototypeCampaignScreen::new, true)
+            .registerScreen(ScreenId.LOBBY, LobbyScreen::new)
+            .registerScreen(ScreenId.NEW_GAME, NewGameScreen::new)
+            .registerScreen(ScreenId.CITY, CityScreen::new)
             .skipToValidation()
             .setVolidationMode(resolveValidationMode())
             .build();

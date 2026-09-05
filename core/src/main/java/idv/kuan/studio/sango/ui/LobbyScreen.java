@@ -6,34 +6,38 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Scaling;
 
 import idv.kuan.studio.libgdx.simpleui.Sui;
 import idv.kuan.studio.libgdx.simpleui.SuiScreen;
 import idv.kuan.studio.libgdx.simpleui.builder.BuiltUI;
 import idv.kuan.studio.sango.data.SangoPreferences;
+import idv.kuan.studio.sango.domain.model.GameState;
+import idv.kuan.studio.sango.repository.save.SaveGameException;
+import idv.kuan.studio.sango.repository.save.SaveSlotInspection;
+import idv.kuan.studio.sango.repository.save.SaveSlotState;
+import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.ui.id.ScreenId;
+import idv.kuan.studio.sango.ui.support.ScreenBackground;
 import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
 
 /**
- * Sango 啟動後的第一個 Lobby／主選單畫面。
+ * Sango 啟動後的 Lobby／主選單畫面。
  */
 public final class LobbyScreen extends SuiScreen {
     private static final String BACKGROUND_PATH = "picture/lobby/sango_lobby_background.png";
     private static final Color STATUS_READY_COLOR = new Color(0.83f, 0.73f, 0.53f, 1f);
     private static final Color STATUS_ACTIVE_COLOR = new Color(0.95f, 0.78f, 0.30f, 1f);
+    private static final Color STATUS_ERROR_COLOR = new Color(0.95f, 0.43f, 0.30f, 1f);
 
-    private Image backgroundImage;
-    private Actor newGameMask;
+    private final ScreenBackground screenBackground = new ScreenBackground();
+
     private Actor settingsMask;
     private Actor exitMask;
 
@@ -49,13 +53,23 @@ public final class LobbyScreen extends SuiScreen {
 
     @Override
     protected void onUIBuilt(BuiltUI builtUI) {
-        attachBackground();
-        attachModalMasks();
+        screenBackground.attach(stage, BACKGROUND_PATH);
+        settingsMask = attachModalMask("settings_mask");
+        exitMask = attachModalMask("exit_mask");
         applyStyles();
         bindActions();
-        refreshCampaignActions(false);
         refreshSettingsLabels();
         animateEntrance();
+    }
+
+    @Override
+    protected void afterShow() {
+        if (ui == null) {
+            return;
+        }
+        closeAllModals();
+        refreshSaveSlotStatus();
+        refreshSettingsLabels();
     }
 
     @Override
@@ -75,44 +89,13 @@ public final class LobbyScreen extends SuiScreen {
 
     @Override
     protected void afterResize(int width, int height) {
-        layoutBackground();
+        screenBackground.resize(stage);
     }
 
     @Override
     protected void beforeDispose() {
-        if (backgroundImage != null) {
-            backgroundImage.remove();
-            backgroundImage = null;
-        }
+        screenBackground.remove();
         super.beforeDispose();
-    }
-
-    private void attachBackground() {
-        if (backgroundImage != null) {
-            backgroundImage.remove();
-        }
-
-        Texture backgroundTexture = Sui.resources.manager().getOrLoadTextureByPath(BACKGROUND_PATH);
-        backgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        backgroundImage = new Image(backgroundTexture);
-        backgroundImage.setScaling(Scaling.fill);
-        backgroundImage.setTouchable(Touchable.disabled);
-        layoutBackground();
-        stage.addActor(backgroundImage);
-        backgroundImage.toBack();
-    }
-
-    private void layoutBackground() {
-        if (backgroundImage == null || stage == null) {
-            return;
-        }
-        backgroundImage.setBounds(0f, 0f, stage.getWidth(), stage.getHeight());
-    }
-
-    private void attachModalMasks() {
-        newGameMask = attachModalMask("new_game_mask");
-        settingsMask = attachModalMask("settings_mask");
-        exitMask = attachModalMask("exit_mask");
     }
 
     private Actor attachModalMask(String actorId) {
@@ -131,13 +114,11 @@ public final class LobbyScreen extends SuiScreen {
         SangoUiStyles.applyMenuButton(button("settings_button"));
         SangoUiStyles.applyMenuButton(button("exit_button"));
 
-        SangoUiStyles.applySecondaryButton(button("new_game_cancel_button"));
-        SangoUiStyles.applyPrimaryButton(button("new_game_confirm_button"));
         SangoUiStyles.applySecondaryButton(button("settings_music_button"));
         SangoUiStyles.applySecondaryButton(button("settings_sound_button"));
         SangoUiStyles.applyPrimaryButton(button("settings_close_button"));
         SangoUiStyles.applySecondaryButton(button("exit_cancel_button"));
-        SangoUiStyles.applyPrimaryButton(button("exit_confirm_button"));
+        SangoUiStyles.applyDangerButton(button("exit_confirm_button"));
 
         Label statusLabel = ui.getActor("lobby_status", Label.class);
         statusLabel.setAlignment(Align.center);
@@ -145,12 +126,10 @@ public final class LobbyScreen extends SuiScreen {
 
     private void bindActions() {
         ui.onClick("continue_button", this::continueCampaign);
-        ui.onClick("new_game_button", () -> openModal(newGameMask));
+        ui.onClick("new_game_button", () -> Sui.screens.set(ScreenId.NEW_GAME));
         ui.onClick("settings_button", this::openSettings);
         ui.onClick("exit_button", () -> openModal(exitMask));
 
-        ui.onClick("new_game_cancel_button", this::closeAllModals);
-        ui.onClick("new_game_confirm_button", this::createPrototypeCampaign);
         ui.onClick("settings_music_button", this::toggleMusic);
         ui.onClick("settings_sound_button", this::toggleSound);
         ui.onClick("settings_close_button", this::closeAllModals);
@@ -165,44 +144,60 @@ public final class LobbyScreen extends SuiScreen {
     }
 
     private void continueCampaign() {
-        if (!SangoPreferences.hasPrototypeCampaign()) {
-            refreshCampaignActions(false);
-            return;
+        try {
+            GameState gameState = SangoServices.saveGames().load(
+                SangoServices.DEFAULT_SAVE_SLOT
+            );
+            SangoServices.session().setCurrentState(gameState);
+            Sui.screens.set(ScreenId.CITY);
+        } catch (SaveGameException | IllegalArgumentException exception) {
+            Gdx.app.error("Lobby", "繼續遊戲時無法載入存檔。", exception);
+            SangoServices.session().clear();
+            setStatus(
+                text("status_save_corrupt", "存檔無法讀取；可開始新局覆寫此存檔。"),
+                STATUS_ERROR_COLOR
+            );
+            setButtonEnabled(button("continue_button"), false);
         }
-        Sui.screens.set(ScreenId.PROTOTYPE_CAMPAIGN);
     }
 
-    private void createPrototypeCampaign() {
-        SangoPreferences.setPrototypeCampaignExists(true);
-        closeAllModals();
-        refreshCampaignActions(true);
-        Sui.screens.set(ScreenId.PROTOTYPE_CAMPAIGN);
-    }
-
-    private void refreshCampaignActions(boolean newlyCreated) {
-        boolean campaignExists = SangoPreferences.hasPrototypeCampaign();
-        setButtonEnabled(button("continue_button"), campaignExists);
+    private void refreshSaveSlotStatus() {
+        SaveSlotInspection inspection = SangoServices.saveGames().inspect(
+            SangoServices.DEFAULT_SAVE_SLOT
+        );
         setButtonEnabled(button("load_game_button"), false);
 
-        Label statusLabel = ui.getActor("lobby_status", Label.class);
-        if (newlyCreated) {
-            statusLabel.setText(text(
-                "status_campaign_created",
-                "測試戰局已建立，正在進入流程驗證畫面。"
-            ));
-            statusLabel.setColor(STATUS_ACTIVE_COLOR);
-        } else if (campaignExists) {
-            statusLabel.setText(text(
-                "status_campaign_available",
-                "已有測試戰局，可選擇「繼續遊戲」。"
-            ));
-            statusLabel.setColor(STATUS_ACTIVE_COLOR);
+        if (inspection.getState() == SaveSlotState.AVAILABLE) {
+            setButtonEnabled(button("continue_button"), true);
+            if (inspection.hasRecoveryCandidate()) {
+                setStatus(
+                    text(
+                        "status_save_recovery_available",
+                        "主要存檔異常，但仍可從暫存或備份繼續遊戲。"
+                    ),
+                    STATUS_ACTIVE_COLOR
+                );
+            } else {
+                setStatus(
+                    text("status_campaign_available", "已有戰局，可選擇「繼續遊戲」。"),
+                    STATUS_ACTIVE_COLOR
+                );
+            }
+            return;
+        }
+
+        setButtonEnabled(button("continue_button"), false);
+        if (inspection.getState() == SaveSlotState.CORRUPT) {
+            Gdx.app.error("Lobby", "偵測到損壞存檔：" + inspection.getDiagnosticMessage());
+            setStatus(
+                text("status_save_corrupt", "存檔無法讀取；可開始新局覆寫此存檔。"),
+                STATUS_ERROR_COLOR
+            );
         } else {
-            statusLabel.setText(text(
-                "status_no_campaign",
-                "尚無戰局存檔；請先開始新局。"
-            ));
-            statusLabel.setColor(STATUS_READY_COLOR);
+            setStatus(
+                text("status_no_campaign", "尚無戰局存檔；請先開始新局。"),
+                STATUS_READY_COLOR
+            );
         }
     }
 
@@ -245,7 +240,7 @@ public final class LobbyScreen extends SuiScreen {
     }
 
     private boolean isAnyModalVisible() {
-        return isVisible(newGameMask) || isVisible(settingsMask) || isVisible(exitMask);
+        return isVisible(settingsMask) || isVisible(exitMask);
     }
 
     private boolean isVisible(Actor actor) {
@@ -261,7 +256,6 @@ public final class LobbyScreen extends SuiScreen {
     }
 
     private void closeAllModals() {
-        setVisible(newGameMask, false);
         setVisible(settingsMask, false);
         setVisible(exitMask, false);
     }
@@ -274,9 +268,15 @@ public final class LobbyScreen extends SuiScreen {
         }
     }
 
-    private void setButtonEnabled(TextButton button, boolean enabled) {
-        button.setDisabled(!enabled);
-        button.setTouchable(enabled ? Touchable.enabled : Touchable.disabled);
+    private void setButtonEnabled(TextButton textButton, boolean enabled) {
+        textButton.setDisabled(!enabled);
+        textButton.setTouchable(enabled ? Touchable.enabled : Touchable.disabled);
+    }
+
+    private void setStatus(String message, Color color) {
+        Label statusLabel = ui.getActor("lobby_status", Label.class);
+        statusLabel.setText(message);
+        statusLabel.setColor(color);
     }
 
     private TextButton button(String actorId) {

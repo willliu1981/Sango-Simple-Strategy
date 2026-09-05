@@ -1,0 +1,34 @@
+{
+  "cities": [
+    {
+      "id": "chenliu",
+      "nameKey": "city_chenliu",
+      "initialPopulation": 62000,
+      "initialAgriculture": 40,
+      "initialCommerce": 42,
+      "initialTroops": 1200,
+      "initialPublicOrder": 58,
+      "initialTraining": 35
+    },
+    {
+      "id": "pingyuan",
+      "nameKey": "city_pingyuan",
+      "initialPopulation": 54000,
+      "initialAgriculture": 46,
+      "initialCommerce": 32,
+      "initialTroops": 1000,
+      "initialPublicOrder": 66,
+      "initialTraining": 32
+    },
+    {
+      "id": "wu_commandery",
+      "nameKey": "city_wu_commandery",
+      "initialPopulation": 68000,
+      "initialAgriculture": 38,
+      "initialCommerce": 50,
+      "initialTroops": 1100,
+      "initialPublicOrder": 60,
+      "initialTraining": 40
+    }
+  ]
+}

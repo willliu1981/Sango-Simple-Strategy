@@ -1,0 +1,92 @@
+<ui xmlns="http://kuan.studio/simpleui">
+    <table id="main" i18n="literal" flags="fillParent" pad="36"
+        backgroundColor="0.010,0.009,0.008,0.70">
+        <table width="1780" height="990" pad="36" backgroundColor="0.040,0.032,0.027,0.97">
+            <label fontKey="title" fontSize="72" width="1660" height="88"
+                color="0.94,0.76,0.43,1">${text:new_game_title}</label>
+            <row />
+            <label id="new_game_status_label" fontSize="28" width="1660" height="50"
+                color="0.77,0.70,0.59,1">${text:new_game_status_ready}</label>
+            <row />
+
+            <table width="1660" height="630" padTop="12">
+                <table width="620" height="620" pad="30" backgroundColor="0.070,0.057,0.047,0.98">
+                    <label fontKey="title" fontSize="52" width="540" height="70"
+                        color="0.90,0.72,0.40,1">${text:new_game_scenario_heading}</label>
+                    <row />
+                    <label id="scenario_name_label" fontSize="38" width="540" height="72"
+                        wrap="true">${text:scenario_prototype_name}</label>
+                    <row />
+                    <label id="scenario_description_label" fontSize="28" width="540" height="200"
+                        align="left" textAlign="left" wrap="true"
+                        color="0.76,0.70,0.61,1">${text:scenario_prototype_description}</label>
+                    <row />
+                    <table width="540" pad="24" backgroundColor="0.045,0.038,0.033,1">
+                        <label fontSize="28" width="490" height="64" align="left" textAlign="left"
+                            color="0.70,0.64,0.55,1">${text:new_game_scenario_date}</label>
+                        <row />
+                        <label fontSize="28" width="490" height="64" align="left" textAlign="left"
+                            color="0.70,0.64,0.55,1">${text:new_game_scenario_actions}</label>
+                    </table>
+                </table>
+
+                <table width="38"></table>
+
+                <table width="1000" height="620" pad="30" backgroundColor="0.060,0.049,0.041,0.98">
+                    <label fontKey="title" fontSize="52" width="910" height="70"
+                        color="0.90,0.72,0.40,1">${text:new_game_faction_heading}</label>
+                    <row />
+                    <table width="900" height="90">
+                        <textButton id="faction_1_button" fontSize="34" width="280" height="82">${text:faction_cao_cao}</textButton>
+                        <textButton id="faction_2_button" fontSize="34" width="280" height="82"
+                            padLeft="20">${text:faction_liu_bei}</textButton>
+                        <textButton id="faction_3_button" fontSize="34" width="280" height="82"
+                            padLeft="20">${text:faction_sun_ce}</textButton>
+                    </table>
+                    <row />
+                    <table width="900" pad="28" backgroundColor="0.040,0.034,0.030,1">
+                        <label id="selected_faction_label" fontSize="34" width="840" height="54"
+                            align="left" textAlign="left">${text:new_game_selected_faction_placeholder}</label>
+                        <row />
+                        <label id="selected_ruler_label" fontSize="30" width="840" height="50"
+                            align="left" textAlign="left">${text:new_game_selected_ruler_placeholder}</label>
+                        <row />
+                        <label id="selected_city_label" fontSize="30" width="840" height="50"
+                            align="left" textAlign="left">${text:new_game_selected_city_placeholder}</label>
+                        <row />
+                        <label id="selected_resources_label" fontSize="30" width="840" height="58"
+                            align="left" textAlign="left">${text:new_game_selected_resources_placeholder}</label>
+                        <row />
+                        <label id="selected_summary_label" fontSize="28" width="840" height="120"
+                            align="left" textAlign="left" wrap="true"
+                            color="0.72,0.66,0.57,1">${text:new_game_selected_summary_placeholder}</label>
+                    </table>
+                </table>
+            </table>
+            <row />
+
+            <table width="1660" height="90" padTop="12">
+                <textButton id="new_game_back_button" fontSize="38" width="520" height="88">${text:button_back_lobby}</textButton>
+                <table width="500"></table>
+                <textButton id="start_game_button" fontSize="38" width="600" height="88">${text:button_start_game}</textButton>
+            </table>
+        </table>
+    </table>
+
+    <table id="overwrite_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0,0,0,0.88" flags="fillParent">
+        <table width="980" pad="54" backgroundColor="0.055,0.043,0.035,0.99">
+            <label fontKey="title" fontSize="62" width="850" height="90"
+                color="0.94,0.66,0.38,1">${text:overwrite_title}</label>
+            <row />
+            <label fontSize="34" width="840" height="126" wrap="true" textAlign="center"
+                color="0.84,0.80,0.72,1">${text:overwrite_description}</label>
+            <row />
+            <table width="840" padTop="28">
+                <textButton id="overwrite_cancel_button" fontSize="38" width="380" height="88">${text:button_cancel}</textButton>
+                <textButton id="overwrite_confirm_button" fontSize="38" width="430" height="88"
+                    padLeft="28">${text:button_overwrite}</textButton>
+            </table>
+        </table>
+    </table>
+</ui>

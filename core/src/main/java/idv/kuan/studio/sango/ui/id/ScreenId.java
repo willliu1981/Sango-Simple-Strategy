@@ -7,7 +7,8 @@ import idv.kuan.studio.libgdx.simpleui.screen.ScreenIdentifier;
  */
 public enum ScreenId implements ScreenIdentifier {
     LOBBY("lobby"),
-    PROTOTYPE_CAMPAIGN("prototype_campaign");
+    NEW_GAME("new_game"),
+    CITY("city");
 
     private final String value;
 

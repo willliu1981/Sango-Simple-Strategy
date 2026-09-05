@@ -22,3 +22,14 @@ dependencies {
   api "com.badlogicgames.gdx:gdx:$gdxVersion"
   api simpleUiWithoutBundledGdx
 }
+
+tasks.register('runVerticalSliceSmokeTest', JavaExec) {
+  group = 'verification'
+  description = 'Runs the Sango new-game, domestic-action, turn and save/load smoke test.'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.VerticalSliceSmokeTest')
+  args rootProject.file('assets').absolutePath
+}
+
+check.dependsOn runVerticalSliceSmokeTest

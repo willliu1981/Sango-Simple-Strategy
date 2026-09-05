@@ -1,0 +1,31 @@
+{
+  "factions": [
+    {
+      "id": "cao_cao",
+      "nameKey": "faction_cao_cao",
+      "rulerNameKey": "ruler_cao_cao",
+      "summaryKey": "faction_cao_cao_summary",
+      "capitalCityId": "chenliu",
+      "initialGold": 1200,
+      "initialFood": 2200
+    },
+    {
+      "id": "liu_bei",
+      "nameKey": "faction_liu_bei",
+      "rulerNameKey": "ruler_liu_bei",
+      "summaryKey": "faction_liu_bei_summary",
+      "capitalCityId": "pingyuan",
+      "initialGold": 900,
+      "initialFood": 2100
+    },
+    {
+      "id": "sun_ce",
+      "nameKey": "faction_sun_ce",
+      "rulerNameKey": "ruler_sun_ce",
+      "summaryKey": "faction_sun_ce_summary",
+      "capitalCityId": "wu_commandery",
+      "initialGold": 1100,
+      "initialFood": 2000
+    }
+  ]
+}

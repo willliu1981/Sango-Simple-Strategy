@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 
 import idv.kuan.studio.libgdx.simpleui.Sui;
 import idv.kuan.studio.libgdx.simpleui.SuiGame;
+import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.ui.id.ScreenId;
 
 /**
@@ -14,6 +15,7 @@ public final class Main extends SuiGame {
     @Override
     protected void afterCreate() {
         Gdx.input.setCatchKey(Input.Keys.BACK, true);
+        SangoServices.initialize();
         Sui.screens.set(ScreenId.LOBBY);
     }
 }

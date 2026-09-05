@@ -1,0 +1,123 @@
+<ui xmlns="http://kuan.studio/simpleui">
+    <table id="main" i18n="literal" flags="fillParent" pad="30"
+        backgroundColor="0.010,0.009,0.008,0.76">
+        <table width="1820" height="990" pad="30" backgroundColor="0.040,0.032,0.027,0.97">
+            <table width="1720" height="100">
+                <label fontKey="title" fontSize="62" width="470" height="86" align="left"
+                    textAlign="left" color="0.94,0.76,0.43,1">${text:city_title}</label>
+                <table width="760" height="100">
+                    <label id="scenario_label" fontSize="28" width="720" height="46"
+                        align="left" textAlign="left">${text:city_scenario_placeholder}</label>
+                    <row />
+                    <label id="date_label" fontSize="28" width="720" height="44"
+                        align="left" textAlign="left" color="0.72,0.66,0.56,1">${text:city_date_placeholder}</label>
+                </table>
+                <table width="460" height="100">
+                    <label id="turn_label" fontSize="30" width="430" height="46"
+                        align="right" textAlign="right">${text:city_turn_placeholder}</label>
+                    <row />
+                    <label id="action_points_label" fontSize="30" width="430" height="44"
+                        align="right" textAlign="right" color="0.94,0.76,0.38,1">${text:city_action_points_placeholder}</label>
+                </table>
+            </table>
+            <row />
+
+            <table width="1720" height="590" padTop="12">
+                <table width="620" height="570" pad="24" backgroundColor="0.065,0.053,0.044,0.98">
+                    <label fontKey="title" fontSize="52" width="540" height="64"
+                        color="0.90,0.72,0.40,1">${text:city_overview_heading}</label>
+                    <row />
+                    <label id="faction_label" fontSize="28" width="540" height="38"
+                        align="left" textAlign="left">${text:city_faction_placeholder}</label>
+                    <row />
+                    <label id="ruler_label" fontSize="28" width="540" height="38"
+                        align="left" textAlign="left">${text:city_ruler_placeholder}</label>
+                    <row />
+                    <label id="city_label" fontSize="28" width="540" height="38"
+                        align="left" textAlign="left">${text:city_name_placeholder}</label>
+                    <row />
+                    <table width="540" pad="16" backgroundColor="0.040,0.034,0.030,1">
+                        <table width="245">
+                            <label fontSize="26" width="220" height="28" align="left" textAlign="left">${text:stat_gold}</label>
+                            <row />
+                            <label id="gold_value_label" fontSize="30" width="220" height="34"
+                                align="left" textAlign="left" color="0.94,0.78,0.44,1">0</label>
+                            <row />
+                            <label fontSize="26" width="220" height="28" align="left" textAlign="left">${text:stat_population}</label>
+                            <row />
+                            <label id="population_value_label" fontSize="30" width="220" height="34"
+                                align="left" textAlign="left" color="0.90,0.84,0.72,1">0</label>
+                            <row />
+                            <label fontSize="26" width="220" height="28" align="left" textAlign="left">${text:stat_agriculture}</label>
+                            <row />
+                            <label id="agriculture_value_label" fontSize="30" width="220" height="34"
+                                align="left" textAlign="left" color="0.80,0.84,0.58,1">0 / 100</label>
+                            <row />
+                            <label fontSize="26" width="220" height="28" align="left" textAlign="left">${text:stat_public_order}</label>
+                            <row />
+                            <label id="public_order_value_label" fontSize="30" width="220" height="34"
+                                align="left" textAlign="left" color="0.72,0.84,0.80,1">0 / 100</label>
+                        </table>
+                        <table width="245">
+                            <label fontSize="26" width="220" height="28" align="left" textAlign="left">${text:stat_food}</label>
+                            <row />
+                            <label id="food_value_label" fontSize="30" width="220" height="34"
+                                align="left" textAlign="left" color="0.82,0.86,0.55,1">0</label>
+                            <row />
+                            <label fontSize="26" width="220" height="28" align="left" textAlign="left">${text:stat_troops}</label>
+                            <row />
+                            <label id="troops_value_label" fontSize="30" width="220" height="34"
+                                align="left" textAlign="left" color="0.88,0.67,0.54,1">0</label>
+                            <row />
+                            <label fontSize="26" width="220" height="28" align="left" textAlign="left">${text:stat_commerce}</label>
+                            <row />
+                            <label id="commerce_value_label" fontSize="30" width="220" height="34"
+                                align="left" textAlign="left" color="0.72,0.76,0.88,1">0 / 100</label>
+                            <row />
+                            <label fontSize="26" width="220" height="28" align="left" textAlign="left">${text:stat_training}</label>
+                            <row />
+                            <label id="training_value_label" fontSize="30" width="220" height="34"
+                                align="left" textAlign="left" color="0.88,0.72,0.58,1">0 / 100</label>
+                        </table>
+                    </table>
+                </table>
+
+                <table width="40"></table>
+
+                <table width="1060" height="570" pad="24" backgroundColor="0.057,0.047,0.040,0.98">
+                    <label fontKey="title" fontSize="52" width="980" height="64"
+                        color="0.90,0.72,0.40,1">${text:city_actions_heading}</label>
+                    <row />
+                    <label fontSize="26" width="960" height="50" wrap="true"
+                        color="0.70,0.65,0.56,1">${text:city_actions_note}</label>
+                    <row />
+                    <table width="960" height="280" padTop="14">
+                        <textButton id="agriculture_button" fontSize="34" width="455" height="110">${text:button_agriculture}</textButton>
+                        <textButton id="commerce_button" fontSize="34" width="455" height="110"
+                            padLeft="28">${text:button_commerce}</textButton>
+                        <row />
+                        <textButton id="recruit_button" fontSize="34" width="455" height="110"
+                            padTop="20">${text:button_recruit}</textButton>
+                        <textButton id="train_button" fontSize="34" width="455" height="110"
+                            padLeft="28" padTop="20">${text:button_train}</textButton>
+                    </table>
+                    <row />
+                    <label fontSize="26" width="960" height="70" align="left" textAlign="left"
+                        wrap="true" color="0.68,0.62,0.53,1">${text:city_rule_summary}</label>
+                </table>
+            </table>
+            <row />
+
+            <label id="city_status_label" fontSize="28" width="1720" height="70"
+                wrap="true" color="0.79,0.72,0.61,1">${text:city_status_ready}</label>
+            <row />
+            <table width="1720" height="88" padTop="12">
+                <textButton id="save_button" fontSize="38" width="350" height="82">${text:button_save}</textButton>
+                <textButton id="return_lobby_button" fontSize="38" width="470" height="82"
+                    padLeft="24">${text:button_return_lobby}</textButton>
+                <table width="330"></table>
+                <textButton id="end_turn_button" fontSize="38" width="520" height="82">${text:button_end_turn}</textButton>
+            </table>
+        </table>
+    </table>
+</ui>

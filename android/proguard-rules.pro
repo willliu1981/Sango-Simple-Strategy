@@ -49,3 +49,13 @@
 # These two lines are used with mapping files; see https://developer.android.com/build/shrink-code#retracing
 -keepattributes LineNumberTable,SourceFile
 -renamesourcefileattribute SourceFile
+
+# Sango Definition 與 SaveGame 使用 LibGDX Json 依欄位名稱反射。
+# 保留名稱可避免 release minify 後 Definition 解析失敗或存檔格式被改寫。
+-keep class idv.kuan.studio.sango.domain.definition.** { *; }
+-keep class idv.kuan.studio.sango.domain.model.** { *; }
+-keep class idv.kuan.studio.sango.repository.save.SaveGameDocument { *; }
+-keep class idv.kuan.studio.sango.repository.definition.AssetJsonGameDefinitionRepository$* { *; }
+
+# 此類別由 META-INF/services 以完整類名載入。
+-keep class idv.kuan.studio.sango.provider.SangoAppContextConfigProvider { *; }

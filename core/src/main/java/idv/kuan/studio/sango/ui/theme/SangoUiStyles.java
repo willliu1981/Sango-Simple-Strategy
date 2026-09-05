@@ -8,7 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import idv.kuan.studio.libgdx.simpleui.Sui;
 
 /**
- * Sango Lobby 共用的 Scene2D Style 工具。
+ * Sango 共用的 Scene2D Style 工具。
  */
 public final class SangoUiStyles {
     private static final Color MENU_UP = new Color(0.13f, 0.11f, 0.09f, 0.96f);
@@ -17,6 +17,9 @@ public final class SangoUiStyles {
     private static final Color PRIMARY_UP = new Color(0.48f, 0.13f, 0.075f, 0.98f);
     private static final Color PRIMARY_OVER = new Color(0.68f, 0.23f, 0.09f, 1f);
     private static final Color PRIMARY_DOWN = new Color(0.34f, 0.075f, 0.045f, 1f);
+    private static final Color DANGER_UP = new Color(0.40f, 0.07f, 0.055f, 0.98f);
+    private static final Color DANGER_OVER = new Color(0.62f, 0.10f, 0.065f, 1f);
+    private static final Color DANGER_DOWN = new Color(0.28f, 0.035f, 0.030f, 1f);
     private static final Color DISABLED = new Color(0.08f, 0.075f, 0.07f, 0.82f);
     private static final Color FONT_NORMAL = new Color(0.95f, 0.88f, 0.72f, 1f);
     private static final Color FONT_OVER = new Color(1f, 0.95f, 0.80f, 1f);
@@ -33,8 +36,16 @@ public final class SangoUiStyles {
         apply(button, PRIMARY_UP, PRIMARY_OVER, PRIMARY_DOWN);
     }
 
+    public static void applySelectedButton(TextButton button) {
+        applyPrimaryButton(button);
+    }
+
     public static void applySecondaryButton(TextButton button) {
-        apply(button, MENU_UP, MENU_OVER, MENU_DOWN);
+        applyMenuButton(button);
+    }
+
+    public static void applyDangerButton(TextButton button) {
+        apply(button, DANGER_UP, DANGER_OVER, DANGER_DOWN);
     }
 
     private static void apply(
