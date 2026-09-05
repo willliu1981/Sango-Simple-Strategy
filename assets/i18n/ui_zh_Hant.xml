@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<i18n>
+    <scope id="literal">
+        <entry name="lobby_sango" value="SANGO" description="Sango title" />
+        <entry name="lobby_title" value="簡易三國志" description="Simple Romance of the Three Kingdoms" />
+        <entry name="lobby_tagline" value="漢末群雄 · 天下待定" description="Late Han warlords; the realm awaits" />
+        <entry name="lobby_intro" value="從一座城、一支軍與一名君主開始。以回合推進內政、任命、行軍與戰鬥，逐步完成一套輕量三國策略遊戲。" description="Lobby introduction" />
+        <entry name="lobby_main_menu" value="主選單" description="Main menu" />
+        <entry name="lobby_prototype" value="FIRST PLAYABLE LOBBY" description="Prototype label" />
+        <entry name="lobby_version" value="Prototype 0.1.0" description="Version label" />
+        <entry name="button_continue" value="繼續遊戲" description="Continue game" />
+        <entry name="button_new_game" value="開始新局" description="New game" />
+        <entry name="button_load_game" value="讀取存檔" description="Load game" />
+        <entry name="button_settings" value="設定" description="Settings" />
+        <entry name="button_exit" value="離開遊戲" description="Exit game" />
+        <entry name="button_back" value="返回" description="Back" />
+        <entry name="button_cancel" value="取消" description="Cancel" />
+        <entry name="button_confirm" value="完成" description="Done" />
+        <entry name="button_create_campaign" value="建立測試戰局" description="Create prototype campaign" />
+        <entry name="button_exit_confirm" value="確認離開" description="Confirm exit" />
+        <entry name="status_no_campaign" value="尚無戰局存檔；請先開始新局。" description="No campaign" />
+        <entry name="status_campaign_available" value="已有測試戰局，可選擇「繼續遊戲」。" description="Campaign available" />
+        <entry name="status_campaign_created" value="測試戰局已建立，正在進入流程驗證畫面。" description="Campaign created" />
+        <entry name="new_game_title" value="開始新局" description="New campaign title" />
+        <entry name="new_game_description" value="先建立一筆最小測試進度，用來驗證 Lobby、Preferences 與 Screen registry 的完整流程。" description="New campaign description" />
+        <entry name="new_game_scenario" value="劇本：群雄割據（流程原型）" description="Scenario" />
+        <entry name="new_game_year" value="年代：初平元年 · 西元 190 年" description="Scenario year" />
+        <entry name="new_game_ruler" value="君主：尚未選擇" description="Ruler not selected" />
+        <entry name="new_game_note" value="正式版本應在下一步加入劇本、君主／自建勢力、難度與存檔欄位；目前不建立假的完整戰局資料。" description="Prototype note" />
+        <entry name="settings_title" value="設定" description="Settings title" />
+        <entry name="settings_note" value="目前先保存介面偏好；音樂與音效資產接入後，可直接沿用這兩個設定。" description="Settings note" />
+        <entry name="settings_music_on" value="背景音樂：開啟" description="Music on" />
+        <entry name="settings_music_off" value="背景音樂：關閉" description="Music off" />
+        <entry name="settings_sound_on" value="介面音效：開啟" description="Sound on" />
+        <entry name="settings_sound_off" value="介面音效：關閉" description="Sound off" />
+        <entry name="exit_title" value="離開 Sango？" description="Exit title" />
+        <entry name="exit_description" value="目前的介面設定已保存。確定要關閉遊戲嗎？" description="Exit description" />
+        <entry name="campaign_title" value="戰局流程驗證" description="Prototype campaign title" />
+        <entry name="campaign_description" value="這不是正式 Gameplay；它只證明新局建立、繼續遊戲、返回 Lobby 與測試進度清除均已接通。" description="Prototype campaign description" />
+        <entry name="campaign_scenario" value="劇本：群雄割據" description="Campaign scenario" />
+        <entry name="campaign_turn" value="回合：第 1 回合" description="Turn one" />
+        <entry name="campaign_faction" value="勢力：尚未選擇" description="Faction not selected" />
+        <entry name="campaign_city" value="據點：尚未選擇" description="City not selected" />
+        <entry name="campaign_next_step" value="下一個實作節點：ScenarioDefinition → FactionDefinition → NewGameCommand → SaveGameRepository，再接入第一張城池／內政畫面。" description="Next implementation step" />
+        <entry name="button_clear_prototype" value="清除測試進度" description="Clear prototype progress" />
+        <entry name="button_return_lobby" value="返回 Lobby" description="Return to lobby" />
+    </scope>
+</i18n>

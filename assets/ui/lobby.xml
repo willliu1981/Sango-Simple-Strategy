@@ -1,0 +1,120 @@
+<ui xmlns="http://kuan.studio/simpleui">
+    <table id="main" i18n="literal" flags="fillParent" pad="52">
+        <table id="lobby_layout" width="1780" height="970">
+            <table id="lobby_identity" width="1040" height="940" pad="56">
+                <label fontKey="title" fontSize="118" width="900" height="150"
+                    align="left" textAlign="left" color="0.97,0.86,0.62,1">${text:lobby_sango}</label>
+                <row />
+                <label fontKey="title" fontSize="72" width="900" height="100"
+                    align="left" textAlign="left" color="0.92,0.74,0.40,1">${text:lobby_title}</label>
+                <row />
+                <label fontSize="34" width="900" height="68" align="left" textAlign="left"
+                    color="0.78,0.72,0.62,1">${text:lobby_tagline}</label>
+                <row />
+                <table height="270"></table>
+                <row />
+                <table width="900" pad="28" backgroundColor="0.035,0.030,0.027,0.82">
+                    <label fontSize="30" width="830" height="84" align="left" textAlign="left"
+                        wrap="true" color="0.86,0.80,0.69,1">${text:lobby_intro}</label>
+                    <row />
+                    <label id="lobby_status" fontSize="30" width="830" height="72"
+                        align="center" textAlign="center" wrap="true">${text:status_no_campaign}</label>
+                </table>
+            </table>
+
+            <table id="lobby_menu_panel" width="620" height="940" pad="48"
+                backgroundColor="0.030,0.025,0.022,0.94">
+                <label fontKey="title" fontSize="52" width="500" height="90"
+                    color="0.90,0.72,0.40,1">${text:lobby_main_menu}</label>
+                <row />
+                <label fontSize="28" width="500" height="48" color="0.53,0.49,0.43,1">${text:lobby_prototype}</label>
+                <row />
+                <textButton id="continue_button" fontSize="42" width="500" height="92"
+                    padTop="34">${text:button_continue}</textButton>
+                <row />
+                <textButton id="new_game_button" fontSize="42" width="500" height="92"
+                    padTop="18">${text:button_new_game}</textButton>
+                <row />
+                <textButton id="load_game_button" fontSize="42" width="500" height="92"
+                    padTop="18">${text:button_load_game}</textButton>
+                <row />
+                <textButton id="settings_button" fontSize="42" width="500" height="92"
+                    padTop="18">${text:button_settings}</textButton>
+                <row />
+                <textButton id="exit_button" fontSize="42" width="500" height="92"
+                    padTop="18">${text:button_exit}</textButton>
+                <row />
+                <table height="54"></table>
+                <row />
+                <label fontSize="26" width="500" height="44" color="0.45,0.41,0.36,1">${text:lobby_version}</label>
+            </table>
+        </table>
+    </table>
+
+    <table id="new_game_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0,0,0,0.86" flags="fillParent">
+        <table width="1050" pad="54" backgroundColor="0.055,0.043,0.035,0.99">
+            <label fontKey="title" fontSize="64" width="920" height="95"
+                color="0.94,0.76,0.43,1">${text:new_game_title}</label>
+            <row />
+            <label fontSize="34" width="900" height="96" wrap="true"
+                textAlign="center" color="0.84,0.80,0.72,1">${text:new_game_description}</label>
+            <row />
+            <table width="900" pad="30" backgroundColor="0.09,0.075,0.060,1">
+                <label fontSize="36" width="820" height="64" align="left" textAlign="left">${text:new_game_scenario}</label>
+                <row />
+                <label fontSize="30" width="820" height="56" align="left" textAlign="left"
+                    color="0.72,0.66,0.55,1">${text:new_game_year}</label>
+                <row />
+                <label fontSize="30" width="820" height="56" align="left" textAlign="left"
+                    color="0.72,0.66,0.55,1">${text:new_game_ruler}</label>
+            </table>
+            <row />
+            <label fontSize="28" width="900" height="74" wrap="true" textAlign="center"
+                color="0.60,0.56,0.49,1">${text:new_game_note}</label>
+            <row />
+            <table width="900" padTop="24">
+                <textButton id="new_game_cancel_button" fontSize="38" width="390" height="88">${text:button_back}</textButton>
+                <textButton id="new_game_confirm_button" fontSize="38" width="470" height="88"
+                    padLeft="28">${text:button_create_campaign}</textButton>
+            </table>
+        </table>
+    </table>
+
+    <table id="settings_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0,0,0,0.86" flags="fillParent">
+        <table width="930" pad="54" backgroundColor="0.055,0.043,0.035,0.99">
+            <label fontKey="title" fontSize="64" width="800" height="95"
+                color="0.94,0.76,0.43,1">${text:settings_title}</label>
+            <row />
+            <label fontSize="30" width="790" height="76" wrap="true" textAlign="center"
+                color="0.72,0.67,0.58,1">${text:settings_note}</label>
+            <row />
+            <textButton id="settings_music_button" fontSize="38" width="700" height="90"
+                padTop="24">${text:settings_music_on}</textButton>
+            <row />
+            <textButton id="settings_sound_button" fontSize="38" width="700" height="90"
+                padTop="18">${text:settings_sound_on}</textButton>
+            <row />
+            <textButton id="settings_close_button" fontSize="38" width="700" height="90"
+                padTop="32">${text:button_confirm}</textButton>
+        </table>
+    </table>
+
+    <table id="exit_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0,0,0,0.86" flags="fillParent">
+        <table width="900" pad="54" backgroundColor="0.055,0.043,0.035,0.99">
+            <label fontKey="title" fontSize="62" width="770" height="92"
+                color="0.94,0.76,0.43,1">${text:exit_title}</label>
+            <row />
+            <label fontSize="34" width="760" height="105" wrap="true" textAlign="center"
+                color="0.84,0.80,0.72,1">${text:exit_description}</label>
+            <row />
+            <table width="760" padTop="28">
+                <textButton id="exit_cancel_button" fontSize="38" width="340" height="88">${text:button_cancel}</textButton>
+                <textButton id="exit_confirm_button" fontSize="38" width="390" height="88"
+                    padLeft="28">${text:button_exit_confirm}</textButton>
+            </table>
+        </table>
+    </table>
+</ui>

@@ -1,0 +1,79 @@
+package idv.kuan.studio.sango.provider;
+
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+
+import idv.kuan.studio.libgdx.simpleui.context.config.ApplicationContextConfiguration;
+import idv.kuan.studio.libgdx.simpleui.context.provider.ApplicationContextConfigProvider;
+import idv.kuan.studio.libgdx.simpleui.resource.FontChars;
+import idv.kuan.studio.libgdx.simpleui.resource.ResourceManager;
+import idv.kuan.studio.libgdx.simpleui.validation.ValidationMode;
+import idv.kuan.studio.sango.ui.LobbyScreen;
+import idv.kuan.studio.sango.ui.PrototypeCampaignScreen;
+import idv.kuan.studio.sango.ui.id.ScreenId;
+
+/**
+ * Sango 的 SimpleUI ApplicationContext 設定。
+ */
+public final class SangoAppContextConfigProvider implements ApplicationContextConfigProvider {
+    private static final float DESIGN_WIDTH = 1920f;
+    private static final float DESIGN_HEIGHT = 1080f;
+    private static final String DEFAULT_FONT_PATH = "font/SourceHanSansCN-Regular.otf";
+    private static final String TITLE_FONT_PATH = "font/SourceHanSansCN-Heavy.otf";
+
+    @Override
+    public ApplicationContextConfiguration buildConfiguration(ConfigBuilder configBuilder) {
+        verifyRequiredFonts();
+
+        String supplementalCharacters = Gdx.files.internal("characters/default.txt").readString("UTF-8");
+        FontChars.Characters defaultCharacters = new FontChars.Characters(
+            FontChars.ASCII_BASIC.getCharacters() + supplementalCharacters
+        );
+
+        return configBuilder
+            .setDefaultFontPath(DEFAULT_FONT_PATH)
+            .setDefaultCharacters(defaultCharacters)
+            .setBaseCharacters(FontChars.ASCII_BASIC)
+            .setResourceManagerConfiguration(
+                new ResourceManager.ResourceManagerConfiguration(
+                    "skin/default/uiskin.json",
+                    128,
+                    128,
+                    true
+                )
+            )
+            .setI18n("i18n/ui_zh_Hant.xml")
+            .registerFontPath("title", TITLE_FONT_PATH)
+            .skipToRegisterCharacters()
+            .skipToDefaultStage()
+            .setDefaultStage(() -> new Stage(new FitViewport(DESIGN_WIDTH, DESIGN_HEIGHT)))
+            .registerScreen(ScreenId.LOBBY, LobbyScreen::new, true)
+            .registerScreen(ScreenId.PROTOTYPE_CAMPAIGN, PrototypeCampaignScreen::new, true)
+            .skipToValidation()
+            .setVolidationMode(resolveValidationMode())
+            .build();
+    }
+
+    private void verifyRequiredFonts() {
+        verifyRequiredFont(DEFAULT_FONT_PATH);
+        verifyRequiredFont(TITLE_FONT_PATH);
+    }
+
+    private void verifyRequiredFont(String fontPath) {
+        if (!Gdx.files.internal(fontPath).exists()) {
+            throw new IllegalStateException(
+                "缺少 Sango 中文字型資產：" + fontPath
+                    + "。請先執行 tools/prepare-local-fonts.ps1。"
+            );
+        }
+    }
+
+    private ValidationMode resolveValidationMode() {
+        if (Gdx.app != null && Gdx.app.getType() == Application.ApplicationType.Android) {
+            return ValidationMode.WARN_ONLY;
+        }
+        return ValidationMode.FAIL_FAST;
+    }
+}

@@ -1,0 +1,24 @@
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+eclipse.project.name = appName + '-core'
+
+def stripBundledGdxFromSimpleUi = tasks.register('stripBundledGdxFromSimpleUi', Jar) {
+  archiveFileName = 'simpleui-1.1.2-no-bundled-gdx.jar'
+  destinationDirectory = layout.buildDirectory.dir('libs')
+  from(zipTree(rootProject.file('libs/simpleui-1.1.2.jar'))) {
+    exclude 'com/badlogic/**'
+  }
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+def simpleUiWithoutBundledGdx = files(
+  stripBundledGdxFromSimpleUi.flatMap {
+    it.archiveFile
+  }
+)
+simpleUiWithoutBundledGdx.builtBy(stripBundledGdxFromSimpleUi)
+
+dependencies {
+  api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+  api "com.badlogicgames.gdx:gdx:$gdxVersion"
+  api simpleUiWithoutBundledGdx
+}
