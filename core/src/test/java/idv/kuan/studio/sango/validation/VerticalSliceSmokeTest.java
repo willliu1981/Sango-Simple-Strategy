@@ -5,10 +5,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonWriter;
+
+import idv.kuan.studio.sango.SangoVersion;
 
 import idv.kuan.studio.sango.application.command.EndTurnCommand;
 import idv.kuan.studio.sango.application.command.ExecuteDomesticActionCommand;
 import idv.kuan.studio.sango.application.command.LaunchExpeditionCommand;
+import idv.kuan.studio.sango.application.command.MarkBattleReportReadCommand;
 import idv.kuan.studio.sango.application.command.NewGameCommand;
 import idv.kuan.studio.sango.application.command.ScoutCityCommand;
 import idv.kuan.studio.sango.application.request.NewGameRequest;
@@ -18,7 +23,10 @@ import idv.kuan.studio.sango.application.result.TurnEvent;
 import idv.kuan.studio.sango.application.result.TurnEventType;
 import idv.kuan.studio.sango.application.result.TurnResolutionResult;
 import idv.kuan.studio.sango.domain.definition.StrategicMapDefinition;
+import idv.kuan.studio.sango.domain.model.BattleReport;
 import idv.kuan.studio.sango.domain.model.CampaignStatus;
+import idv.kuan.studio.sango.domain.model.GameplayStatus;
+import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
@@ -28,11 +36,13 @@ import idv.kuan.studio.sango.domain.rule.SeasonalEconomyRules;
 import idv.kuan.studio.sango.domain.service.TurnResolutionService;
 import idv.kuan.studio.sango.repository.definition.AssetJsonGameDefinitionRepository;
 import idv.kuan.studio.sango.repository.save.LocalJsonSaveGameRepository;
+import idv.kuan.studio.sango.repository.save.SaveGameDocument;
 import idv.kuan.studio.sango.repository.save.SaveSlotInspection;
+import idv.kuan.studio.sango.repository.save.SaveSlotMetadata;
 import idv.kuan.studio.sango.repository.save.SaveSlotState;
 
 /**
- * 不依賴 Graphics Context 的 0.3.0 Vertical Slice smoke test。
+ * 不依賴 Graphics Context 的 0.4.0 戰報、自由征戰與存檔 smoke test。
  */
 public final class VerticalSliceSmokeTest {
     private static final int SAVE_SLOT = 1;
@@ -50,7 +60,7 @@ public final class VerticalSliceSmokeTest {
         }
 
         Path assetsPath = Path.of(arguments[0]);
-        Path temporaryRootPath = Files.createTempDirectory("sango-030-test-");
+        Path temporaryRootPath = Files.createTempDirectory("sango-040-test-");
         FileHandle temporaryRootDirectory = new FileHandle(temporaryRootPath.toFile());
 
         try {
@@ -66,20 +76,29 @@ public final class VerticalSliceSmokeTest {
                 definitionRepository,
                 temporaryRootDirectory.child("battle")
             );
-            validateCapitalDefeat(
+            validateCapitalRelocationAndFreePlay(
                 definitionRepository,
-                temporaryRootDirectory.child("defeat")
+                temporaryRootDirectory.child("capital-relocation")
             );
-            validateTurnLimit(
+            validateTurnLimitFreePlay(
                 definitionRepository,
                 temporaryRootDirectory.child("timeout")
             );
-            validateSaveRecovery(
+            validatePlayerElimination(
+                definitionRepository,
+                temporaryRootDirectory.child("elimination")
+            );
+            validateSaveRecoveryAndSlots(
                 definitionRepository,
                 temporaryRootDirectory.child("recovery")
             );
+            validateSchemaTwoMigration(
+                definitionRepository,
+                temporaryRootDirectory.child("migration")
+            );
+            validateAudioAssets(assetsPath);
 
-            System.out.println("Sango 0.3.0 strategic vertical slice smoke test: PASS");
+            System.out.println("Sango 0.4.0 battle report and flow smoke test: PASS");
         } finally {
             temporaryRootDirectory.deleteDirectory();
         }
@@ -285,7 +304,32 @@ public final class VerticalSliceSmokeTest {
             TurnEventType.BATTLE_DEFENDER_WON,
             "第一次進攻應由守軍獲勝"
         );
-        assertEquals(CampaignStatus.IN_PROGRESS, gameState.campaignStatus, "首戰失敗後仍可繼續");
+        assertEquals(
+            ScenarioObjectiveStatus.IN_PROGRESS,
+            gameState.scenarioObjectiveStatus,
+            "首戰失敗後劇本目標仍進行中"
+        );
+        assertEquals(GameplayStatus.ACTIVE, gameState.gameplayStatus, "首戰失敗後仍可操作");
+        assertEquals(1, firstBattleResult.getReport().getBattleReportIds().size(), "首戰戰報 ID 數");
+        assertEquals(1, gameState.countUnreadBattleReports(), "首戰產生未讀戰報");
+        BattleReport firstBattleReport = gameState.battleReports[0];
+        assertEquals(VICTORY_TARGET_ID, firstBattleReport.targetCityId, "首戰戰報城池");
+        assertTrue(!firstBattleReport.read, "新戰報預設未讀");
+        MarkBattleReportReadCommand markBattleReportReadCommand = new MarkBattleReportReadCommand(
+            commands.saveGameRepository
+        );
+        gameState = markBattleReportReadCommand.execute(
+            SAVE_SLOT,
+            gameState,
+            firstBattleReport.battleId
+        );
+        assertTrue(gameState.requireBattleReport(firstBattleReport.battleId).read, "戰報可標記已讀");
+        assertEquals(0, gameState.countUnreadBattleReports(), "已讀後不再計入未讀數");
+        GameState reloadedReportState = commands.saveGameRepository.load(SAVE_SLOT);
+        assertTrue(
+            reloadedReportState.requireBattleReport(firstBattleReport.battleId).read,
+            "戰報已讀狀態必須持久化"
+        );
         assertEquals(680, gameState.requireCityState(PLAYER_CAPITAL_ID).troops, "敗軍生還者返回主城");
         assertEquals(523, gameState.requireCityState(VICTORY_TARGET_ID).troops, "首戰後敵城守軍");
 
@@ -320,17 +364,34 @@ public final class VerticalSliceSmokeTest {
             secondExpedition.getGameState()
         );
         gameState = victoryResult.getGameState();
-        assertEquals(CampaignStatus.VICTORY, gameState.campaignStatus, "攻下目標城後勝利");
+        assertTurnEventCityReferencesValid(
+            definitionRepository,
+            victoryResult,
+            "勝利回合事件城池引用"
+        );
+        assertEquals(
+            ScenarioObjectiveStatus.ACHIEVED,
+            gameState.scenarioObjectiveStatus,
+            "攻下目標城後完成劇本目標"
+        );
+        assertEquals(GameplayStatus.ACTIVE, gameState.gameplayStatus, "達成目標後仍可自由征戰");
         assertEquals(
             PLAYER_FACTION_ID,
             gameState.requireCityState(VICTORY_TARGET_ID).ownerFactionId,
             "目標城控制權"
         );
         assertContainsEvent(victoryResult, TurnEventType.CAMPAIGN_VICTORY, "戰役勝利事件");
-        assertEquals(0, gameState.actionPointsRemaining, "戰役結束後不可再下命令");
+        assertEquals(3, gameState.actionPointsRemaining, "達成目標後恢復下月行動力");
+        DomesticActionResult freePlayAction = commands.domesticActionCommand.execute(
+            SAVE_SLOT,
+            gameState,
+            PLAYER_CAPITAL_ID,
+            DomesticActionType.TRAIN
+        );
+        assertTrue(freePlayAction.isSuccessful(), "達成劇本目標後仍可下達內政命令");
     }
 
-    private static void validateCapitalDefeat(
+    private static void validateCapitalRelocationAndFreePlay(
         AssetJsonGameDefinitionRepository definitionRepository,
         FileHandle saveDirectory
     ) {
@@ -354,7 +415,17 @@ public final class VerticalSliceSmokeTest {
             gameState
         );
         gameState = defeatResult.getGameState();
-        assertEquals(CampaignStatus.DEFEAT, gameState.campaignStatus, "主城失守後敗北");
+        assertTurnEventCityReferencesValid(
+            definitionRepository,
+            defeatResult,
+            "遷都敗北回合事件城池引用"
+        );
+        assertEquals(
+            ScenarioObjectiveStatus.FAILED,
+            gameState.scenarioObjectiveStatus,
+            "原首都失守後劇本目標失敗"
+        );
+        assertEquals(GameplayStatus.ACTIVE, gameState.gameplayStatus, "仍有城池時遊戲繼續");
         assertContainsEvent(
             defeatResult,
             TurnEventType.CAMPAIGN_DEFEAT_CAPITAL,
@@ -362,10 +433,12 @@ public final class VerticalSliceSmokeTest {
         );
         assertTrue(gameState.requirePlayerFactionState().active, "仍有其他城時勢力可保持 active");
         assertEquals("guangling", gameState.requirePlayerFactionState().capitalCityId, "敗北後替代主城");
-        assertEquals(0, gameState.actionPointsRemaining, "敗北後行動力歸零");
+        assertEquals(3, gameState.actionPointsRemaining, "遷都後恢復下月行動力");
+        TurnResolutionResult continuedResult = commands.endTurnCommand.execute(SAVE_SLOT, gameState);
+        assertEquals(7, continuedResult.getGameState().currentMonth, "遷都後仍可繼續推進月份");
     }
 
-    private static void validateTurnLimit(
+    private static void validateTurnLimitFreePlay(
         AssetJsonGameDefinitionRepository definitionRepository,
         FileHandle saveDirectory
     ) {
@@ -379,16 +452,185 @@ public final class VerticalSliceSmokeTest {
             gameState
         );
         gameState = timeoutResult.getGameState();
-        assertEquals(CampaignStatus.DEFEAT, gameState.campaignStatus, "超過期限後敗北");
+        assertEquals(
+            ScenarioObjectiveStatus.FAILED,
+            gameState.scenarioObjectiveStatus,
+            "超過期限後劇本目標失敗"
+        );
+        assertEquals(GameplayStatus.ACTIVE, gameState.gameplayStatus, "期限失敗後仍可自由征戰");
         assertContainsEvent(
             timeoutResult,
             TurnEventType.CAMPAIGN_DEFEAT_TIMEOUT,
             "期限敗北事件"
         );
-        assertEquals(0, gameState.actionPointsRemaining, "期限敗北後行動力歸零");
+        assertEquals(3, gameState.actionPointsRemaining, "期限失敗後仍恢復行動力");
+        TurnResolutionResult continuedResult = commands.endTurnCommand.execute(SAVE_SLOT, gameState);
+        assertEquals(3, continuedResult.getGameState().currentMonth, "期限失敗後仍可繼續月份");
     }
 
-    private static void validateSaveRecovery(
+    private static void validatePlayerElimination(
+        AssetJsonGameDefinitionRepository definitionRepository,
+        FileHandle saveDirectory
+    ) {
+        CommandSet commands = new CommandSet(definitionRepository, saveDirectory);
+        GameState gameState = commands.newGame();
+        gameState.enemyAttackCountdown = 1;
+        gameState.requireCityState(PLAYER_CAPITAL_ID).troops = 1;
+
+        TurnResolutionResult marchResult = commands.endTurnCommand.execute(
+            SAVE_SLOT,
+            gameState
+        );
+        gameState = marchResult.getGameState();
+        assertContainsEvent(marchResult, TurnEventType.ENEMY_MARCHING, "敵軍應建立行軍部隊");
+        assertEquals(1, gameState.armyStates.length, "敵軍行軍部隊數");
+
+        TurnResolutionResult eliminationResult = commands.endTurnCommand.execute(
+            SAVE_SLOT,
+            gameState
+        );
+        gameState = eliminationResult.getGameState();
+        assertTurnEventCityReferencesValid(
+            definitionRepository,
+            eliminationResult,
+            "玩家滅亡回合事件城池引用"
+        );
+        assertContainsEvent(
+            eliminationResult,
+            TurnEventType.PLAYER_ELIMINATED,
+            "失去最後一座城後必須產生滅亡事件"
+        );
+        assertEquals(
+            ScenarioObjectiveStatus.FAILED,
+            gameState.scenarioObjectiveStatus,
+            "玩家滅亡後劇本目標失敗"
+        );
+        assertEquals(
+            GameplayStatus.ELIMINATED,
+            gameState.gameplayStatus,
+            "失去全部城池後遊戲狀態"
+        );
+        assertTrue(!gameState.requirePlayerFactionState().active, "玩家勢力必須失效");
+        assertEquals(0, gameState.findCitiesOwnedBy(PLAYER_FACTION_ID).size(), "玩家城池數");
+        assertEquals(0, gameState.actionPointsRemaining, "玩家滅亡後行動力");
+        assertEquals(1, gameState.countUnreadBattleReports(), "滅亡戰鬥仍須留下未讀戰報");
+
+        boolean rejected = false;
+        try {
+            commands.endTurnCommand.execute(SAVE_SLOT, gameState);
+        } catch (IllegalStateException expectedException) {
+            rejected = true;
+        }
+        assertTrue(rejected, "玩家勢力滅亡後不可繼續推進月份");
+    }
+
+    @SuppressWarnings("deprecation")
+    private static void validateSchemaTwoMigration(
+        AssetJsonGameDefinitionRepository definitionRepository,
+        FileHandle saveDirectory
+    ) {
+        CommandSet commands = new CommandSet(definitionRepository, saveDirectory);
+        GameState legacyState = commands.newGame().copy();
+        legacyState.schemaVersion = SangoVersion.LEGACY_GAME_STATE_SCHEMA_VERSION;
+        legacyState.campaignStatus = CampaignStatus.DEFEAT;
+        legacyState.scenarioObjectiveStatus = null;
+        legacyState.gameplayStatus = null;
+        legacyState.nextBattleSequence = 0;
+        legacyState.battleReports = null;
+        legacyState.actionPointsRemaining = 0;
+
+        SaveGameDocument legacyDocument = new SaveGameDocument();
+        legacyDocument.schemaVersion = SangoVersion.SAVE_DOCUMENT_SCHEMA_VERSION;
+        legacyDocument.gameVersion = "0.3.0";
+        legacyDocument.savedAtEpochMillis = 1_725_552_000_000L;
+        legacyDocument.gameState = legacyState;
+
+        saveDirectory.mkdirs();
+        Json json = new Json();
+        json.setIgnoreUnknownFields(false);
+        json.setUsePrototypes(false);
+        json.setOutputType(JsonWriter.OutputType.json);
+        saveDirectory.child("slot-01.json").writeString(
+            json.prettyPrint(legacyDocument),
+            false,
+            "UTF-8"
+        );
+
+        LocalJsonSaveGameRepository migrationRepository = new LocalJsonSaveGameRepository(
+            saveDirectory
+        );
+        SaveSlotInspection inspection = migrationRepository.inspect(SAVE_SLOT);
+        assertEquals(SaveSlotState.AVAILABLE, inspection.getState(), "舊存檔遷移後槽位狀態");
+        assertNotNull(inspection.getMetadata(), "遷移後槽位摘要");
+        assertEquals(
+            ScenarioObjectiveStatus.FAILED,
+            inspection.getMetadata().getObjectiveStatus(),
+            "遷移後槽位目標狀態"
+        );
+
+        GameState migratedState = migrationRepository.load(SAVE_SLOT);
+        assertEquals(
+            SangoVersion.GAME_STATE_SCHEMA_VERSION,
+            migratedState.schemaVersion,
+            "遷移後 GameState schema"
+        );
+        assertEquals(null, migratedState.campaignStatus, "遷移後舊欄位應清空");
+        assertEquals(
+            ScenarioObjectiveStatus.FAILED,
+            migratedState.scenarioObjectiveStatus,
+            "遷移後目標狀態"
+        );
+        assertEquals(GameplayStatus.ACTIVE, migratedState.gameplayStatus, "遷移後可繼續遊玩");
+        assertEquals(
+            migratedState.actionPointsPerTurn,
+            migratedState.actionPointsRemaining,
+            "舊敗北存檔遷移後恢復行動力"
+        );
+        assertEquals(1, migratedState.nextBattleSequence, "遷移後戰報序號");
+        assertEquals(0, migratedState.battleReports.length, "遷移後戰報陣列");
+
+        migrationRepository.save(SAVE_SLOT, migratedState);
+        GameState reloadedState = migrationRepository.load(SAVE_SLOT);
+        assertEquals(
+            SangoVersion.GAME_STATE_SCHEMA_VERSION,
+            reloadedState.schemaVersion,
+            "遷移狀態重新保存後 schema"
+        );
+        assertEquals(
+            ScenarioObjectiveStatus.FAILED,
+            reloadedState.scenarioObjectiveStatus,
+            "遷移狀態重新保存後目標狀態"
+        );
+    }
+
+    private static void validateAudioAssets(Path assetsPath) throws IOException {
+        String[] audioAssetPaths = {
+            "audio/music/lobby_theme.ogg",
+            "audio/music/strategy_theme.ogg",
+            "audio/sfx/ui_click.ogg",
+            "audio/sfx/confirm.ogg",
+            "audio/sfx/cancel.ogg",
+            "audio/sfx/command_success.ogg",
+            "audio/sfx/command_error.ogg",
+            "audio/sfx/end_month.ogg",
+            "audio/sfx/save_complete.ogg",
+            "audio/sfx/battle_alert.ogg",
+            "audio/sfx/battle_impact.ogg",
+            "audio/sfx/city_captured.ogg",
+            "audio/sfx/objective_success.ogg",
+            "audio/sfx/objective_failed.ogg"
+        };
+        for (String audioAssetPath : audioAssetPaths) {
+            Path audioPath = assetsPath.resolve(audioAssetPath);
+            assertTrue(Files.isRegularFile(audioPath), "缺少音訊資產：" + audioAssetPath);
+            assertTrue(
+                Files.size(audioPath) > 256L,
+                "音訊資產內容過小或無效：" + audioAssetPath
+            );
+        }
+    }
+
+    private static void validateSaveRecoveryAndSlots(
         AssetJsonGameDefinitionRepository definitionRepository,
         FileHandle saveDirectory
     ) {
@@ -404,6 +646,37 @@ public final class VerticalSliceSmokeTest {
         );
         assertEquals(45, gameState.requireCityState(PLAYER_CAPITAL_ID).agriculture, "主要存檔農業");
 
+        commands.saveGameRepository.save(2, gameState);
+        commands.saveGameRepository.save(3, gameState);
+        SaveSlotInspection slotTwoInspection = commands.saveGameRepository.inspect(2);
+        SaveSlotInspection slotThreeInspection = commands.saveGameRepository.inspect(3);
+        assertEquals(SaveSlotState.AVAILABLE, slotTwoInspection.getState(), "存檔槽 2 狀態");
+        assertEquals(SaveSlotState.AVAILABLE, slotThreeInspection.getState(), "存檔槽 3 狀態");
+        SaveSlotMetadata slotTwoMetadata = slotTwoInspection.getMetadata();
+        assertNotNull(slotTwoMetadata, "存檔槽 2 摘要");
+        assertEquals(2, slotTwoMetadata.getSlotNumber(), "槽位摘要編號");
+        assertEquals(PLAYER_FACTION_ID, slotTwoMetadata.getPlayerFactionId(), "槽位摘要勢力");
+        assertEquals(PLAYER_CAPITAL_ID, slotTwoMetadata.getCapitalCityId(), "槽位摘要首都");
+        assertEquals(1, slotTwoMetadata.getOwnedCityCount(), "槽位摘要領地數");
+        assertEquals(gameState.currentTurn, slotTwoMetadata.getCurrentTurn(), "槽位摘要回合");
+        assertEquals(
+            ScenarioObjectiveStatus.IN_PROGRESS,
+            slotTwoMetadata.getObjectiveStatus(),
+            "槽位摘要目標狀態"
+        );
+
+        commands.saveGameRepository.delete(2);
+        assertEquals(
+            SaveSlotState.EMPTY,
+            commands.saveGameRepository.inspect(2).getState(),
+            "刪除槽位 2 後狀態"
+        );
+        assertEquals(
+            SaveSlotState.AVAILABLE,
+            commands.saveGameRepository.inspect(3).getState(),
+            "刪除槽位 2 不可影響槽位 3"
+        );
+
         GameState loadedState = commands.saveGameRepository.load(SAVE_SLOT);
         loadedState.requirePlayerFactionState().gold = 1;
         assertEquals(
@@ -417,11 +690,13 @@ public final class VerticalSliceSmokeTest {
         SaveSlotInspection recoveryInspection = commands.saveGameRepository.inspect(SAVE_SLOT);
         assertEquals(SaveSlotState.AVAILABLE, recoveryInspection.getState(), "備份可用狀態");
         assertTrue(recoveryInspection.hasRecoveryCandidate(), "應標示使用復原候選檔");
+        assertNotNull(recoveryInspection.getMetadata(), "復原候選仍應提供槽位摘要");
         GameState recoveredState = commands.saveGameRepository.load(SAVE_SLOT);
         assertEquals(40, recoveredState.requireCityState(PLAYER_CAPITAL_ID).agriculture, "備份應為前一版本");
         assertEquals(1200, recoveredState.requirePlayerFactionState().gold, "備份金");
 
         commands.saveGameRepository.delete(SAVE_SLOT);
+        commands.saveGameRepository.delete(3);
         assertEquals(
             SaveSlotState.EMPTY,
             commands.saveGameRepository.inspect(SAVE_SLOT).getState(),
@@ -434,6 +709,43 @@ public final class VerticalSliceSmokeTest {
             throw new AssertionError("命令應成功，但失敗原因為：" + actionResult.getFailureReason());
         }
         return actionResult.getGameState();
+    }
+
+    private static void assertTurnEventCityReferencesValid(
+        AssetJsonGameDefinitionRepository definitionRepository,
+        TurnResolutionResult resolutionResult,
+        String message
+    ) {
+        for (TurnEvent turnEvent : resolutionResult.getReport().getEvents()) {
+            assertOptionalCityReference(
+                definitionRepository,
+                turnEvent.getCityId(),
+                message + " / cityId / " + turnEvent.getType()
+            );
+            assertOptionalCityReference(
+                definitionRepository,
+                turnEvent.getOtherCityId(),
+                message + " / otherCityId / " + turnEvent.getType()
+            );
+        }
+    }
+
+    private static void assertOptionalCityReference(
+        AssetJsonGameDefinitionRepository definitionRepository,
+        String cityId,
+        String message
+    ) {
+        if (cityId == null || cityId.isEmpty()) {
+            return;
+        }
+        try {
+            definitionRepository.requireCity(cityId);
+        } catch (IllegalArgumentException invalidCityReferenceException) {
+            throw new AssertionError(
+                message + "，不是有效的城池 ID：" + cityId,
+                invalidCityReferenceException
+            );
+        }
     }
 
     private static void assertContainsEvent(

@@ -14,7 +14,15 @@ public final class GameState {
     public String opponentFactionId;
     public String neutralFactionId;
     public String victoryTargetCityId;
+
+    /**
+     * 只供 schema 2 存檔遷移使用；schema 3 新存檔應為 null。
+     */
+    @Deprecated
     public CampaignStatus campaignStatus;
+
+    public ScenarioObjectiveStatus scenarioObjectiveStatus;
+    public GameplayStatus gameplayStatus;
     public int currentTurn;
     public int currentYear;
     public int currentMonth;
@@ -24,10 +32,12 @@ public final class GameState {
     public int actionPointsPerTurn;
     public int enemyAttackCountdown;
     public int nextArmySequence;
+    public int nextBattleSequence;
     public String lastActionCode;
     public FactionState[] factionStates;
     public CityState[] cityStates;
     public ArmyState[] armyStates;
+    public BattleReport[] battleReports;
 
     public GameState() {
     }
@@ -42,6 +52,8 @@ public final class GameState {
         copiedState.neutralFactionId = neutralFactionId;
         copiedState.victoryTargetCityId = victoryTargetCityId;
         copiedState.campaignStatus = campaignStatus;
+        copiedState.scenarioObjectiveStatus = scenarioObjectiveStatus;
+        copiedState.gameplayStatus = gameplayStatus;
         copiedState.currentTurn = currentTurn;
         copiedState.currentYear = currentYear;
         copiedState.currentMonth = currentMonth;
@@ -51,11 +63,17 @@ public final class GameState {
         copiedState.actionPointsPerTurn = actionPointsPerTurn;
         copiedState.enemyAttackCountdown = enemyAttackCountdown;
         copiedState.nextArmySequence = nextArmySequence;
+        copiedState.nextBattleSequence = nextBattleSequence;
         copiedState.lastActionCode = lastActionCode;
         copiedState.factionStates = copyFactionStates(factionStates);
         copiedState.cityStates = copyCityStates(cityStates);
         copiedState.armyStates = copyArmyStates(armyStates);
+        copiedState.battleReports = copyBattleReports(battleReports);
         return copiedState;
+    }
+
+    public boolean isGameplayActive() {
+        return gameplayStatus == GameplayStatus.ACTIVE;
     }
 
     public FactionState requirePlayerFactionState() {
@@ -161,6 +179,78 @@ public final class GameState {
         armyStates = remainingStates.toArray(new ArmyState[0]);
     }
 
+    public String allocateBattleReportId() {
+        String battleId = "battle-" + nextBattleSequence;
+        nextBattleSequence += 1;
+        return battleId;
+    }
+
+    public void addBattleReport(BattleReport battleReport) {
+        if (battleReport == null) {
+            throw new IllegalArgumentException("battleReport 不可為 null。");
+        }
+        int existingCount = battleReports == null ? 0 : battleReports.length;
+        BattleReport[] expandedReports = new BattleReport[existingCount + 1];
+        if (existingCount > 0) {
+            System.arraycopy(battleReports, 0, expandedReports, 0, existingCount);
+        }
+        expandedReports[existingCount] = battleReport;
+        battleReports = expandedReports;
+    }
+
+    public BattleReport requireBattleReport(String battleId) {
+        BattleReport battleReport = findBattleReport(battleId);
+        if (battleReport == null) {
+            throw new IllegalStateException("找不到戰報：" + battleId);
+        }
+        return battleReport;
+    }
+
+    public BattleReport findBattleReport(String battleId) {
+        if (battleReports != null) {
+            for (BattleReport battleReport : battleReports) {
+                if (battleReport != null && battleId.equals(battleReport.battleId)) {
+                    return battleReport;
+                }
+            }
+        }
+        return null;
+    }
+
+    public List<BattleReport> findUnreadBattleReports() {
+        List<BattleReport> unreadReports = new ArrayList<>();
+        if (battleReports != null) {
+            for (BattleReport battleReport : battleReports) {
+                if (battleReport != null && !battleReport.read) {
+                    unreadReports.add(battleReport);
+                }
+            }
+        }
+        return unreadReports;
+    }
+
+    public List<BattleReport> findUnreadBattleReportsForCity(String cityId) {
+        List<BattleReport> unreadReports = new ArrayList<>();
+        if (battleReports != null) {
+            for (BattleReport battleReport : battleReports) {
+                if (battleReport != null
+                    && !battleReport.read
+                    && cityId.equals(battleReport.targetCityId)) {
+                    unreadReports.add(battleReport);
+                }
+            }
+        }
+        return unreadReports;
+    }
+
+    public int countUnreadBattleReports() {
+        return findUnreadBattleReports().size();
+    }
+
+    public int countUnreadBattleReportsForCity(String cityId) {
+        return findUnreadBattleReportsForCity(cityId).size();
+    }
+
     private FactionState[] copyFactionStates(FactionState[] sourceStates) {
         if (sourceStates == null) {
             return null;
@@ -192,5 +282,16 @@ public final class GameState {
             copiedStates[i] = sourceStates[i] == null ? null : sourceStates[i].copy();
         }
         return copiedStates;
+    }
+
+    private BattleReport[] copyBattleReports(BattleReport[] sourceReports) {
+        if (sourceReports == null) {
+            return null;
+        }
+        BattleReport[] copiedReports = new BattleReport[sourceReports.length];
+        for (int i = 0; i < sourceReports.length; i++) {
+            copiedReports[i] = sourceReports[i] == null ? null : sourceReports[i].copy();
+        }
+        return copiedReports;
     }
 }

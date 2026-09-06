@@ -8,10 +8,10 @@ import idv.kuan.studio.sango.application.result.TurnResolutionReport;
 import idv.kuan.studio.sango.domain.definition.CityConnectionDefinition;
 import idv.kuan.studio.sango.domain.definition.StrategicMapDefinition;
 import idv.kuan.studio.sango.domain.model.ArmyState;
-import idv.kuan.studio.sango.domain.model.CampaignStatus;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
+import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 
 /**
@@ -28,7 +28,7 @@ public final class EnemyTurnService {
         StrategicMapDefinition mapDefinition,
         TurnResolutionReport report
     ) {
-        if (gameState.campaignStatus != CampaignStatus.IN_PROGRESS) {
+        if (gameState.gameplayStatus != GameplayStatus.ACTIVE) {
             return;
         }
         FactionState opponentFactionState = gameState.requireOpponentFactionState();

@@ -25,22 +25,26 @@ import idv.kuan.studio.libgdx.simpleui.SuiScreen;
 import idv.kuan.studio.libgdx.simpleui.builder.BuiltUI;
 import idv.kuan.studio.sango.application.command.LaunchExpeditionCommand;
 import idv.kuan.studio.sango.application.result.StrategicActionResult;
-import idv.kuan.studio.sango.application.result.TurnEvent;
-import idv.kuan.studio.sango.application.result.TurnEventType;
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
 import idv.kuan.studio.sango.application.result.TurnResolutionResult;
+import idv.kuan.studio.sango.audio.MusicTrack;
+import idv.kuan.studio.sango.audio.SoundEffect;
+import idv.kuan.studio.sango.data.SangoPreferences;
 import idv.kuan.studio.sango.domain.definition.CityDefinition;
 import idv.kuan.studio.sango.domain.definition.FactionDefinition;
 import idv.kuan.studio.sango.domain.definition.MapCityNodeDefinition;
 import idv.kuan.studio.sango.domain.definition.ScenarioDefinition;
 import idv.kuan.studio.sango.domain.definition.StrategicMapDefinition;
 import idv.kuan.studio.sango.domain.model.ArmyState;
-import idv.kuan.studio.sango.domain.model.CampaignStatus;
+import idv.kuan.studio.sango.domain.model.BattleReport;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.GameState;
+import idv.kuan.studio.sango.domain.model.GameplayStatus;
+import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.domain.rule.StrategicActionFailureReason;
 import idv.kuan.studio.sango.runtime.SangoServices;
+import idv.kuan.studio.sango.ui.flow.MonthEndFlowController;
 import idv.kuan.studio.sango.ui.id.ScreenId;
 import idv.kuan.studio.sango.ui.support.ScreenBackground;
 import idv.kuan.studio.sango.ui.theme.MapNodeTone;
@@ -48,7 +52,7 @@ import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
 import idv.kuan.studio.sango.ui.widget.StrategicMapWidget;
 
 /**
- * 六城節點式戰略地圖，也是內政、偵察、出征與月份推進的主畫面。
+ * 六城節點式戰略地圖，也是偵察、出征與月份推進的主畫面。
  */
 public final class StrategicMapScreen extends SuiScreen {
     private static final String BACKGROUND_PATH = "picture/lobby/sango_lobby_background.png";
@@ -60,11 +64,12 @@ public final class StrategicMapScreen extends SuiScreen {
 
     private final ScreenBackground screenBackground = new ScreenBackground();
     private final NumberFormat numberFormat = NumberFormat.getIntegerInstance(Locale.TAIWAN);
+    private final MonthEndFlowController monthEndFlowController = new MonthEndFlowController();
 
-    private Actor turnReportMask;
+    private Actor endMonthConfirmMask;
+    private Actor battlePromptMask;
     private Group mapHost;
     private StrategicMapWidget strategicMapWidget;
-    private TurnResolutionReport lastTurnReport;
     private String currentStatusMessage;
     private Color currentStatusColor = STATUS_NORMAL_COLOR;
 
@@ -81,7 +86,8 @@ public final class StrategicMapScreen extends SuiScreen {
     @Override
     protected void onUIBuilt(BuiltUI builtUI) {
         screenBackground.attach(stage, BACKGROUND_PATH);
-        turnReportMask = attachModalMask("turn_report_mask");
+        endMonthConfirmMask = attachModalMask("end_month_confirm_mask");
+        battlePromptMask = attachModalMask("battle_prompt_mask");
         mapHost = ui.getActor("map_host", Group.class);
         strategicMapWidget = new StrategicMapWidget(
             label("map_font_probe").getStyle().font,
@@ -100,7 +106,8 @@ public final class StrategicMapScreen extends SuiScreen {
         if (ui == null) {
             return;
         }
-        closeTurnReport();
+        closeModals();
+        SangoServices.audio().playMusic(MusicTrack.STRATEGY);
         ensureCurrentGameState();
         refreshView();
     }
@@ -111,10 +118,10 @@ public final class StrategicMapScreen extends SuiScreen {
             @Override
             public boolean keyDown(int keycode) {
                 if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                    if (turnReportMask != null && turnReportMask.isVisible()) {
-                        closeTurnReport();
+                    if (isAnyModalVisible()) {
+                        closeModals();
                     } else {
-                        returnToLobby();
+                        openSettings();
                     }
                     return true;
                 }
@@ -165,12 +172,15 @@ public final class StrategicMapScreen extends SuiScreen {
         SangoUiStyles.applySecondaryButton(button("manage_city_button"));
         SangoUiStyles.applySecondaryButton(button("scout_city_button"));
         SangoUiStyles.applyPrimaryButton(button("launch_expedition_button"));
-        SangoUiStyles.applySecondaryButton(button("map_save_button"));
-        SangoUiStyles.applySecondaryButton(button("map_return_lobby_button"));
+        SangoUiStyles.applySecondaryButton(button("view_city_battle_button"));
+        SangoUiStyles.applySecondaryButton(button("map_settings_button"));
         SangoUiStyles.applySecondaryButton(button("show_last_report_button"));
+        SangoUiStyles.applyDangerButton(button("show_unread_battle_button"));
         SangoUiStyles.applyPrimaryButton(button("end_month_button"));
-        SangoUiStyles.applySecondaryButton(button("report_close_button"));
-        SangoUiStyles.applySecondaryButton(button("report_lobby_button"));
+        SangoUiStyles.applySecondaryButton(button("end_month_cancel_button"));
+        SangoUiStyles.applyPrimaryButton(button("end_month_confirm_button"));
+        SangoUiStyles.applySecondaryButton(button("battle_prompt_later_button"));
+        SangoUiStyles.applyDangerButton(button("battle_prompt_view_button"));
         refreshTacticStyles();
     }
 
@@ -178,15 +188,18 @@ public final class StrategicMapScreen extends SuiScreen {
         ui.onClick("manage_city_button", this::openSelectedCity);
         ui.onClick("scout_city_button", this::scoutSelectedCity);
         ui.onClick("launch_expedition_button", this::launchExpedition);
+        ui.onClick("view_city_battle_button", this::viewSelectedCityBattle);
         ui.onClick("tactic_balanced_button", () -> selectTactic(BattleTactic.BALANCED));
         ui.onClick("tactic_assault_button", () -> selectTactic(BattleTactic.ASSAULT));
         ui.onClick("tactic_cautious_button", () -> selectTactic(BattleTactic.CAUTIOUS));
-        ui.onClick("map_save_button", this::saveManually);
-        ui.onClick("map_return_lobby_button", this::returnToLobby);
+        ui.onClick("map_settings_button", this::openSettings);
         ui.onClick("show_last_report_button", this::showLastTurnReport);
-        ui.onClick("end_month_button", this::endMonth);
-        ui.onClick("report_close_button", this::closeTurnReport);
-        ui.onClick("report_lobby_button", this::returnToLobby);
+        ui.onClick("show_unread_battle_button", this::viewFirstUnreadBattle);
+        ui.onClick("end_month_button", this::requestEndMonth);
+        ui.onClick("end_month_cancel_button", this::closeModals);
+        ui.onClick("end_month_confirm_button", this::confirmEndMonth);
+        ui.onClick("battle_prompt_later_button", this::openMonthReportAfterBattlePrompt);
+        ui.onClick("battle_prompt_view_button", this::openPromptedBattleReport);
     }
 
     private void animateEntrance() {
@@ -199,17 +212,13 @@ public final class StrategicMapScreen extends SuiScreen {
         if (SangoServices.session().hasCurrentState()) {
             return;
         }
+        int slotNumber = SangoPreferences.getLastUsedSaveSlot();
         try {
-            GameState gameState = SangoServices.saveGames().load(
-                SangoServices.DEFAULT_SAVE_SLOT
-            );
-            SangoServices.session().setCurrentState(gameState);
+            GameState gameState = SangoServices.saveGames().load(slotNumber);
+            SangoServices.session().setCurrentState(slotNumber, gameState);
         } catch (RuntimeException exception) {
             Gdx.app.error("StrategicMap", "無法載入目前戰局。", exception);
-            currentStatusMessage = text(
-                "map_status_load_failed",
-                "無法載入戰局；請返回 Lobby 並建立新局。"
-            );
+            currentStatusMessage = text("map_status_load_failed", "無法載入戰局；請從 Lobby 選擇存檔。");
             currentStatusColor = STATUS_ERROR_COLOR;
         }
     }
@@ -221,13 +230,17 @@ public final class StrategicMapScreen extends SuiScreen {
         SangoServices.session().setSelectedCityId(cityId);
         currentStatusMessage = text("map_status_city_selected", "已選取城池。");
         currentStatusColor = STATUS_NORMAL_COLOR;
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
         refreshView();
     }
 
     private void selectTactic(BattleTactic battleTactic) {
         SangoServices.session().setSelectedBattleTactic(battleTactic);
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
         refreshTacticStyles();
-        refreshSelectedCityPanel(SangoServices.session().requireCurrentState());
+        if (SangoServices.session().hasCurrentState()) {
+            refreshSelectedCityPanel(SangoServices.session().requireCurrentState());
+        }
     }
 
     private void refreshTacticStyles() {
@@ -274,53 +287,84 @@ public final class StrategicMapScreen extends SuiScreen {
                 + text("city_action_points_prefix", "行動力：")
                 + gameState.actionPointsRemaining + " / " + gameState.actionPointsPerTurn
         );
-        label("map_name_label").setText(
-            localized(mapDefinition.nameKey, mapDefinition.id)
-        );
+        label("map_name_label").setText(localized(mapDefinition.nameKey, mapDefinition.id));
         refreshObjectiveLabel(gameState);
+        refreshUnreadBattleLabel(gameState);
         refreshMapWidget(gameState, mapDefinition, selectedCityId);
         refreshSelectedCityPanel(gameState);
         refreshArmySummary(gameState);
         refreshStatusLabel();
+
+        TurnResolutionReport lastTurnReport = SangoServices.session().getLastTurnReport();
         setButtonEnabled(
             button("show_last_report_button"),
-            lastTurnReport != null && !lastTurnReport.isEmpty()
+            lastTurnReport != null
         );
+        int unreadBattleCount = gameState.countUnreadBattleReports();
+        button("show_unread_battle_button").setText(
+            text("button_unread_battles_format", "未讀戰報（{0}）", unreadBattleCount)
+        );
+        setButtonEnabled(button("show_unread_battle_button"), unreadBattleCount > 0);
         setButtonEnabled(
             button("end_month_button"),
-            gameState.campaignStatus == CampaignStatus.IN_PROGRESS
+            gameState.gameplayStatus == GameplayStatus.ACTIVE
         );
     }
 
     private String ensureSelectedCity(GameState gameState) {
         String selectedCityId = SangoServices.session().getSelectedCityId();
-        if (selectedCityId == null || gameState.findCityState(selectedCityId) == null) {
-            selectedCityId = gameState.requirePlayerFactionState().active
-                ? gameState.requirePlayerFactionState().capitalCityId
-                : gameState.victoryTargetCityId;
-            SangoServices.session().setSelectedCityId(selectedCityId);
+        if (selectedCityId != null && gameState.findCityState(selectedCityId) != null) {
+            return selectedCityId;
         }
+        if (gameState.requirePlayerFactionState().active) {
+            selectedCityId = gameState.requirePlayerFactionState().capitalCityId;
+        } else {
+            selectedCityId = gameState.cityStates[0].cityId;
+        }
+        SangoServices.session().setSelectedCityId(selectedCityId);
         return selectedCityId;
     }
 
     private void refreshObjectiveLabel(GameState gameState) {
+        if (gameState.gameplayStatus == GameplayStatus.ELIMINATED) {
+            label("map_objective_label").setText(
+                text("map_gameplay_eliminated", "我方已失去全部城池｜只能查看局勢或讀取存檔")
+            );
+            return;
+        }
         String targetCityName = cityName(gameState.victoryTargetCityId);
         int remainingMonths = Math.max(0, gameState.turnLimitMonths - gameState.elapsedMonths);
-        if (gameState.campaignStatus == CampaignStatus.VICTORY) {
+        if (gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.ACHIEVED) {
             label("map_objective_label").setText(
-                text("map_objective_victory", "勝利：已攻下目標城池。")
+                text("map_objective_achieved_free", "劇本目標達成｜自由征戰中")
             );
-        } else if (gameState.campaignStatus == CampaignStatus.DEFEAT) {
+        } else if (gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.FAILED) {
             label("map_objective_label").setText(
-                text("map_objective_defeat", "戰役失敗；可查看最後局勢或建立新局。")
+                text("map_objective_failed_free", "劇本目標失敗｜自由征戰中")
             );
         } else {
             label("map_objective_label").setText(
-                text("map_objective_format", "目標：攻下 {0}｜期限剩餘 {1} 個月",
+                text(
+                    "map_objective_format",
+                    "目標：攻下 {0}｜期限剩餘 {1} 個月",
                     targetCityName,
-                    remainingMonths)
+                    remainingMonths
+                )
             );
         }
+    }
+
+    private void refreshUnreadBattleLabel(GameState gameState) {
+        int unreadBattleCount = gameState.countUnreadBattleReports();
+        label("map_unread_battle_label").setText(
+            unreadBattleCount > 0
+                ? text(
+                    "map_unread_battle_alert_format",
+                    "戰事通報：有 {0} 份未讀戰報；發生戰鬥的城池正在閃爍。",
+                    unreadBattleCount
+                )
+                : text("map_unread_battle_none", "戰事通報：目前沒有未讀戰報。")
+        );
     }
 
     private void refreshMapWidget(
@@ -330,6 +374,7 @@ public final class StrategicMapScreen extends SuiScreen {
     ) {
         Map<String, String> captionsByCityId = new LinkedHashMap<>();
         Map<String, MapNodeTone> tonesByCityId = new LinkedHashMap<>();
+        Map<String, Integer> unreadBattlesByCityId = new LinkedHashMap<>();
         for (MapCityNodeDefinition nodeDefinition : mapDefinition.nodes) {
             CityState cityState = gameState.requireCityState(nodeDefinition.cityId);
             MapNodeTone nodeTone = toneForOwner(gameState, cityState.ownerFactionId);
@@ -337,16 +382,19 @@ public final class StrategicMapScreen extends SuiScreen {
             if (gameState.victoryTargetCityId.equals(cityState.cityId)) {
                 marker += "・" + text("map_marker_target", "目標");
             }
-            captionsByCityId.put(
-                cityState.cityId,
-                cityName(cityState.cityId) + "\n" + marker
-            );
+            int unreadCount = gameState.countUnreadBattleReportsForCity(cityState.cityId);
+            if (unreadCount > 0) {
+                marker += "\n" + text("map_marker_battle_format", "戰事 {0}", unreadCount);
+            }
+            captionsByCityId.put(cityState.cityId, cityName(cityState.cityId) + "\n" + marker);
             tonesByCityId.put(cityState.cityId, nodeTone);
+            unreadBattlesByCityId.put(cityState.cityId, unreadCount);
         }
         strategicMapWidget.setMapData(
             mapDefinition,
             captionsByCityId,
             tonesByCityId,
+            unreadBattlesByCityId,
             selectedCityId
         );
         resizeMapWidget();
@@ -397,14 +445,18 @@ public final class StrategicMapScreen extends SuiScreen {
             buildRouteText(gameState, selectedCityState, originCityState)
         );
 
-        boolean playerOwned = gameState.playerFactionId.equals(
-            selectedCityState.ownerFactionId
+        int cityUnreadCount = gameState.countUnreadBattleReportsForCity(selectedCityState.cityId);
+        button("view_city_battle_button").setText(
+            text("button_city_battles_format", "查看此城戰報（{0}）", cityUnreadCount)
         );
-        boolean campaignActive = gameState.campaignStatus == CampaignStatus.IN_PROGRESS;
-        setButtonEnabled(button("manage_city_button"), playerOwned);
+        setButtonEnabled(button("view_city_battle_button"), cityUnreadCount > 0);
+
+        boolean playerOwned = gameState.playerFactionId.equals(selectedCityState.ownerFactionId);
+        boolean gameplayActive = gameState.gameplayStatus == GameplayStatus.ACTIVE;
+        setButtonEnabled(button("manage_city_button"), gameplayActive && playerOwned);
         setButtonEnabled(
             button("scout_city_button"),
-            campaignActive && !playerOwned && originCityState != null
+            gameplayActive && !playerOwned && originCityState != null
                 && gameState.actionPointsRemaining >= 1
         );
 
@@ -416,7 +468,7 @@ public final class StrategicMapScreen extends SuiScreen {
                 ? text("button_launch_expedition_format", "出征（{0} 兵）", dispatchTroops)
                 : text("button_launch_expedition", "出征")
         );
-        boolean expeditionEnabled = campaignActive
+        boolean expeditionEnabled = gameplayActive
             && !playerOwned
             && originCityState != null
             && dispatchTroops >= LaunchExpeditionCommand.MINIMUM_EXPEDITION
@@ -451,10 +503,7 @@ public final class StrategicMapScreen extends SuiScreen {
 
     private String buildSelectedCityStats(CityState cityState, boolean exactIntel) {
         if (!exactIntel) {
-            return text(
-                "map_stats_unknown",
-                "城防、訓練與內政狀態尚未掌握。"
-            );
+            return text("map_stats_unknown", "城防、訓練與內政狀態尚未掌握。");
         }
         return text(
             "map_stats_format",
@@ -473,16 +522,10 @@ public final class StrategicMapScreen extends SuiScreen {
         CityState originCityState
     ) {
         if (gameState.playerFactionId.equals(selectedCityState.ownerFactionId)) {
-            return text(
-                "map_route_owned",
-                "此城屬於我方；可進入內政畫面投資或整備。"
-            );
+            return text("map_route_owned", "此城屬於我方；可進入內政畫面投資或整備。");
         }
         if (originCityState == null) {
-            return text(
-                "map_route_not_adjacent",
-                "目前沒有與此城直接相鄰的我方城池，無法偵察或出征。"
-            );
+            return text("map_route_not_adjacent", "目前沒有與此城直接相鄰的我方城池。");
         }
         return text(
             "map_route_format",
@@ -501,7 +544,9 @@ public final class StrategicMapScreen extends SuiScreen {
             gameState.mapId
         );
         List<CityState> playerCities = gameState.findCitiesOwnedBy(gameState.playerFactionId);
-        String capitalCityId = gameState.requirePlayerFactionState().capitalCityId;
+        String capitalCityId = gameState.requirePlayerFactionState().active
+            ? gameState.requirePlayerFactionState().capitalCityId
+            : "";
         for (CityState playerCityState : playerCities) {
             if (playerCityState.cityId.equals(capitalCityId)
                 && mapDefinition.findConnection(playerCityState.cityId, targetCityId) != null) {
@@ -533,9 +578,11 @@ public final class StrategicMapScreen extends SuiScreen {
                 summaryBuilder.append("　｜　");
             }
             boolean playerArmy = gameState.playerFactionId.equals(armyState.factionId);
-            summaryBuilder.append(playerArmy
-                ? text("map_army_player_prefix", "我軍")
-                : text("map_army_enemy_prefix", "敵軍"));
+            summaryBuilder.append(
+                playerArmy
+                    ? text("map_army_player_prefix", "我軍")
+                    : text("map_army_enemy_prefix", "敵軍")
+            );
             summaryBuilder.append(' ')
                 .append(numberFormat.format(armyState.troops))
                 .append(' ')
@@ -554,18 +601,19 @@ public final class StrategicMapScreen extends SuiScreen {
         if (!SangoServices.session().hasCurrentState()) {
             return;
         }
-        CityState selectedCityState = SangoServices.session().requireCurrentState()
-            .requireCityState(SangoServices.session().getSelectedCityId());
-        if (!SangoServices.session().requireCurrentState().playerFactionId.equals(
-            selectedCityState.ownerFactionId
-        )) {
+        GameState gameState = SangoServices.session().requireCurrentState();
+        CityState selectedCityState = gameState.requireCityState(
+            SangoServices.session().getSelectedCityId()
+        );
+        if (!gameState.playerFactionId.equals(selectedCityState.ownerFactionId)) {
             return;
         }
+        SangoServices.audio().playSound(SoundEffect.CONFIRM);
         Sui.screens.set(ScreenId.CITY);
     }
 
     private void scoutSelectedCity() {
-        GameState currentState = requireCurrentStateOrReturn();
+        GameState currentState = requireCurrentState();
         if (currentState == null) {
             return;
         }
@@ -577,7 +625,7 @@ public final class StrategicMapScreen extends SuiScreen {
         }
         try {
             StrategicActionResult result = SangoServices.scoutCityCommand().execute(
-                SangoServices.DEFAULT_SAVE_SLOT,
+                SangoServices.session().getCurrentSaveSlot(),
                 currentState,
                 originCityState.cityId,
                 targetCityId
@@ -586,12 +634,13 @@ public final class StrategicMapScreen extends SuiScreen {
         } catch (RuntimeException exception) {
             Gdx.app.error("StrategicMap", "偵察命令失敗。", exception);
             setStatus(text("map_status_action_failed", "戰略命令失敗，戰局未更新。"), STATUS_ERROR_COLOR);
+            SangoServices.audio().playSound(SoundEffect.COMMAND_ERROR);
         }
         refreshView();
     }
 
     private void launchExpedition() {
-        GameState currentState = requireCurrentStateOrReturn();
+        GameState currentState = requireCurrentState();
         if (currentState == null) {
             return;
         }
@@ -603,7 +652,7 @@ public final class StrategicMapScreen extends SuiScreen {
         }
         try {
             StrategicActionResult result = SangoServices.launchExpeditionCommand().execute(
-                SangoServices.DEFAULT_SAVE_SLOT,
+                SangoServices.session().getCurrentSaveSlot(),
                 currentState,
                 originCityState.cityId,
                 targetCityId,
@@ -613,6 +662,7 @@ public final class StrategicMapScreen extends SuiScreen {
         } catch (RuntimeException exception) {
             Gdx.app.error("StrategicMap", "出征命令失敗。", exception);
             setStatus(text("map_status_action_failed", "戰略命令失敗，戰局未更新。"), STATUS_ERROR_COLOR);
+            SangoServices.audio().playSound(SoundEffect.COMMAND_ERROR);
         }
         refreshView();
     }
@@ -622,7 +672,8 @@ public final class StrategicMapScreen extends SuiScreen {
         boolean scouting
     ) {
         if (actionResult.isSuccessful()) {
-            SangoServices.session().setCurrentState(actionResult.getGameState());
+            int slotNumber = SangoServices.session().getCurrentSaveSlot();
+            SangoServices.session().setCurrentState(slotNumber, actionResult.getGameState());
             if (scouting) {
                 setStatus(
                     text("map_status_scout_success", "偵察完成；精確情報可維持三個回合。"),
@@ -638,14 +689,16 @@ public final class StrategicMapScreen extends SuiScreen {
                     STATUS_SUCCESS_COLOR
                 );
             }
+            SangoServices.audio().playSound(SoundEffect.COMMAND_SUCCESS);
             return;
         }
         setStatus(strategicFailureMessage(actionResult.getFailureReason()), STATUS_ERROR_COLOR);
+        SangoServices.audio().playSound(SoundEffect.COMMAND_ERROR);
     }
 
     private String strategicFailureMessage(StrategicActionFailureReason failureReason) {
         return switch (failureReason) {
-            case CAMPAIGN_FINISHED -> text("map_status_campaign_finished", "戰役已結束，不能再下達命令。");
+            case PLAYER_ELIMINATED -> text("map_status_player_eliminated", "我方已失去全部城池，不能再下達命令。");
             case NO_ACTION_POINTS -> text("city_status_no_action_points", "行動力不足；請結束月份。");
             case ORIGIN_NOT_OWNED -> text("map_status_origin_not_owned", "出發城不屬於我方。");
             case TARGET_ALREADY_OWNED -> text("map_status_target_owned", "目標已屬於我方。");
@@ -658,235 +711,139 @@ public final class StrategicMapScreen extends SuiScreen {
         };
     }
 
-    private void endMonth() {
-        GameState currentState = requireCurrentStateOrReturn();
-        if (currentState == null) {
+    private void requestEndMonth() {
+        GameState gameState = requireCurrentState();
+        if (gameState == null || gameState.gameplayStatus != GameplayStatus.ACTIVE) {
             return;
         }
+        label("end_month_confirm_title_label").setText(
+            text(
+                "end_month_confirm_title_format",
+                "確定結束 {0} 年 {1} 月？",
+                gameState.currentYear,
+                gameState.currentMonth
+            )
+        );
+        label("end_month_confirm_description_label").setText(
+            text(
+                "end_month_confirm_description_format",
+                "剩餘行動力：{0} / {1}\n月底將結算軍糧、季節收入、行軍、戰鬥與敵軍行動。未使用的行動力不會保留。",
+                gameState.actionPointsRemaining,
+                gameState.actionPointsPerTurn
+            )
+        );
+        openModal(endMonthConfirmMask);
+    }
+
+    private void confirmEndMonth() {
+        closeModals();
         try {
-            TurnResolutionResult resolutionResult = SangoServices.endTurnCommand().execute(
-                SangoServices.DEFAULT_SAVE_SLOT,
-                currentState
-            );
-            SangoServices.session().setCurrentState(resolutionResult.getGameState());
-            lastTurnReport = resolutionResult.getReport();
-            setStatus(text("map_status_month_ended", "月份結算完成並已自動存檔。"), STATUS_SUCCESS_COLOR);
+            String selectedCityId = SangoServices.session().getSelectedCityId();
+            TurnResolutionResult resolutionResult = monthEndFlowController.endCurrentMonth();
+            TurnResolutionReport report = resolutionResult.getReport();
+            SangoServices.session().openMonthReport(report, ScreenId.STRATEGIC_MAP);
+            SangoServices.audio().playSound(SoundEffect.END_MONTH);
             refreshView();
-            openTurnReport(lastTurnReport);
+            String battleReportId = findBattleAtCity(report, selectedCityId);
+            if (battleReportId != null) {
+                prepareBattlePrompt(battleReportId);
+            } else {
+                Sui.screens.set(ScreenId.MONTH_REPORT);
+            }
         } catch (RuntimeException exception) {
             Gdx.app.error("StrategicMap", "結束月份失敗。", exception);
             setStatus(text("city_status_save_failed", "存檔失敗，因此月份沒有推進。"), STATUS_ERROR_COLOR);
+            SangoServices.audio().playSound(SoundEffect.COMMAND_ERROR);
             refreshView();
         }
     }
 
-    private void saveManually() {
-        GameState currentState = requireCurrentStateOrReturn();
-        if (currentState == null) {
-            return;
+    private String findBattleAtCity(TurnResolutionReport report, String cityId) {
+        GameState gameState = SangoServices.session().requireCurrentState();
+        for (String battleReportId : report.getBattleReportIds()) {
+            BattleReport battleReport = gameState.findBattleReport(battleReportId);
+            if (battleReport != null && cityId.equals(battleReport.targetCityId)) {
+                return battleReportId;
+            }
         }
-        try {
-            SangoServices.saveCurrentGameCommand().execute(
-                SangoServices.DEFAULT_SAVE_SLOT,
-                currentState
-            );
-            setStatus(text("city_status_saved", "戰局已保存。"), STATUS_SUCCESS_COLOR);
-        } catch (RuntimeException exception) {
-            Gdx.app.error("StrategicMap", "手動存檔失敗。", exception);
-            setStatus(text("city_status_save_failed", "戰局保存失敗。"), STATUS_ERROR_COLOR);
-        }
-        refreshStatusLabel();
+        return null;
+    }
+
+    private void prepareBattlePrompt(String battleReportId) {
+        BattleReport battleReport = SangoServices.session().requireCurrentState()
+            .requireBattleReport(battleReportId);
+        SangoServices.session().openBattleReport(battleReportId, ScreenId.MONTH_REPORT);
+        label("battle_prompt_title_label").setText(
+            text("battle_prompt_title_format", "{0} 發生戰鬥", cityName(battleReport.targetCityId))
+        );
+        label("battle_prompt_description_label").setText(
+            text("battle_prompt_description", "本月所選城池發生戰事。是否立即觀看完整戰報？")
+        );
+        openModal(battlePromptMask);
+        SangoServices.audio().playSound(SoundEffect.BATTLE_ALERT);
+    }
+
+    private void openMonthReportAfterBattlePrompt() {
+        closeModals();
+        Sui.screens.set(ScreenId.MONTH_REPORT);
+    }
+
+    private void openPromptedBattleReport() {
+        closeModals();
+        Sui.screens.set(ScreenId.BATTLE_REPORT);
     }
 
     private void showLastTurnReport() {
-        if (lastTurnReport != null) {
-            openTurnReport(lastTurnReport);
+        if (SangoServices.session().getLastTurnReport() == null) {
+            return;
         }
-    }
-
-    private void openTurnReport(TurnResolutionReport report) {
-        label("report_period_label").setText(
-            text(
-                "report_period_format",
-                "{0} 年 {1} 月結算",
-                report.getResolvedYear(),
-                report.getResolvedMonth()
-            )
+        SangoServices.session().openMonthReport(
+            SangoServices.session().getLastTurnReport(),
+            ScreenId.STRATEGIC_MAP
         );
-        label("report_content_label").setText(formatTurnReport(report));
-        turnReportMask.setVisible(true);
-        turnReportMask.getColor().a = 0f;
-        turnReportMask.toFront();
-        turnReportMask.addAction(Actions.fadeIn(0.16f));
+        Sui.screens.set(ScreenId.MONTH_REPORT);
     }
 
-    private String formatTurnReport(TurnResolutionReport report) {
-        if (report.isEmpty()) {
-            return text("report_empty", "本月沒有特殊事件。");
+    private void viewSelectedCityBattle() {
+        GameState gameState = requireCurrentState();
+        if (gameState == null) {
+            return;
         }
-        StringBuilder reportBuilder = new StringBuilder();
-        for (TurnEvent turnEvent : report.getEvents()) {
-            if (reportBuilder.length() > 0) {
-                reportBuilder.append('\n');
-            }
-            reportBuilder.append("• ").append(formatTurnEvent(turnEvent));
+        List<BattleReport> reports = gameState.findUnreadBattleReportsForCity(
+            SangoServices.session().getSelectedCityId()
+        );
+        if (reports.isEmpty()) {
+            return;
         }
-        return reportBuilder.toString();
+        SangoServices.session().openBattleReport(reports.get(0).battleId, ScreenId.STRATEGIC_MAP);
+        Sui.screens.set(ScreenId.BATTLE_REPORT);
     }
 
-    private String formatTurnEvent(TurnEvent turnEvent) {
-        TurnEventType eventType = turnEvent.getType();
-        String cityName = optionalCityName(turnEvent.getCityId());
-        String otherCityName = optionalCityName(turnEvent.getOtherCityId());
-        boolean playerFactionEvent = SangoServices.session().requireCurrentState().playerFactionId
-            .equals(turnEvent.getFactionId());
-
-        return switch (eventType) {
-            case MILITARY_UPKEEP -> text(
-                "report_event_upkeep",
-                "軍糧支出：-{0} 糧，用於維持 {1} 兵。",
-                numberFormat.format(turnEvent.getPrimaryValue()),
-                numberFormat.format(turnEvent.getSecondaryValue())
-            );
-            case FOOD_SHORTAGE -> text(
-                "report_event_shortage",
-                "軍糧不足 {0}，共有 {1} 兵逃散。",
-                numberFormat.format(turnEvent.getPrimaryValue()),
-                numberFormat.format(turnEvent.getSecondaryValue())
-            );
-            case QUARTERLY_TAX -> text(
-                "report_event_tax",
-                "季末商稅：+{0} 金（{1} 座城池）。",
-                numberFormat.format(turnEvent.getPrimaryValue()),
-                turnEvent.getSecondaryValue()
-            );
-            case FLOOD_OCCURRED -> text(
-                "report_event_flood",
-                "{0} 發生洪災；秋收預估減少 {1}%（事前風險 {2}%）。",
-                cityName,
-                turnEvent.getSecondaryValue(),
-                turnEvent.getPrimaryValue()
-            );
-            case FLOOD_AVOIDED -> text(
-                "report_event_flood_avoided",
-                "{0} 平安度過汛期（洪災風險 {1}%）。",
-                cityName,
-                turnEvent.getPrimaryValue()
-            );
-            case HARVEST -> text(
-                "report_event_harvest",
-                "秋收：+{0} 糧（{1} 座城池）。",
-                numberFormat.format(turnEvent.getPrimaryValue()),
-                turnEvent.getSecondaryValue()
-            );
-            case ARMY_ADVANCED -> text(
-                "report_event_army_advanced",
-                "我軍 {0} 兵由 {1} 向 {2} 行軍，尚需 {3} 個月。",
-                numberFormat.format(turnEvent.getPrimaryValue()),
-                cityName,
-                otherCityName,
-                turnEvent.getSecondaryValue()
-            );
-            case ARMY_REINFORCED -> text(
-                "report_event_reinforced",
-                "{0} 獲得 {1} 兵增援。",
-                cityName,
-                numberFormat.format(turnEvent.getPrimaryValue())
-            );
-            case BATTLE_ATTACKER_WON -> playerFactionEvent
-                ? text(
-                    "report_event_player_attack_won",
-                    "我軍攻克 {0}；我軍損失 {1}，守軍損失 {2}。",
-                    cityName,
-                    numberFormat.format(turnEvent.getPrimaryValue()),
-                    numberFormat.format(turnEvent.getSecondaryValue())
-                )
-                : text(
-                    "report_event_enemy_attack_won",
-                    "敵軍攻下 {0}；敵軍損失 {1}，守軍損失 {2}。",
-                    cityName,
-                    numberFormat.format(turnEvent.getPrimaryValue()),
-                    numberFormat.format(turnEvent.getSecondaryValue())
-                );
-            case BATTLE_DEFENDER_WON -> playerFactionEvent
-                ? text(
-                    "report_event_player_defense_won",
-                    "我軍守住 {0}；敵軍損失 {1}，我軍損失 {2}。",
-                    cityName,
-                    numberFormat.format(turnEvent.getPrimaryValue()),
-                    numberFormat.format(turnEvent.getSecondaryValue())
-                )
-                : text(
-                    "report_event_player_attack_lost",
-                    "我軍進攻 {0} 失敗；我軍損失 {1}，守軍損失 {2}。",
-                    cityName,
-                    numberFormat.format(turnEvent.getPrimaryValue()),
-                    numberFormat.format(turnEvent.getSecondaryValue())
-                );
-            case CITY_CAPTURED -> text(
-                "report_event_city_captured",
-                "{0} 的控制權已轉移，現有駐軍 {1}。",
-                cityName,
-                numberFormat.format(turnEvent.getPrimaryValue())
-            );
-            case ENEMY_PREPARING -> text(
-                "report_event_enemy_preparing",
-                "敵軍仍在 {0} 集結，預估 {1} 個月後出征。",
-                cityName,
-                turnEvent.getPrimaryValue()
-            );
-            case ENEMY_REINFORCING -> text(
-                "report_event_enemy_reinforcing",
-                "敵軍在 {0} 補充 {1} 兵，出征延後。",
-                cityName,
-                numberFormat.format(turnEvent.getPrimaryValue())
-            );
-            case ENEMY_MARCHING -> text(
-                "report_event_enemy_marching",
-                "敵軍 {0} 兵已由 {1} 向 {2} 出征，預計 {3} 個月抵達。",
-                numberFormat.format(turnEvent.getPrimaryValue()),
-                cityName,
-                otherCityName,
-                turnEvent.getSecondaryValue()
-            );
-            case CAMPAIGN_VICTORY -> text(
-                "report_event_victory",
-                "戰役勝利：已攻下目標城池 {0}。",
-                cityName
-            );
-            case CAMPAIGN_DEFEAT_CAPITAL -> text(
-                "report_event_defeat_capital",
-                "戰役失敗：我方主城 {0} 已失守。",
-                cityName
-            );
-            case CAMPAIGN_DEFEAT_TIMEOUT -> text(
-                "report_event_defeat_timeout",
-                "戰役失敗：未能在 {0} 個月內攻下目標城池。",
-                turnEvent.getPrimaryValue()
-            );
-        };
-    }
-
-    private void closeTurnReport() {
-        if (turnReportMask != null) {
-            turnReportMask.clearActions();
-            turnReportMask.setVisible(false);
-            turnReportMask.getColor().a = 1f;
+    private void viewFirstUnreadBattle() {
+        GameState gameState = requireCurrentState();
+        if (gameState == null) {
+            return;
         }
+        List<BattleReport> reports = gameState.findUnreadBattleReports();
+        if (reports.isEmpty()) {
+            return;
+        }
+        SangoServices.session().openBattleReport(reports.get(0).battleId, ScreenId.STRATEGIC_MAP);
+        Sui.screens.set(ScreenId.BATTLE_REPORT);
     }
 
-    private GameState requireCurrentStateOrReturn() {
+    private void openSettings() {
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
+        SangoServices.session().openSettings(ScreenId.STRATEGIC_MAP);
+        Sui.screens.set(ScreenId.SETTINGS);
+    }
+
+    private GameState requireCurrentState() {
         if (!SangoServices.session().hasCurrentState()) {
             setStatus(text("map_status_load_failed", "目前沒有可用戰局。"), STATUS_ERROR_COLOR);
             return null;
         }
         return SangoServices.session().requireCurrentState();
-    }
-
-    private void returnToLobby() {
-        saveSilently();
-        closeTurnReport();
-        Sui.screens.set(ScreenId.LOBBY);
     }
 
     private void saveSilently() {
@@ -895,7 +852,7 @@ public final class StrategicMapScreen extends SuiScreen {
         }
         try {
             SangoServices.saveCurrentGameCommand().execute(
-                SangoServices.DEFAULT_SAVE_SLOT,
+                SangoServices.session().getCurrentSaveSlot(),
                 SangoServices.session().requireCurrentState()
             );
         } catch (RuntimeException exception) {
@@ -905,12 +862,41 @@ public final class StrategicMapScreen extends SuiScreen {
         }
     }
 
+    private void openModal(Actor mask) {
+        closeModals();
+        mask.setVisible(true);
+        mask.getColor().a = 0f;
+        mask.toFront();
+        mask.addAction(Actions.fadeIn(0.16f));
+    }
+
+    private void closeModals() {
+        setVisible(endMonthConfirmMask, false);
+        setVisible(battlePromptMask, false);
+    }
+
+    private boolean isAnyModalVisible() {
+        return isVisible(endMonthConfirmMask) || isVisible(battlePromptMask);
+    }
+
+    private boolean isVisible(Actor actor) {
+        return actor != null && actor.isVisible();
+    }
+
+    private void setVisible(Actor actor, boolean visible) {
+        if (actor != null) {
+            actor.clearActions();
+            actor.setVisible(visible);
+            actor.getColor().a = 1f;
+        }
+    }
+
     private void setAllGameplayButtonsEnabled(boolean enabled) {
         setButtonEnabled(button("manage_city_button"), enabled);
         setButtonEnabled(button("scout_city_button"), enabled);
         setButtonEnabled(button("launch_expedition_button"), enabled);
+        setButtonEnabled(button("view_city_battle_button"), enabled);
         setButtonEnabled(button("end_month_button"), enabled);
-        setButtonEnabled(button("map_save_button"), enabled);
     }
 
     private void setStatus(String message, Color color) {
@@ -933,10 +919,6 @@ public final class StrategicMapScreen extends SuiScreen {
     private String cityName(String cityId) {
         CityDefinition cityDefinition = SangoServices.definitions().requireCity(cityId);
         return localized(cityDefinition.nameKey, cityDefinition.id);
-    }
-
-    private String optionalCityName(String cityId) {
-        return cityId == null || cityId.isEmpty() ? "" : cityName(cityId);
     }
 
     private String localized(String entryName, String fallback) {

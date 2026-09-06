@@ -30,8 +30,11 @@ public final class GameStateValidator {
         requireText(gameState.neutralFactionId, "neutralFactionId");
         requireText(gameState.victoryTargetCityId, "victoryTargetCityId");
         requireText(gameState.lastActionCode, "lastActionCode");
-        if (gameState.campaignStatus == null) {
-            throw new IllegalArgumentException("campaignStatus 不可為 null。");
+        if (gameState.scenarioObjectiveStatus == null) {
+            throw new IllegalArgumentException("scenarioObjectiveStatus 不可為 null。");
+        }
+        if (gameState.gameplayStatus == null) {
+            throw new IllegalArgumentException("gameplayStatus 不可為 null。");
         }
         if (gameState.currentTurn < 1) {
             throw new IllegalArgumentException("currentTurn 必須大於或等於 1。");
@@ -57,6 +60,9 @@ public final class GameStateValidator {
         if (gameState.nextArmySequence < 1) {
             throw new IllegalArgumentException("nextArmySequence 必須大於或等於 1。");
         }
+        if (gameState.nextBattleSequence < 1) {
+            throw new IllegalArgumentException("nextBattleSequence 必須大於或等於 1。");
+        }
         if (gameState.factionStates == null || gameState.factionStates.length == 0) {
             throw new IllegalArgumentException("factionStates 不可為空。");
         }
@@ -65,6 +71,9 @@ public final class GameStateValidator {
         }
         if (gameState.armyStates == null) {
             throw new IllegalArgumentException("armyStates 不可為 null。");
+        }
+        if (gameState.battleReports == null) {
+            throw new IllegalArgumentException("battleReports 不可為 null。");
         }
 
         Set<String> factionIds = new HashSet<>();
@@ -112,13 +121,34 @@ public final class GameStateValidator {
             }
         }
 
-        FactionState playerFactionState = factionStatesById.get(gameState.playerFactionId);
-        if (gameState.campaignStatus == CampaignStatus.IN_PROGRESS
-            && !playerFactionState.active) {
-            throw new IllegalArgumentException("進行中的戰役不可將玩家勢力標為 inactive。");
+        Set<String> battleIds = new HashSet<>();
+        for (BattleReport battleReport : gameState.battleReports) {
+            validateBattleReport(battleReport, factionIds, cityStatesById);
+            if (!battleIds.add(battleReport.battleId)) {
+                throw new IllegalArgumentException(
+                    "BattleReport ID 重複：" + battleReport.battleId
+                );
+            }
         }
-        if (playerFactionState.active) {
+
+        FactionState playerFactionState = factionStatesById.get(gameState.playerFactionId);
+        boolean playerOwnsAnyCity = !gameState.findCitiesOwnedBy(gameState.playerFactionId).isEmpty();
+        if (gameState.gameplayStatus == GameplayStatus.ACTIVE) {
+            if (!playerFactionState.active || !playerOwnsAnyCity) {
+                throw new IllegalArgumentException(
+                    "ACTIVE 戰局必須保有至少一座玩家城池與 active 玩家勢力。"
+                );
+            }
             gameState.requireCapitalCityState();
+        } else {
+            if (playerFactionState.active || playerOwnsAnyCity) {
+                throw new IllegalArgumentException(
+                    "ELIMINATED 戰局不可仍保有玩家城池或 active 玩家勢力。"
+                );
+            }
+            if (gameState.actionPointsRemaining != 0) {
+                throw new IllegalArgumentException("ELIMINATED 戰局的行動力必須為 0。");
+            }
         }
     }
 
@@ -170,16 +200,8 @@ public final class GameStateValidator {
         requireText(armyState.originCityId, "armyState.originCityId");
         requireText(armyState.targetCityId, "armyState.targetCityId");
         requireFactionReference(factionIds, armyState.factionId, "armyState.factionId");
-        if (!cityStatesById.containsKey(armyState.originCityId)) {
-            throw new IllegalArgumentException(
-                "armyState.originCityId 沒有對應城池：" + armyState.originCityId
-            );
-        }
-        if (!cityStatesById.containsKey(armyState.targetCityId)) {
-            throw new IllegalArgumentException(
-                "armyState.targetCityId 沒有對應城池：" + armyState.targetCityId
-            );
-        }
+        requireCityReference(cityStatesById, armyState.originCityId, "armyState.originCityId");
+        requireCityReference(cityStatesById, armyState.targetCityId, "armyState.targetCityId");
         if (armyState.originCityId.equals(armyState.targetCityId)) {
             throw new IllegalArgumentException("軍隊起點與目標不可相同。");
         }
@@ -193,6 +215,79 @@ public final class GameStateValidator {
         requireRange(armyState.morale, 0, 100, "armyState.morale");
         if (armyState.tactic == null) {
             throw new IllegalArgumentException("armyState.tactic 不可為 null。");
+        }
+    }
+
+    private static void validateBattleReport(
+        BattleReport battleReport,
+        Set<String> factionIds,
+        Map<String, CityState> cityStatesById
+    ) {
+        if (battleReport == null) {
+            throw new IllegalArgumentException("BattleReport 不可為 null。");
+        }
+        requireText(battleReport.battleId, "battleReport.battleId");
+        requireText(battleReport.originCityId, "battleReport.originCityId");
+        requireText(battleReport.targetCityId, "battleReport.targetCityId");
+        requireText(battleReport.attackerFactionId, "battleReport.attackerFactionId");
+        requireText(battleReport.defenderFactionId, "battleReport.defenderFactionId");
+        requireText(battleReport.winnerFactionId, "battleReport.winnerFactionId");
+        requireFactionReference(
+            factionIds,
+            battleReport.attackerFactionId,
+            "battleReport.attackerFactionId"
+        );
+        requireFactionReference(
+            factionIds,
+            battleReport.defenderFactionId,
+            "battleReport.defenderFactionId"
+        );
+        requireFactionReference(
+            factionIds,
+            battleReport.winnerFactionId,
+            "battleReport.winnerFactionId"
+        );
+        requireCityReference(
+            cityStatesById,
+            battleReport.originCityId,
+            "battleReport.originCityId"
+        );
+        requireCityReference(
+            cityStatesById,
+            battleReport.targetCityId,
+            "battleReport.targetCityId"
+        );
+        if (battleReport.resolvedTurn < 1) {
+            throw new IllegalArgumentException("battleReport.resolvedTurn 必須大於或等於 1。");
+        }
+        if (battleReport.resolvedYear < 1) {
+            throw new IllegalArgumentException("battleReport.resolvedYear 必須大於或等於 1。");
+        }
+        if (battleReport.resolvedMonth < 1 || battleReport.resolvedMonth > 12) {
+            throw new IllegalArgumentException("battleReport.resolvedMonth 超出合法範圍。");
+        }
+        if (battleReport.attackerTactic == null) {
+            throw new IllegalArgumentException("battleReport.attackerTactic 不可為 null。");
+        }
+        if (battleReport.outcome == null) {
+            throw new IllegalArgumentException("battleReport.outcome 不可為 null。");
+        }
+        requireNonNegative(battleReport.attackerTroopsBefore, "battleReport.attackerTroopsBefore");
+        requireNonNegative(battleReport.defenderTroopsBefore, "battleReport.defenderTroopsBefore");
+        requireRange(battleReport.attackerTraining, 0, 100, "battleReport.attackerTraining");
+        requireRange(battleReport.defenderTraining, 0, 100, "battleReport.defenderTraining");
+        requireRange(battleReport.defenderDefense, 0, 100, "battleReport.defenderDefense");
+        requireNonNegative(battleReport.attackerLosses, "battleReport.attackerLosses");
+        requireNonNegative(battleReport.defenderLosses, "battleReport.defenderLosses");
+        requireNonNegative(battleReport.attackerSurvivors, "battleReport.attackerSurvivors");
+        requireNonNegative(battleReport.defenderSurvivors, "battleReport.defenderSurvivors");
+        if (battleReport.attackerLosses + battleReport.attackerSurvivors
+            != battleReport.attackerTroopsBefore) {
+            throw new IllegalArgumentException("戰報攻方損失與生還數不等於開戰兵力。");
+        }
+        if (battleReport.defenderLosses + battleReport.defenderSurvivors
+            != battleReport.defenderTroopsBefore) {
+            throw new IllegalArgumentException("戰報守方損失與生還數不等於開戰兵力。");
         }
     }
 
@@ -223,6 +318,16 @@ public final class GameStateValidator {
     ) {
         if (!factionIds.contains(factionId)) {
             throw new IllegalArgumentException(fieldName + " 沒有對應勢力：" + factionId);
+        }
+    }
+
+    private static void requireCityReference(
+        Map<String, CityState> cityStatesById,
+        String cityId,
+        String fieldName
+    ) {
+        if (!cityStatesById.containsKey(cityId)) {
+            throw new IllegalArgumentException(fieldName + " 沒有對應城池：" + cityId);
         }
     }
 

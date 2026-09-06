@@ -20,18 +20,26 @@ import idv.kuan.studio.libgdx.simpleui.Sui;
 import idv.kuan.studio.libgdx.simpleui.SuiScreen;
 import idv.kuan.studio.libgdx.simpleui.builder.BuiltUI;
 import idv.kuan.studio.sango.application.result.DomesticActionResult;
+import idv.kuan.studio.sango.application.result.TurnResolutionReport;
+import idv.kuan.studio.sango.application.result.TurnResolutionResult;
+import idv.kuan.studio.sango.audio.MusicTrack;
+import idv.kuan.studio.sango.audio.SoundEffect;
+import idv.kuan.studio.sango.data.SangoPreferences;
 import idv.kuan.studio.sango.domain.definition.CityDefinition;
 import idv.kuan.studio.sango.domain.definition.FactionDefinition;
 import idv.kuan.studio.sango.domain.definition.ScenarioDefinition;
+import idv.kuan.studio.sango.domain.model.BattleReport;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
+import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.rule.DomesticActionFailureReason;
 import idv.kuan.studio.sango.domain.rule.DomesticActionRules;
 import idv.kuan.studio.sango.domain.rule.DomesticActionType;
 import idv.kuan.studio.sango.domain.rule.SeasonalEconomyRules;
 import idv.kuan.studio.sango.repository.save.SaveGameException;
 import idv.kuan.studio.sango.runtime.SangoServices;
+import idv.kuan.studio.sango.ui.flow.MonthEndFlowController;
 import idv.kuan.studio.sango.ui.id.ScreenId;
 import idv.kuan.studio.sango.ui.support.ScreenBackground;
 import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
@@ -47,7 +55,10 @@ public final class CityScreen extends SuiScreen {
 
     private final ScreenBackground screenBackground = new ScreenBackground();
     private final NumberFormat numberFormat = NumberFormat.getIntegerInstance(Locale.TAIWAN);
+    private final MonthEndFlowController monthEndFlowController = new MonthEndFlowController();
 
+    private Actor endMonthConfirmMask;
+    private Actor battlePromptMask;
     private String currentStatusMessage;
     private Color currentStatusColor = STATUS_NORMAL_COLOR;
 
@@ -64,6 +75,8 @@ public final class CityScreen extends SuiScreen {
     @Override
     protected void onUIBuilt(BuiltUI builtUI) {
         screenBackground.attach(stage, BACKGROUND_PATH);
+        endMonthConfirmMask = attachModalMask("city_end_month_mask");
+        battlePromptMask = attachModalMask("city_battle_prompt_mask");
         applyStyles();
         bindActions();
         currentStatusMessage = text(
@@ -78,13 +91,15 @@ public final class CityScreen extends SuiScreen {
         if (ui == null) {
             return;
         }
+        closeModals();
+        SangoServices.audio().playMusic(MusicTrack.STRATEGY);
         currentStatusMessage = text(
             "city_status_ready",
             "內政投資不會立即產生金糧；收益會在季末或秋收結算。"
         );
         currentStatusColor = STATUS_NORMAL_COLOR;
         ensureCurrentGameState();
-        ensureSelectedOwnedCity();
+        ensureSelectedCity();
         refreshView();
     }
 
@@ -94,7 +109,11 @@ public final class CityScreen extends SuiScreen {
             @Override
             public boolean keyDown(int keycode) {
                 if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                    returnToMap();
+                    if (isAnyModalVisible()) {
+                        closeModals();
+                    } else {
+                        returnToMap();
+                    }
                     return true;
                 }
                 return false;
@@ -120,6 +139,15 @@ public final class CityScreen extends SuiScreen {
         super.beforeDispose();
     }
 
+    private Actor attachModalMask(String actorId) {
+        Actor mask = ui.getActor(actorId);
+        if (mask.getStage() == null) {
+            stage.addActor(mask);
+        }
+        mask.setVisible(false);
+        return mask;
+    }
+
     private void applyStyles() {
         SangoUiStyles.applySecondaryButton(button("agriculture_button"));
         SangoUiStyles.applySecondaryButton(button("commerce_button"));
@@ -127,8 +155,13 @@ public final class CityScreen extends SuiScreen {
         SangoUiStyles.applySecondaryButton(button("fortify_button"));
         SangoUiStyles.applySecondaryButton(button("recruit_button"));
         SangoUiStyles.applySecondaryButton(button("train_button"));
-        SangoUiStyles.applySecondaryButton(button("save_button"));
-        SangoUiStyles.applyPrimaryButton(button("return_map_button"));
+        SangoUiStyles.applySecondaryButton(button("return_map_button"));
+        SangoUiStyles.applySecondaryButton(button("city_settings_button"));
+        SangoUiStyles.applyPrimaryButton(button("city_end_month_button"));
+        SangoUiStyles.applySecondaryButton(button("city_end_month_cancel_button"));
+        SangoUiStyles.applyPrimaryButton(button("city_end_month_confirm_button"));
+        SangoUiStyles.applySecondaryButton(button("city_battle_prompt_later_button"));
+        SangoUiStyles.applyDangerButton(button("city_battle_prompt_view_button"));
     }
 
     private void bindActions() {
@@ -147,8 +180,13 @@ public final class CityScreen extends SuiScreen {
         ui.onClick("fortify_button", () -> executeDomesticAction(DomesticActionType.FORTIFY));
         ui.onClick("recruit_button", () -> executeDomesticAction(DomesticActionType.RECRUIT));
         ui.onClick("train_button", () -> executeDomesticAction(DomesticActionType.TRAIN));
-        ui.onClick("save_button", this::saveManually);
         ui.onClick("return_map_button", this::returnToMap);
+        ui.onClick("city_settings_button", this::openSettings);
+        ui.onClick("city_end_month_button", this::requestEndMonth);
+        ui.onClick("city_end_month_cancel_button", this::closeModals);
+        ui.onClick("city_end_month_confirm_button", this::confirmEndMonth);
+        ui.onClick("city_battle_prompt_later_button", this::openMonthReportAfterBattlePrompt);
+        ui.onClick("city_battle_prompt_view_button", this::openPromptedBattleReport);
     }
 
     private void animateEntrance() {
@@ -161,22 +199,21 @@ public final class CityScreen extends SuiScreen {
         if (SangoServices.session().hasCurrentState()) {
             return;
         }
+        int slotNumber = SangoPreferences.getLastUsedSaveSlot();
         try {
-            GameState gameState = SangoServices.saveGames().load(
-                SangoServices.DEFAULT_SAVE_SLOT
-            );
-            SangoServices.session().setCurrentState(gameState);
+            GameState gameState = SangoServices.saveGames().load(slotNumber);
+            SangoServices.session().setCurrentState(slotNumber, gameState);
         } catch (RuntimeException exception) {
             Gdx.app.error("City", "無法載入目前戰局。", exception);
             currentStatusMessage = text(
                 "city_status_load_failed",
-                "無法載入戰局；請返回 Lobby 並建立新局。"
+                "無法載入戰局；請返回 Lobby 並選擇存檔。"
             );
             currentStatusColor = STATUS_ERROR_COLOR;
         }
     }
 
-    private void ensureSelectedOwnedCity() {
+    private void ensureSelectedCity() {
         if (!SangoServices.session().hasCurrentState()) {
             return;
         }
@@ -185,13 +222,15 @@ public final class CityScreen extends SuiScreen {
         CityState selectedCityState = selectedCityId == null
             ? null
             : gameState.findCityState(selectedCityId);
-        if (selectedCityState == null
-            || !gameState.playerFactionId.equals(selectedCityState.ownerFactionId)) {
-            if (gameState.requirePlayerFactionState().active) {
-                SangoServices.session().setSelectedCityId(
-                    gameState.requirePlayerFactionState().capitalCityId
-                );
-            }
+        if (selectedCityState != null
+            && gameState.playerFactionId.equals(selectedCityState.ownerFactionId)) {
+            return;
+        }
+        FactionState playerFactionState = gameState.requirePlayerFactionState();
+        if (playerFactionState.active
+            && playerFactionState.capitalCityId != null
+            && gameState.findCityState(playerFactionState.capitalCityId) != null) {
+            SangoServices.session().setSelectedCityId(playerFactionState.capitalCityId);
         }
     }
 
@@ -202,19 +241,22 @@ public final class CityScreen extends SuiScreen {
         }
 
         try {
+            int slotNumber = SangoServices.session().getCurrentSaveSlot();
             DomesticActionResult result = SangoServices.domesticActionCommand().execute(
-                SangoServices.DEFAULT_SAVE_SLOT,
+                slotNumber,
                 SangoServices.session().requireCurrentState(),
                 SangoServices.session().getSelectedCityId(),
                 actionType
             );
             if (result.isSuccessful()) {
-                SangoServices.session().setCurrentState(result.getGameState());
+                SangoServices.session().setCurrentState(slotNumber, result.getGameState());
                 currentStatusMessage = successMessage(result.getActionType());
                 currentStatusColor = STATUS_SUCCESS_COLOR;
+                SangoServices.audio().playSound(SoundEffect.COMMAND_SUCCESS);
             } else {
                 currentStatusMessage = failureMessage(result.getFailureReason());
                 currentStatusColor = STATUS_ERROR_COLOR;
+                SangoServices.audio().playSound(SoundEffect.COMMAND_ERROR);
             }
         } catch (SaveGameException exception) {
             Gdx.app.error("City", "內政命令完成前存檔失敗。", exception);
@@ -223,6 +265,7 @@ public final class CityScreen extends SuiScreen {
                 "存檔失敗，因此本次命令沒有套用。"
             );
             currentStatusColor = STATUS_ERROR_COLOR;
+            SangoServices.audio().playSound(SoundEffect.COMMAND_ERROR);
         } catch (RuntimeException exception) {
             Gdx.app.error("City", "執行內政命令失敗。", exception);
             currentStatusMessage = text(
@@ -230,34 +273,124 @@ public final class CityScreen extends SuiScreen {
                 "內政命令執行失敗，戰局狀態未更新。"
             );
             currentStatusColor = STATUS_ERROR_COLOR;
+            SangoServices.audio().playSound(SoundEffect.COMMAND_ERROR);
         }
         refreshView();
     }
 
-    private void saveManually() {
+    private void requestEndMonth() {
         if (!SangoServices.session().hasCurrentState()) {
             showNoGameStateError();
             return;
         }
-
-        try {
-            SangoServices.saveCurrentGameCommand().execute(
-                SangoServices.DEFAULT_SAVE_SLOT,
-                SangoServices.session().requireCurrentState()
+        GameState gameState = SangoServices.session().requireCurrentState();
+        if (gameState.gameplayStatus != GameplayStatus.ACTIVE) {
+            setStatus(
+                text("city_status_player_eliminated", "我方已失去全部城池，無法繼續推進月份。"),
+                STATUS_ERROR_COLOR
             );
-            currentStatusMessage = text("city_status_saved", "戰局已保存。");
-            currentStatusColor = STATUS_SUCCESS_COLOR;
-        } catch (RuntimeException exception) {
-            Gdx.app.error("City", "手動存檔失敗。", exception);
-            currentStatusMessage = text("city_status_save_failed", "戰局保存失敗。");
-            currentStatusColor = STATUS_ERROR_COLOR;
+            return;
         }
-        refreshStatusLabel();
+        label("city_end_month_title_label").setText(
+            text(
+                "end_month_confirm_title_format",
+                "確定結束 {0} 年 {1} 月？",
+                gameState.currentYear,
+                gameState.currentMonth
+            )
+        );
+        label("city_end_month_description_label").setText(
+            text(
+                "end_month_confirm_description_format",
+                "剩餘行動力：{0} / {1}\n月底將結算軍糧、季節收入、行軍、戰鬥與敵軍行動。未使用的行動力不會保留。",
+                gameState.actionPointsRemaining,
+                gameState.actionPointsPerTurn
+            )
+        );
+        openModal(endMonthConfirmMask);
+    }
+
+    private void confirmEndMonth() {
+        closeModals();
+        String managedCityId = SangoServices.session().getSelectedCityId();
+        try {
+            TurnResolutionResult resolutionResult = monthEndFlowController.endCurrentMonth();
+            TurnResolutionReport report = resolutionResult.getReport();
+            GameState nextState = resolutionResult.getGameState();
+            ScreenId reportReturnScreen = nextState.ownsCity(nextState.playerFactionId, managedCityId)
+                ? ScreenId.CITY
+                : ScreenId.STRATEGIC_MAP;
+            SangoServices.session().openMonthReport(report, reportReturnScreen);
+            SangoServices.audio().playSound(SoundEffect.END_MONTH);
+            String battleReportId = findBattleAtCity(report, managedCityId);
+            ensureSelectedCity();
+            refreshView();
+            if (battleReportId != null) {
+                prepareBattlePrompt(battleReportId);
+            } else {
+                Sui.screens.set(ScreenId.MONTH_REPORT);
+            }
+        } catch (RuntimeException exception) {
+            Gdx.app.error("City", "結束月份失敗。", exception);
+            setStatus(
+                text("city_status_save_failed", "存檔失敗，因此月份沒有推進。"),
+                STATUS_ERROR_COLOR
+            );
+            SangoServices.audio().playSound(SoundEffect.COMMAND_ERROR);
+            refreshView();
+        }
+    }
+
+    private String findBattleAtCity(TurnResolutionReport report, String cityId) {
+        GameState gameState = SangoServices.session().requireCurrentState();
+        for (String battleReportId : report.getBattleReportIds()) {
+            BattleReport battleReport = gameState.findBattleReport(battleReportId);
+            if (battleReport != null && cityId.equals(battleReport.targetCityId)) {
+                return battleReportId;
+            }
+        }
+        return null;
+    }
+
+    private void prepareBattlePrompt(String battleReportId) {
+        BattleReport battleReport = SangoServices.session().requireCurrentState()
+            .requireBattleReport(battleReportId);
+        SangoServices.session().openBattleReport(battleReportId, ScreenId.MONTH_REPORT);
+        label("city_battle_prompt_title_label").setText(
+            text("battle_prompt_title_format", "{0} 發生戰鬥", cityName(battleReport.targetCityId))
+        );
+        label("city_battle_prompt_description_label").setText(
+            text(
+                "battle_prompt_description",
+                "本月正在管理的城池發生戰事。是否立即觀看完整戰報？"
+            )
+        );
+        openModal(battlePromptMask);
+        SangoServices.audio().playSound(SoundEffect.BATTLE_ALERT);
+    }
+
+    private void openMonthReportAfterBattlePrompt() {
+        closeModals();
+        Sui.screens.set(ScreenId.MONTH_REPORT);
+    }
+
+    private void openPromptedBattleReport() {
+        closeModals();
+        Sui.screens.set(ScreenId.BATTLE_REPORT);
     }
 
     private void returnToMap() {
+        closeModals();
         saveSilently();
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
         Sui.screens.set(ScreenId.STRATEGIC_MAP);
+    }
+
+    private void openSettings() {
+        closeModals();
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
+        SangoServices.session().openSettings(ScreenId.CITY);
+        Sui.screens.set(ScreenId.SETTINGS);
     }
 
     private void saveSilently() {
@@ -266,7 +399,7 @@ public final class CityScreen extends SuiScreen {
         }
         try {
             SangoServices.saveCurrentGameCommand().execute(
-                SangoServices.DEFAULT_SAVE_SLOT,
+                SangoServices.session().getCurrentSaveSlot(),
                 SangoServices.session().requireCurrentState()
             );
         } catch (RuntimeException exception) {
@@ -279,6 +412,7 @@ public final class CityScreen extends SuiScreen {
     private void refreshView() {
         if (!SangoServices.session().hasCurrentState()) {
             setActionButtonsEnabled(false);
+            setButtonEnabled(button("city_end_month_button"), false);
             refreshStatusLabel();
             return;
         }
@@ -342,7 +476,16 @@ public final class CityScreen extends SuiScreen {
         );
         label("season_forecast_label").setText(buildSeasonForecast(gameState, cityState));
 
-        refreshActionButtonState(gameState, cityState.cityId);
+        boolean cityOwned = gameState.playerFactionId.equals(cityState.ownerFactionId);
+        if (cityOwned && gameState.gameplayStatus == GameplayStatus.ACTIVE) {
+            refreshActionButtonState(gameState, cityState.cityId);
+        } else {
+            setActionButtonsEnabled(false);
+        }
+        setButtonEnabled(
+            button("city_end_month_button"),
+            gameState.gameplayStatus == GameplayStatus.ACTIVE
+        );
         refreshStatusLabel();
     }
 
@@ -421,7 +564,6 @@ public final class CityScreen extends SuiScreen {
         setButtonEnabled(button("fortify_button"), enabled);
         setButtonEnabled(button("recruit_button"), enabled);
         setButtonEnabled(button("train_button"), enabled);
-        setButtonEnabled(button("save_button"), enabled);
     }
 
     private String successMessage(DomesticActionType actionType) {
@@ -455,9 +597,9 @@ public final class CityScreen extends SuiScreen {
 
     private String failureMessage(DomesticActionFailureReason failureReason) {
         return switch (failureReason) {
-            case CAMPAIGN_FINISHED -> text(
-                "map_status_campaign_finished",
-                "戰役已結束，不能再下達內政命令。"
+            case PLAYER_ELIMINATED -> text(
+                "city_status_player_eliminated",
+                "我方已失去全部城池，不能再下達內政命令。"
             );
             case CITY_NOT_OWNED -> text(
                 "city_status_not_owned",
@@ -465,7 +607,7 @@ public final class CityScreen extends SuiScreen {
             );
             case NO_ACTION_POINTS -> text(
                 "city_status_no_action_points",
-                "行動力不足；請返回地圖並結束月份。"
+                "行動力不足；可直接使用下方的「結束本月」。"
             );
             case INSUFFICIENT_GOLD -> text(
                 "city_status_insufficient_gold",
@@ -488,8 +630,41 @@ public final class CityScreen extends SuiScreen {
     }
 
     private void showNoGameStateError() {
-        currentStatusMessage = text("city_status_load_failed", "目前沒有可用戰局。");
-        currentStatusColor = STATUS_ERROR_COLOR;
+        setStatus(text("city_status_load_failed", "目前沒有可用戰局。"), STATUS_ERROR_COLOR);
+    }
+
+    private void openModal(Actor mask) {
+        closeModals();
+        mask.setVisible(true);
+        mask.getColor().a = 0f;
+        mask.toFront();
+        mask.addAction(Actions.fadeIn(0.16f));
+    }
+
+    private void closeModals() {
+        setVisible(endMonthConfirmMask, false);
+        setVisible(battlePromptMask, false);
+    }
+
+    private boolean isAnyModalVisible() {
+        return isVisible(endMonthConfirmMask) || isVisible(battlePromptMask);
+    }
+
+    private boolean isVisible(Actor actor) {
+        return actor != null && actor.isVisible();
+    }
+
+    private void setVisible(Actor actor, boolean visible) {
+        if (actor != null) {
+            actor.clearActions();
+            actor.setVisible(visible);
+            actor.getColor().a = 1f;
+        }
+    }
+
+    private void setStatus(String message, Color color) {
+        currentStatusMessage = message;
+        currentStatusColor = color;
         refreshStatusLabel();
     }
 
@@ -502,6 +677,11 @@ public final class CityScreen extends SuiScreen {
     private void setButtonEnabled(TextButton textButton, boolean enabled) {
         textButton.setDisabled(!enabled);
         textButton.setTouchable(enabled ? Touchable.enabled : Touchable.disabled);
+    }
+
+    private String cityName(String cityId) {
+        CityDefinition cityDefinition = SangoServices.definitions().requireCity(cityId);
+        return localized(cityDefinition.nameKey, cityDefinition.id);
     }
 
     private String localized(String entryName, String fallback) {

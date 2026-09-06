@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
@@ -24,14 +25,15 @@ import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
  * 以 Scene2D 節點與連線繪製的小型戰略地圖，不依賴額外地圖貼圖。
  */
 public final class StrategicMapWidget extends WidgetGroup {
-    private static final float NODE_WIDTH = 178f;
-    private static final float NODE_HEIGHT = 78f;
+    private static final float NODE_WIDTH = 188f;
+    private static final float NODE_HEIGHT = 92f;
     private static final float LINE_THICKNESS = 6f;
 
     private final BitmapFont nodeFont;
     private final Consumer<String> citySelectionHandler;
     private final Map<String, String> captionsByCityId = new LinkedHashMap<>();
     private final Map<String, MapNodeTone> tonesByCityId = new LinkedHashMap<>();
+    private final Map<String, Integer> unreadBattlesByCityId = new LinkedHashMap<>();
 
     private StrategicMapDefinition mapDefinition;
     private String selectedCityId;
@@ -55,9 +57,13 @@ public final class StrategicMapWidget extends WidgetGroup {
         StrategicMapDefinition mapDefinition,
         Map<String, String> captionsByCityId,
         Map<String, MapNodeTone> tonesByCityId,
+        Map<String, Integer> unreadBattlesByCityId,
         String selectedCityId
     ) {
-        if (mapDefinition == null || captionsByCityId == null || tonesByCityId == null) {
+        if (mapDefinition == null
+            || captionsByCityId == null
+            || tonesByCityId == null
+            || unreadBattlesByCityId == null) {
             throw new IllegalArgumentException("地圖顯示資料不可為 null。");
         }
         this.mapDefinition = mapDefinition;
@@ -65,6 +71,8 @@ public final class StrategicMapWidget extends WidgetGroup {
         this.captionsByCityId.putAll(captionsByCityId);
         this.tonesByCityId.clear();
         this.tonesByCityId.putAll(tonesByCityId);
+        this.unreadBattlesByCityId.clear();
+        this.unreadBattlesByCityId.putAll(unreadBattlesByCityId);
         this.selectedCityId = selectedCityId;
         rebuildChildren();
         invalidateHierarchy();
@@ -115,6 +123,16 @@ public final class StrategicMapWidget extends WidgetGroup {
                     citySelectionHandler.accept(nodeDefinition.cityId);
                 }
             });
+            if (unreadBattlesByCityId.getOrDefault(nodeDefinition.cityId, 0) > 0) {
+                nodeButton.addAction(
+                    Actions.forever(
+                        Actions.sequence(
+                            Actions.alpha(0.52f, 0.48f),
+                            Actions.alpha(1f, 0.48f)
+                        )
+                    )
+                );
+            }
             addActor(nodeButton);
         }
     }

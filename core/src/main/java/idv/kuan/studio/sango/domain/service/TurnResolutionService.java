@@ -9,10 +9,11 @@ import idv.kuan.studio.sango.application.result.TurnResolutionReport;
 import idv.kuan.studio.sango.application.result.TurnResolutionResult;
 import idv.kuan.studio.sango.domain.definition.StrategicMapDefinition;
 import idv.kuan.studio.sango.domain.model.ArmyState;
-import idv.kuan.studio.sango.domain.model.CampaignStatus;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
+import idv.kuan.studio.sango.domain.model.GameplayStatus;
+import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
 import idv.kuan.studio.sango.domain.rule.SeasonalEconomyRules;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
@@ -49,8 +50,8 @@ public final class TurnResolutionService {
 
     public TurnResolutionResult resolve(GameState currentState) {
         GameStateValidator.validate(currentState);
-        if (currentState.campaignStatus != CampaignStatus.IN_PROGRESS) {
-            throw new IllegalStateException("戰役已結束，不能繼續推進月份。");
+        if (currentState.gameplayStatus != GameplayStatus.ACTIVE) {
+            throw new IllegalStateException("玩家勢力已滅亡，不能繼續推進月份。");
         }
 
         GameState nextState = currentState.copy();
@@ -325,9 +326,9 @@ public final class TurnResolutionService {
         TurnResolutionReport report
     ) {
         gameState.elapsedMonths += 1;
-        if (gameState.campaignStatus == CampaignStatus.IN_PROGRESS
+        if (gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.IN_PROGRESS
             && gameState.elapsedMonths >= gameState.turnLimitMonths) {
-            gameState.campaignStatus = CampaignStatus.DEFEAT;
+            gameState.scenarioObjectiveStatus = ScenarioObjectiveStatus.FAILED;
             report.add(new TurnEvent(
                 TurnEventType.CAMPAIGN_DEFEAT_TIMEOUT,
                 gameState.playerFactionId,
@@ -344,7 +345,7 @@ public final class TurnResolutionService {
             gameState.currentMonth = 1;
             gameState.currentYear += 1;
         }
-        gameState.actionPointsRemaining = gameState.campaignStatus == CampaignStatus.IN_PROGRESS
+        gameState.actionPointsRemaining = gameState.gameplayStatus == GameplayStatus.ACTIVE
             ? gameState.actionPointsPerTurn
             : 0;
     }

@@ -11,10 +11,12 @@ import idv.kuan.studio.sango.domain.definition.MapCityNodeDefinition;
 import idv.kuan.studio.sango.domain.definition.ScenarioDefinition;
 import idv.kuan.studio.sango.domain.definition.StrategicMapDefinition;
 import idv.kuan.studio.sango.domain.model.ArmyState;
-import idv.kuan.studio.sango.domain.model.CampaignStatus;
+import idv.kuan.studio.sango.domain.model.BattleReport;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
+import idv.kuan.studio.sango.domain.model.GameplayStatus;
+import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 import idv.kuan.studio.sango.repository.SaveGameRepository;
@@ -131,7 +133,8 @@ public final class NewGameCommand {
         gameState.opponentFactionId = opponentFactionDefinition.id;
         gameState.neutralFactionId = neutralFactionDefinition.id;
         gameState.victoryTargetCityId = campaignStartDefinition.targetCityId;
-        gameState.campaignStatus = CampaignStatus.IN_PROGRESS;
+        gameState.scenarioObjectiveStatus = ScenarioObjectiveStatus.IN_PROGRESS;
+        gameState.gameplayStatus = GameplayStatus.ACTIVE;
         gameState.currentTurn = scenarioDefinition.initialTurn;
         gameState.currentYear = scenarioDefinition.startYear;
         gameState.currentMonth = scenarioDefinition.startMonth;
@@ -141,6 +144,7 @@ public final class NewGameCommand {
         gameState.actionPointsRemaining = scenarioDefinition.actionPointsPerTurn;
         gameState.enemyAttackCountdown = scenarioDefinition.enemyAttackDelayMonths;
         gameState.nextArmySequence = 1;
+        gameState.nextBattleSequence = 1;
         gameState.lastActionCode = "NEW_GAME";
         gameState.factionStates = new FactionState[] {
             playerFactionState,
@@ -149,6 +153,7 @@ public final class NewGameCommand {
         };
         gameState.cityStates = cityStates;
         gameState.armyStates = new ArmyState[0];
+        gameState.battleReports = new BattleReport[0];
         return gameState;
     }
 

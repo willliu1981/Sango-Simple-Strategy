@@ -1,48 +1,93 @@
 # Sango
 
-Java 17 + LibGDX 的輕量三國策略遊戲原型。UI 沿用 StudyRoutine 已驗證的 SimpleUI 1.1.2、XML 畫面定義、i18n 與 Screen registry，但 Domain、Application、Repository 與遊戲資產維持 Sango 自己的邊界。
+Java 17 + LibGDX 的輕量三國策略遊戲原型。UI 沿用 StudyRoutine 已驗證的 SimpleUI 1.1.2、XML 畫面定義、i18n 與 Screen registry；Domain、Application、Repository、存檔與遊戲資產維持 Sango 自己的邊界。
 
-`0.3.0` 將 `0.2.0` 的單城內政流程擴充成第一個具備地理、時間壓力與戰爭結果的 Strategic Vertical Slice：
+`0.4.0` 集中完善 `0.3.0` 的戰爭回饋與遊戲流程：戰鬥不再只是一行月底文字，讀取存檔正式可用，劇本目標失敗後也不會鎖死戰局。
 
 ```text
 Lobby
-→ 建立新局／繼續遊戲
+→ 建立新局／繼續遊戲／讀取三個存檔槽
 → 六城區域戰略地圖
-→ 選城進行內政、治水、徵兵與整備
-→ 偵察／選擇戰術／向相鄰城池出征
-→ 月底軍糧、季末商稅、六月汛期、九月秋收
-→ 敵軍集結與進攻
-→ 十二個月內攻下指定敵城，或因主城失守／逾期敗北
+→ 選城內政、偵察、選擇戰術與出征
+→ 確認結束本月
+→ 軍糧、季節經濟、行軍、戰鬥與敵軍 AI 結算
+→ 月報與可持久化戰報
+→ 目標達成／失敗後進入自由征戰
 ```
 
-## 0.3.0 已完成
+## 0.4.0 已完成
 
-- 六城節點式 `StrategicMapScreen`，以 Definition 提供節點位置、道路與行軍月份。
-- 一個 12 個月 Micro Campaign，曹操軍、劉備軍與孫策軍各有不同起始城及指定目標城。
-- 農業與商業改為**投資能力值**：
-  - 開墾支付金並提高農業，不再立即增加糧食。
-  - 商業開發支付金並提高商業，不再立即增加金錢。
-- 每季末（3、6、9、12 月）依城池商業與人口收取商稅。
-- 每年 9 月依農業、人口及當年洪災影響進行秋收。
-- 新增治水：降低 6 月洪災機率及洪災造成的秋收損失。
-- 新增修築城防，影響簡化攻城戰的守方強度。
-- 每月依勢力總兵力支出軍糧；糧食不足會造成逃兵。
-- 偵察相鄰非我方城池，精確情報維持三個回合。
-- 三種戰術：穩健、強攻、保守。
-- 玩家與敵軍皆可建立一支野戰軍，沿相鄰道路行軍並自動結算攻城。
-- 敵方最小 AI：倒數集結、兵力不足時補兵、向相鄰玩家城池出征。
-- 月底集中顯示結算報告：軍糧、商稅、洪災、秋收、行軍、戰鬥與勝敗。
-- 勝利條件：期限內攻下指定敵城。
-- 失敗條件：玩家主城失守，或 12 個月期限到期。
-- 所有成功命令均採 copy-on-write，驗證及存檔成功後才更新 `GameSession`。
-- `LocalJsonSaveGameRepository` 保留 temp 驗證、backup、corrupt 保存及復原候選讀取。
-- 無 Graphics Context 的 `VerticalSliceSmokeTest` 覆蓋季節經濟、洪災、偵察、出征、攻防、勝敗與存檔復原。
+### 戰報與地圖戰事提示
 
-「讀取存檔」目前仍保持 disabled；Prototype 只使用 slot 1，等多槽位 UI 完成後再啟用。
+- 每場戰鬥建立可保存的 `BattleReport`，記錄雙方兵力、訓練、城防、戰術、傷亡、勝方與城池控制權。
+- 戰報有獨立畫面，不再只依賴月底報告中的單行文字。
+- 若玩家在地圖或內政畫面結束本月，且當前選取／管理的城池發生戰鬥，會先詢問是否立即觀看。
+- 選擇稍後觀看時，戰報保留為未讀。
+- 非當前城池的未讀戰報會顯示在戰略地圖節點上，節點以「戰事 N」與脈衝效果提示。
+- 地圖可查看所選城池的未讀戰報，也可直接開啟第一份未讀戰報。
+- 戰報已讀狀態會寫回目前存檔；重新啟動後不會遺失。
+
+### 劇本目標與自由征戰
+
+`0.3.0` 將期限失敗與主城失守視為整局終止，現在已改為分離兩種狀態：
+
+```text
+ScenarioObjectiveStatus
+- IN_PROGRESS
+- ACHIEVED
+- FAILED
+
+GameplayStatus
+- ACTIVE
+- ELIMINATED
+```
+
+- 十二個月內攻下指定城池仍是原型劇本目標。
+- 期限到期只會將目標標記為失敗，玩家仍可內政、結束月份、偵察與出征。
+- 達成原目標後也可繼續自由征戰。
+- 原首都失守但仍擁有其他城池時，會遷移首都並繼續遊戲。
+- 只有失去全部城池時才進入 `ELIMINATED`，此時停止下達新命令。
+
+### 三槽存讀檔
+
+- Lobby 的「讀取存檔」已正式啟用。
+- 新增三個存檔槽，顯示勢力、首都、年月、回合、城池數、目標狀態與保存時間。
+- 「繼續遊戲」讀取最後使用且仍有效的槽位；若該槽位失效，會尋找其他有效槽位。
+- 新局可指定寫入槽位，覆寫既有進度前必須確認。
+- 存讀檔畫面支援：讀取、另存、覆寫確認與刪除確認。
+- 主要檔案損壞時，槽位會標示可使用 `.tmp` 或 `.backup.json` 的復原候選。
+
+### 月底流程與設定
+
+- 戰略地圖與城池內政都提供「結束本月」。
+- 結束前會顯示確認視窗、目前年月與剩餘行動力；未使用行動力不會保留。
+- 地圖與內政共用 `MonthEndFlowController`，避免兩套結算流程分歧。
+- 月份結算後開啟獨立月報畫面；若當前城池發生戰鬥，先顯示觀看戰報提示。
+- 地圖與內政的直接「返回 Lobby」已移除。
+- 新增全域設定／暫停畫面，集中提供：
+  - 背景音樂開關與音量。
+  - 遊戲音效開關與音量。
+  - 儲存遊戲。
+  - 保存並返回 Lobby。
+  - 保存並退出遊戲。
+- Desktop `ESC`／Android Back：
+  - 城池內政返回戰略地圖。
+  - 戰略地圖開啟設定。
+  - Dialog／戰報／月報優先關閉或返回上一層。
+
+### BGM 與音效
+
+- Lobby 與 Strategy 各有一首可循環 OGG BGM。
+- 加入介面、確認、取消、命令成功／失敗、保存、月底、戰鬥、攻城與目標結果音效。
+- `SangoAudioService` 集中快取、播放與釋放 LibGDX `Music`／`Sound`，Screen 不直接管理音訊生命週期。
+- Android／Desktop pause、resume、dispose 已接入共用 Application lifecycle。
+- 音樂與音效開關、音量會保存於 `SangoPreferences`。
+- 音訊由 `tools/generate-prototype-audio.py` 以基本波形、五聲音階與程序節奏原創合成，不含第三方遊戲、影視或商業曲目取樣。
+- 這批素材定位為功能驗證用 Prototype Audio，不等同正式商業配樂或專業 Foley。
 
 ## 第一次執行前：準備中文字型
 
-此 Source ZIP 不重複攜帶 StudyRoutine 已有的兩個大型 Source Han Sans 字型二進位檔。Windows PowerShell：
+Source ZIP 不重複攜帶 StudyRoutine 已有的兩個大型 Source Han Sans 字型二進位檔。Windows PowerShell：
 
 ```powershell
 .\tools\prepare-local-fonts.ps1 -StudyRoutineSource "C:\path\to\StudyRoutineCurated-source.zip"
@@ -67,7 +112,7 @@ assets/font/SourceHanSansCN-Heavy.otf
 .\gradlew.bat verifyRequiredLocalFonts
 ```
 
-## 執行
+## 執行與驗證
 
 Desktop：
 
@@ -84,10 +129,11 @@ Android Debug APK：
 完整核心驗證：
 
 ```powershell
+.\gradlew.bat --stop
 .\gradlew.bat clean core:check core:compileJava lwjgl3:dist
 ```
 
-單獨執行 Strategic Vertical Slice smoke test：
+單獨執行 Vertical Slice smoke test：
 
 ```powershell
 .\gradlew.bat core:runVerticalSliceSmokeTest
@@ -95,12 +141,24 @@ Android Debug APK：
 
 ## 原型規則
 
-### 時間
+### 時間與月底順序
 
 - 1 回合＝1 個月。
 - 每月 3 點行動力。
 - 成功的內政、偵察與出征命令各消耗 1 點行動力。
-- 結束本月後，依固定順序處理軍糧、季節事件、行軍、戰鬥、敵方 AI，再推進月份並自動存檔。
+- 結束本月後依固定順序處理：
+
+```text
+1. 全勢力軍糧與缺糧逃兵
+2. 六月洪災
+3. 季末商稅
+4. 九月秋收
+5. 已在途軍隊移動與抵達戰鬥
+6. 敵方 AI 集結、補兵或建立新軍隊
+7. 劇本期限判定
+8. 月份與回合推進
+9. 行動力恢復並自動存檔
+```
 
 ### 內政
 
@@ -111,49 +169,70 @@ Android Debug APK：
 | 治水 | 金 80 | 治水 +5 | 洪災機率與秋收損失下降 |
 | 修築城防 | 金 100 | 城防 +5 | 守城強度提高 |
 | 徵兵 | 金 100、糧 100、人口 200 | 兵力 +200 | 每月軍糧支出提高 |
-| 訓練 | 金 50 | 訓練 +5 | 城內守軍及之後派出的軍隊更強 |
+| 訓練 | 金 50 | 訓練 +5 | 守軍與之後派出的軍隊更強 |
 
 目前能力值上限為 100。固定數值仍是 Prototype Parameter，尚未移至獨立 Rule Definition JSON。
 
-### 季節經濟與汛期
+### 季節經濟與戰爭
 
 - 商稅：3、6、9、12 月月底結算。
-- 汛期：6 月月底依各城治水值進行 deterministic flood roll。
+- 汛期：6 月月底依治水值進行 deterministic flood roll。
 - 秋收：9 月月底結算。
-- 洪災可能降低人口、農業、民心與當年秋收倍率。
-- 軍糧：每月依勢力所有城池守軍與行軍部隊總兵力結算。
-
-### 地圖與戰爭
-
-- 地圖共有 6 座城、6 條雙向道路。
-- 偵察和出征只能針對與我方城池直接相鄰的非我方城池。
+- 每月依勢力守軍與行軍部隊總兵力支出軍糧。
+- 地圖共有 6 座城與 6 條雙向道路。
+- 偵察／出征只能針對與我方城池直接相鄰的非我方城池。
 - 出征消耗糧 100，必須至少保留 400 守軍並至少派出 400 兵；單次最多派出 1,000 兵。
-- 第一版每個勢力同時只能有一支行軍部隊。
-- 戰鬥採簡化 Auto-resolve：兵力、訓練、城防及戰術共同決定結果與損失。
-- 敵軍會依倒數集結並主動攻打相鄰玩家城池，不會無限等待玩家開發。
+- 每個勢力目前同時只能有一支行軍部隊。
+- 戰鬥採簡化 Auto-resolve，由兵力、訓練、城防與戰術共同決定結果及損失。
 
 ## 存檔位置與相容性
 
-- Desktop：LibGDX external storage，預設為 `%USERPROFILE%\.sango\save\slot-01.json`。
-- Android：App private local storage 的 `save/slot-01.json`。
+Desktop 預設位置：
 
-同一目錄可能存在：
+```text
+%USERPROFILE%\.sango\save\
+```
+
+Android 使用 App private local storage：
+
+```text
+save/
+```
+
+三個槽位各可能包含：
 
 ```text
 slot-01.json
 slot-01.tmp
 slot-01.backup.json
 slot-01.corrupt.json
+
+slot-02.*
+slot-03.*
 ```
 
-正常完成寫入後，`.tmp` 會被移除。主要檔案損壞時，Repository 會嘗試讀取完整的 `.tmp` 或 `.backup.json`。
+正常完成寫入後 `.tmp` 會被移除。Repository 讀取順序為：
 
-`0.3.0` 將 `GameState.schemaVersion` 提升為 2，**不直接讀取 0.2.0 schema 1 存檔**。目前尚未實作 migration；升級後請建立新局。詳見 [`docs/UPGRADE_0.2.0_TO_0.3.0.md`](docs/UPGRADE_0.2.0_TO_0.3.0.md)。
+```text
+primary → tmp → backup
+```
+
+`0.4.0` 使用：
+
+```text
+SaveGameDocument.schemaVersion = 1
+GameState.schemaVersion = 3
+```
+
+`0.3.0` 的 `GameState.schemaVersion = 2` 可在讀取時自動遷移至 schema 3；下一次保存會正式寫回新格式。`0.2.0` 的 schema 1 仍不支援自動遷移。詳見 [`docs/UPGRADE_0.3.0_TO_0.4.0.md`](docs/UPGRADE_0.3.0_TO_0.4.0.md)。
 
 ## 主要結構
 
 ```text
 assets/
+├─ audio/
+│  ├─ music/
+│  └─ sfx/
 ├─ data/
 │  ├─ scenarios/scenarios.json
 │  ├─ factions/factions.json
@@ -164,29 +243,34 @@ assets/
    ├─ lobby.xml
    ├─ new_game.xml
    ├─ strategic_map.xml
-   └─ city.xml
+   ├─ city.xml
+   ├─ month_report.xml
+   ├─ battle_report.xml
+   ├─ save_load.xml
+   └─ settings.xml
 
 core/src/main/java/idv/kuan/studio/sango/
 ├─ application/
-│  ├─ command/
-│  ├─ request/
-│  └─ result/
+├─ audio/
 ├─ domain/
-│  ├─ definition/
-│  ├─ model/
-│  ├─ rule/
-│  └─ service/
 ├─ repository/
-│  ├─ definition/
-│  └─ save/
 ├─ runtime/
 └─ ui/
-   ├─ widget/
+   ├─ flow/
+   ├─ support/
    ├─ theme/
-   └─ support/
+   └─ widget/
 ```
 
-設計細節見 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)，驗證結果見 [`docs/VALIDATION.md`](docs/VALIDATION.md)。
+設計細節見 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)，驗證範圍見 [`docs/VALIDATION.md`](docs/VALIDATION.md)。
+
+## 目前限制
+
+- 戰鬥仍是 Auto-resolve，尚未建立 Tactical Combat。
+- 同一勢力同時只能有一支野戰軍。
+- 六城地圖仍是流程驗證用 Region Map，不是完整中國地圖。
+- Prototype Audio 可驗證切換、音量與事件回饋，但不代表正式配樂品質。
+- 存檔沒有雲端同步，也沒有跨裝置衝突解決。
 
 ## GdxTools
 
@@ -194,4 +278,4 @@ core/src/main/java/idv/kuan/studio/sango/
 
 ## 第三方與授權
 
-詳見 `THIRD_PARTY_NOTICES.md`。SimpleUI snapshot 未附授權檔；對外散布前應確認授權。
+詳見 `THIRD_PARTY_NOTICES.md`。SimpleUI snapshot 未附授權檔；對外散布前必須確認適用授權。

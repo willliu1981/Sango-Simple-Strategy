@@ -1,0 +1,76 @@
+<ui xmlns="http://kuan.studio/simpleui">
+    <table id="main" i18n="literal" flags="fillParent" pad="34"
+        backgroundColor="0.010,0.006,0.005,0.88">
+        <table width="1500" height="950" pad="42" backgroundColor="0.055,0.035,0.027,0.995">
+            <table width="1390" height="110">
+                <label id="battle_report_title_label" fontKey="title" fontSize="70" width="930" height="92"
+                    align="left" textAlign="left" color="0.96,0.72,0.34,1">${text:battle_report_title_placeholder}</label>
+                <table width="430" height="92">
+                    <label id="battle_report_sequence_label" fontSize="28" width="410" height="42"
+                        align="right" textAlign="right" color="0.72,0.65,0.55,1">${text:battle_report_sequence_placeholder}</label>
+                    <row />
+                    <label id="battle_report_period_label" fontSize="28" width="410" height="42"
+                        align="right" textAlign="right">${text:battle_report_period_placeholder}</label>
+                </table>
+            </table>
+            <row />
+            <label id="battle_report_route_label" fontSize="30" width="1390" height="48"
+                color="0.75,0.68,0.58,1">${text:battle_report_route_placeholder}</label>
+            <row />
+            <label id="battle_report_tactic_label" fontSize="28" width="1390" height="48"
+                color="0.70,0.66,0.58,1">${text:battle_report_tactic_placeholder}</label>
+            <row />
+            <table width="1390" height="510" padTop="18">
+                <table width="640" height="500" pad="30" backgroundColor="0.095,0.040,0.030,0.98">
+                    <label fontSize="27" width="560" height="40" color="0.72,0.65,0.56,1">${text:battle_report_attacker}</label>
+                    <row />
+                    <label id="battle_report_attacker_name_label" fontKey="title" fontSize="46" width="560" height="64"
+                        color="0.94,0.68,0.36,1">${text:battle_report_faction_placeholder}</label>
+                    <row />
+                    <table width="560" height="270" pad="20" backgroundColor="0.040,0.027,0.024,1">
+                        <label fontSize="26" width="260" height="54" align="left" textAlign="left">${text:battle_report_before}</label>
+                        <label id="attacker_before_value_label" fontSize="34" width="260" height="54" align="right" textAlign="right">0</label>
+                        <row />
+                        <label fontSize="26" width="260" height="54" align="left" textAlign="left">${text:battle_report_losses}</label>
+                        <label id="attacker_loss_value_label" fontSize="34" width="260" height="54" align="right" textAlign="right" color="0.94,0.35,0.26,1">0</label>
+                        <row />
+                        <label fontSize="26" width="260" height="54" align="left" textAlign="left">${text:battle_report_survivors}</label>
+                        <label id="attacker_after_value_label" fontSize="34" width="260" height="54" align="right" textAlign="right" color="0.82,0.84,0.62,1">0</label>
+                    </table>
+                </table>
+                <table width="70"></table>
+                <table width="640" height="500" pad="30" backgroundColor="0.035,0.050,0.075,0.98">
+                    <label fontSize="27" width="560" height="40" color="0.72,0.65,0.56,1">${text:battle_report_defender}</label>
+                    <row />
+                    <label id="battle_report_defender_name_label" fontKey="title" fontSize="46" width="560" height="64"
+                        color="0.62,0.74,0.92,1">${text:battle_report_faction_placeholder}</label>
+                    <row />
+                    <table width="560" height="270" pad="20" backgroundColor="0.026,0.032,0.045,1">
+                        <label fontSize="26" width="260" height="54" align="left" textAlign="left">${text:battle_report_before}</label>
+                        <label id="defender_before_value_label" fontSize="34" width="260" height="54" align="right" textAlign="right">0</label>
+                        <row />
+                        <label fontSize="26" width="260" height="54" align="left" textAlign="left">${text:battle_report_losses}</label>
+                        <label id="defender_loss_value_label" fontSize="34" width="260" height="54" align="right" textAlign="right" color="0.94,0.35,0.26,1">0</label>
+                        <row />
+                        <label fontSize="26" width="260" height="54" align="left" textAlign="left">${text:battle_report_survivors}</label>
+                        <label id="defender_after_value_label" fontSize="34" width="260" height="54" align="right" textAlign="right" color="0.82,0.84,0.62,1">0</label>
+                    </table>
+                </table>
+            </table>
+            <row />
+            <label id="battle_report_training_label" fontSize="27" width="1390" height="44"
+                color="0.72,0.67,0.59,1">${text:battle_report_training_placeholder}</label>
+            <row />
+            <label id="battle_report_result_label" fontKey="title" fontSize="48" width="1390" height="64"
+                color="0.94,0.76,0.38,1">${text:battle_report_result_placeholder}</label>
+            <row />
+            <label id="battle_report_capture_label" fontSize="28" width="1390" height="48"
+                color="0.78,0.72,0.63,1">${text:battle_report_capture_placeholder}</label>
+            <row />
+            <table width="1390" height="88" padTop="20">
+                <textButton id="battle_report_return_button" fontSize="36" width="600" height="82">${text:button_return_from_battle}</textButton>
+                <textButton id="battle_report_next_button" fontSize="36" width="730" height="82" padLeft="30">${text:button_next_battle}</textButton>
+            </table>
+        </table>
+    </table>
+</ui>

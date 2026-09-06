@@ -25,7 +25,7 @@ dependencies {
 
 tasks.register('runVerticalSliceSmokeTest', JavaExec) {
   group = 'verification'
-  description = 'Runs the Sango 0.3.0 economy, map, battle and save/load smoke test.'
+  description = 'Runs the Sango 0.4.0 battle report, save slot, audio asset and free-play smoke test.'
   dependsOn testClasses
   classpath = sourceSets.test.runtimeClasspath
   mainClass.set('idv.kuan.studio.sango.validation.VerticalSliceSmokeTest')

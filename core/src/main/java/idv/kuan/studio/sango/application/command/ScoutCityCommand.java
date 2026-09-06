@@ -2,10 +2,10 @@ package idv.kuan.studio.sango.application.command;
 
 import idv.kuan.studio.sango.application.result.StrategicActionResult;
 import idv.kuan.studio.sango.domain.definition.StrategicMapDefinition;
-import idv.kuan.studio.sango.domain.model.CampaignStatus;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
+import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
 import idv.kuan.studio.sango.domain.rule.StrategicActionFailureReason;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
@@ -67,8 +67,8 @@ public final class ScoutCityCommand {
         GameStateValidator.validate(gameState);
         CityState originCityState = gameState.requireCityState(originCityId);
         CityState targetCityState = gameState.requireCityState(targetCityId);
-        if (gameState.campaignStatus != CampaignStatus.IN_PROGRESS) {
-            return StrategicActionFailureReason.CAMPAIGN_FINISHED;
+        if (gameState.gameplayStatus != GameplayStatus.ACTIVE) {
+            return StrategicActionFailureReason.PLAYER_ELIMINATED;
         }
         if (!gameState.playerFactionId.equals(originCityState.ownerFactionId)) {
             return StrategicActionFailureReason.ORIGIN_NOT_OWNED;

@@ -25,6 +25,7 @@ public final class LocalJsonSaveGameRepository implements SaveGameRepository {
 
     private final FileHandle saveDirectory;
     private final Json json;
+    private final GameStateMigrator gameStateMigrator;
 
     public LocalJsonSaveGameRepository() {
         this(resolveDefaultSaveDirectory());
@@ -36,6 +37,7 @@ public final class LocalJsonSaveGameRepository implements SaveGameRepository {
         }
         this.saveDirectory = saveDirectory;
         this.json = createJson();
+        this.gameStateMigrator = new GameStateMigrator();
     }
 
     @Override
@@ -44,17 +46,26 @@ public final class LocalJsonSaveGameRepository implements SaveGameRepository {
 
         CandidateRead primaryRead = readCandidate(primaryFile(slotNumber));
         if (primaryRead.isValid()) {
-            return SaveSlotInspection.available(false);
+            return SaveSlotInspection.available(
+                false,
+                SaveSlotMetadata.fromDocument(slotNumber, primaryRead.document())
+            );
         }
 
         CandidateRead temporaryRead = readCandidate(temporaryFile(slotNumber));
         if (temporaryRead.isValid()) {
-            return SaveSlotInspection.available(true);
+            return SaveSlotInspection.available(
+                true,
+                SaveSlotMetadata.fromDocument(slotNumber, temporaryRead.document())
+            );
         }
 
         CandidateRead backupRead = readCandidate(backupFile(slotNumber));
         if (backupRead.isValid()) {
-            return SaveSlotInspection.available(true);
+            return SaveSlotInspection.available(
+                true,
+                SaveSlotMetadata.fromDocument(slotNumber, backupRead.document())
+            );
         }
 
         if (!primaryRead.exists() && !temporaryRead.exists() && !backupRead.exists()) {
@@ -219,6 +230,7 @@ public final class LocalJsonSaveGameRepository implements SaveGameRepository {
         if (saveGameDocument.gameVersion == null || saveGameDocument.gameVersion.trim().isEmpty()) {
             throw new IllegalArgumentException("SaveGame.gameVersion 不可為空。");
         }
+        saveGameDocument.gameState = gameStateMigrator.migrate(saveGameDocument.gameState);
         GameStateValidator.validate(saveGameDocument.gameState);
     }
 

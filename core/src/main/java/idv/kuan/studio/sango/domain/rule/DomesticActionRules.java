@@ -1,9 +1,9 @@
 package idv.kuan.studio.sango.domain.rule;
 
-import idv.kuan.studio.sango.domain.model.CampaignStatus;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
+import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
 
 /**
@@ -25,8 +25,8 @@ public final class DomesticActionRules {
         if (actionType == null) {
             throw new IllegalArgumentException("actionType 不可為 null。");
         }
-        if (gameState.campaignStatus != CampaignStatus.IN_PROGRESS) {
-            return DomesticActionFailureReason.CAMPAIGN_FINISHED;
+        if (gameState.gameplayStatus != GameplayStatus.ACTIVE) {
+            return DomesticActionFailureReason.PLAYER_ELIMINATED;
         }
 
         CityState cityState = gameState.requireCityState(cityId);

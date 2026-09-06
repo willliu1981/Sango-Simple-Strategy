@@ -9,7 +9,11 @@ public enum ScreenId implements ScreenIdentifier {
     LOBBY("lobby"),
     NEW_GAME("new_game"),
     STRATEGIC_MAP("strategic_map"),
-    CITY("city");
+    CITY("city"),
+    MONTH_REPORT("month_report"),
+    BATTLE_REPORT("battle_report"),
+    SAVE_LOAD("save_load"),
+    SETTINGS("settings");
 
     private final String value;
 

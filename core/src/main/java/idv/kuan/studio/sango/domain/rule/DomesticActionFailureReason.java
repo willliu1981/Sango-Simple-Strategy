@@ -5,7 +5,7 @@ package idv.kuan.studio.sango.domain.rule;
  */
 public enum DomesticActionFailureReason {
     NONE,
-    CAMPAIGN_FINISHED,
+    PLAYER_ELIMINATED,
     CITY_NOT_OWNED,
     NO_ACTION_POINTS,
     INSUFFICIENT_GOLD,

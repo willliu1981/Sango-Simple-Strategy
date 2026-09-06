@@ -100,9 +100,44 @@
                 wrap="true" color="0.79,0.72,0.61,1">${text:city_status_ready}</label>
             <row />
             <table width="1780" height="88" padTop="8">
-                <textButton id="save_button" fontSize="36" width="360" height="80">${text:button_save}</textButton>
-                <textButton id="return_map_button" fontSize="36" width="500" height="80" padLeft="24">${text:button_return_map}</textButton>
-                <table width="896"></table>
+                <textButton id="return_map_button" fontSize="34" width="430" height="80">${text:button_return_map}</textButton>
+                <textButton id="city_settings_button" fontSize="34" width="300" height="80" padLeft="20">${text:button_settings}</textButton>
+                <table width="490"></table>
+                <textButton id="city_end_month_button" fontSize="36" width="520" height="80">${text:button_end_month}</textButton>
+            </table>
+        </table>
+    </table>
+
+    <table id="city_end_month_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0,0,0,0.88" flags="fillParent">
+        <table width="1040" pad="52" backgroundColor="0.055,0.043,0.035,0.995">
+            <label id="city_end_month_title_label" fontKey="title" fontSize="60" width="900" height="86"
+                color="0.94,0.76,0.43,1">${text:end_month_confirm_title_placeholder}</label>
+            <row />
+            <label id="city_end_month_description_label" fontSize="31" width="890" height="150"
+                wrap="true" color="0.84,0.80,0.72,1">${text:end_month_confirm_description_placeholder}</label>
+            <row />
+            <table width="890" height="86" padTop="24">
+                <textButton id="city_end_month_cancel_button" fontSize="36" width="400" height="82">${text:button_cancel}</textButton>
+                <textButton id="city_end_month_confirm_button" fontSize="36" width="460" height="82"
+                    padLeft="30">${text:button_end_month_confirm}</textButton>
+            </table>
+        </table>
+    </table>
+
+    <table id="city_battle_prompt_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0,0,0,0.88" flags="fillParent">
+        <table width="1040" pad="52" backgroundColor="0.060,0.038,0.030,0.995">
+            <label id="city_battle_prompt_title_label" fontKey="title" fontSize="60" width="900" height="86"
+                color="0.96,0.53,0.35,1">${text:battle_prompt_title_placeholder}</label>
+            <row />
+            <label id="city_battle_prompt_description_label" fontSize="31" width="890" height="125"
+                wrap="true" color="0.86,0.80,0.70,1">${text:battle_prompt_description}</label>
+            <row />
+            <table width="890" height="86" padTop="24">
+                <textButton id="city_battle_prompt_later_button" fontSize="36" width="400" height="82">${text:button_view_later}</textButton>
+                <textButton id="city_battle_prompt_view_button" fontSize="36" width="460" height="82"
+                    padLeft="30">${text:button_view_battle_report}</textButton>
             </table>
         </table>
     </table>

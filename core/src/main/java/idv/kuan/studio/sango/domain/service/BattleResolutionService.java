@@ -4,19 +4,22 @@ import idv.kuan.studio.sango.application.result.TurnEvent;
 import idv.kuan.studio.sango.application.result.TurnEventType;
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
 import idv.kuan.studio.sango.domain.model.ArmyState;
-import idv.kuan.studio.sango.domain.model.CampaignStatus;
+import idv.kuan.studio.sango.domain.model.BattleOutcome;
+import idv.kuan.studio.sango.domain.model.BattleReport;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
+import idv.kuan.studio.sango.domain.model.GameplayStatus;
+import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 
 /**
- * 決定軍隊抵達城池時的簡化攻城結果。
+ * 決定軍隊抵達城池時的簡化攻城結果，並建立可持久化戰報。
  */
 public final class BattleResolutionService {
     public void resolveArrival(
         GameState gameState,
         ArmyState armyState,
-        TurnResolutionReport report
+        TurnResolutionReport turnResolutionReport
     ) {
         CityState targetCityState = gameState.requireCityState(armyState.targetCityId);
         if (armyState.factionId.equals(targetCityState.ownerFactionId)) {
@@ -27,7 +30,7 @@ public final class BattleResolutionService {
                 armyState.troops,
                 armyState.training
             );
-            report.add(new TurnEvent(
+            turnResolutionReport.add(new TurnEvent(
                 TurnEventType.ARMY_REINFORCED,
                 armyState.factionId,
                 targetCityState.cityId,
@@ -37,6 +40,17 @@ public final class BattleResolutionService {
             ));
             return;
         }
+
+        int attackerTroopsBefore = armyState.troops;
+        int defenderTroopsBefore = targetCityState.troops;
+        int defenderTrainingBefore = targetCityState.training;
+        int defenderDefenseBefore = targetCityState.defense;
+        String defendingFactionId = targetCityState.ownerFactionId;
+        boolean capturedDefendingCapital = isDefendingCapital(
+            gameState,
+            defendingFactionId,
+            targetCityState.cityId
+        );
 
         int attackerStrength = calculateAttackerStrength(armyState);
         int defenderStrength = calculateDefenderStrength(targetCityState);
@@ -51,14 +65,8 @@ public final class BattleResolutionService {
             attackerStrength,
             defenderStrength
         );
-        int attackerSurvivors = Math.max(0, armyState.troops - attackerLosses);
-        int defenderSurvivors = Math.max(0, targetCityState.troops - defenderLosses);
-        String defendingFactionId = targetCityState.ownerFactionId;
-        boolean capturedDefendingCapital = isDefendingCapital(
-            gameState,
-            defendingFactionId,
-            targetCityState.cityId
-        );
+        int attackerSurvivors = Math.max(0, attackerTroopsBefore - attackerLosses);
+        int defenderSurvivors = Math.max(0, defenderTroopsBefore - defenderLosses);
 
         if (attackerWon) {
             captureCity(
@@ -68,7 +76,7 @@ public final class BattleResolutionService {
                 defendingFactionId,
                 attackerSurvivors
             );
-            report.add(new TurnEvent(
+            turnResolutionReport.add(new TurnEvent(
                 TurnEventType.BATTLE_ATTACKER_WON,
                 armyState.factionId,
                 targetCityState.cityId,
@@ -76,35 +84,98 @@ public final class BattleResolutionService {
                 attackerLosses,
                 defenderLosses
             ));
-            report.add(new TurnEvent(
+            turnResolutionReport.add(new TurnEvent(
                 TurnEventType.CITY_CAPTURED,
                 armyState.factionId,
                 targetCityState.cityId,
-                defendingFactionId,
+                null,
                 attackerSurvivors,
                 0
             ));
-            evaluateCampaignAfterCapture(
+        } else {
+            targetCityState.troops = Math.max(1, defenderSurvivors);
+            returnSurvivors(gameState, armyState, attackerSurvivors);
+            turnResolutionReport.add(new TurnEvent(
+                TurnEventType.BATTLE_DEFENDER_WON,
+                defendingFactionId,
+                targetCityState.cityId,
+                armyState.originCityId,
+                attackerLosses,
+                defenderLosses
+            ));
+        }
+
+        BattleReport battleReport = createBattleReport(
+            gameState,
+            armyState,
+            defendingFactionId,
+            attackerTroopsBefore,
+            defenderTroopsBefore,
+            defenderTrainingBefore,
+            defenderDefenseBefore,
+            attackerLosses,
+            defenderLosses,
+            attackerSurvivors,
+            defenderSurvivors,
+            attackerWon
+        );
+        gameState.addBattleReport(battleReport);
+        turnResolutionReport.addBattleReportId(battleReport.battleId);
+
+        if (attackerWon) {
+            evaluateScenarioAfterCapture(
                 gameState,
                 armyState.factionId,
                 defendingFactionId,
                 targetCityState.cityId,
                 capturedDefendingCapital,
-                report
+                turnResolutionReport
             );
-            return;
         }
+    }
 
-        targetCityState.troops = Math.max(1, defenderSurvivors);
-        returnSurvivors(gameState, armyState, attackerSurvivors);
-        report.add(new TurnEvent(
-            TurnEventType.BATTLE_DEFENDER_WON,
-            defendingFactionId,
-            targetCityState.cityId,
-            armyState.originCityId,
-            attackerLosses,
-            defenderLosses
-        ));
+    private BattleReport createBattleReport(
+        GameState gameState,
+        ArmyState armyState,
+        String defendingFactionId,
+        int attackerTroopsBefore,
+        int defenderTroopsBefore,
+        int defenderTrainingBefore,
+        int defenderDefenseBefore,
+        int attackerLosses,
+        int defenderLosses,
+        int attackerSurvivors,
+        int defenderSurvivors,
+        boolean attackerWon
+    ) {
+        BattleReport battleReport = new BattleReport();
+        battleReport.battleId = gameState.allocateBattleReportId();
+        battleReport.resolvedTurn = gameState.currentTurn;
+        battleReport.resolvedYear = gameState.currentYear;
+        battleReport.resolvedMonth = gameState.currentMonth;
+        battleReport.originCityId = armyState.originCityId;
+        battleReport.targetCityId = armyState.targetCityId;
+        battleReport.attackerFactionId = armyState.factionId;
+        battleReport.defenderFactionId = defendingFactionId;
+        battleReport.attackerTactic = armyState.tactic;
+        battleReport.attackerTroopsBefore = attackerTroopsBefore;
+        battleReport.defenderTroopsBefore = defenderTroopsBefore;
+        battleReport.attackerTraining = armyState.training;
+        battleReport.defenderTraining = defenderTrainingBefore;
+        battleReport.defenderDefense = defenderDefenseBefore;
+        battleReport.attackerLosses = attackerLosses;
+        battleReport.defenderLosses = defenderLosses;
+        battleReport.attackerSurvivors = attackerSurvivors;
+        battleReport.defenderSurvivors = defenderSurvivors;
+        battleReport.outcome = attackerWon
+            ? BattleOutcome.ATTACKER_VICTORY
+            : BattleOutcome.DEFENDER_VICTORY;
+        battleReport.cityCaptured = attackerWon;
+        battleReport.winnerFactionId = attackerWon
+            ? armyState.factionId
+            : defendingFactionId;
+        battleReport.read = false;
+        return battleReport;
     }
 
     private int calculateAttackerStrength(ArmyState armyState) {
@@ -216,36 +287,67 @@ public final class BattleResolutionService {
             && targetCityId.equals(defendingFactionState.capitalCityId);
     }
 
-    private void evaluateCampaignAfterCapture(
+    private void evaluateScenarioAfterCapture(
         GameState gameState,
         String attackingFactionId,
         String defendingFactionId,
         String capturedCityId,
         boolean capturedDefendingCapital,
-        TurnResolutionReport report
+        TurnResolutionReport turnResolutionReport
     ) {
         if (gameState.playerFactionId.equals(attackingFactionId)
-            && gameState.victoryTargetCityId.equals(capturedCityId)) {
-            gameState.campaignStatus = CampaignStatus.VICTORY;
-            report.add(new TurnEvent(
+            && gameState.victoryTargetCityId.equals(capturedCityId)
+            && gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.IN_PROGRESS) {
+            gameState.scenarioObjectiveStatus = ScenarioObjectiveStatus.ACHIEVED;
+            turnResolutionReport.add(new TurnEvent(
                 TurnEventType.CAMPAIGN_VICTORY,
                 attackingFactionId,
                 capturedCityId,
-                defendingFactionId,
+                null,
+                0,
+                0
+            ));
+        }
+
+        if (!gameState.playerFactionId.equals(defendingFactionId)) {
+            return;
+        }
+
+        FactionState playerFactionState = gameState.requirePlayerFactionState();
+        if (!playerFactionState.active) {
+            gameState.gameplayStatus = GameplayStatus.ELIMINATED;
+            gameState.actionPointsRemaining = 0;
+            if (gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.IN_PROGRESS) {
+                gameState.scenarioObjectiveStatus = ScenarioObjectiveStatus.FAILED;
+            }
+            turnResolutionReport.add(new TurnEvent(
+                TurnEventType.PLAYER_ELIMINATED,
+                attackingFactionId,
+                capturedCityId,
+                null,
                 0,
                 0
             ));
             return;
         }
 
-        if (gameState.playerFactionId.equals(defendingFactionId)
-            && capturedDefendingCapital) {
-            gameState.campaignStatus = CampaignStatus.DEFEAT;
-            report.add(new TurnEvent(
-                TurnEventType.CAMPAIGN_DEFEAT_CAPITAL,
-                attackingFactionId,
-                capturedCityId,
+        if (capturedDefendingCapital) {
+            if (gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.IN_PROGRESS) {
+                gameState.scenarioObjectiveStatus = ScenarioObjectiveStatus.FAILED;
+                turnResolutionReport.add(new TurnEvent(
+                    TurnEventType.CAMPAIGN_DEFEAT_CAPITAL,
+                    attackingFactionId,
+                    capturedCityId,
+                    null,
+                    0,
+                    0
+                ));
+            }
+            turnResolutionReport.add(new TurnEvent(
+                TurnEventType.CAPITAL_RELOCATED,
                 defendingFactionId,
+                playerFactionState.capitalCityId,
+                capturedCityId,
                 0,
                 0
             ));

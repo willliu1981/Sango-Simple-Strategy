@@ -18,4 +18,22 @@ public final class Main extends SuiGame {
         SangoServices.initialize();
         Sui.screens.set(ScreenId.LOBBY);
     }
+
+    @Override
+    public void pause() {
+        SangoServices.audio().pause();
+        super.pause();
+    }
+
+    @Override
+    public void resume() {
+        super.resume();
+        SangoServices.audio().resume();
+    }
+
+    @Override
+    protected void beforeDispose() {
+        SangoServices.dispose();
+        super.beforeDispose();
+    }
 }

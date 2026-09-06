@@ -3,9 +3,11 @@ package idv.kuan.studio.sango.runtime;
 import idv.kuan.studio.sango.application.command.EndTurnCommand;
 import idv.kuan.studio.sango.application.command.ExecuteDomesticActionCommand;
 import idv.kuan.studio.sango.application.command.LaunchExpeditionCommand;
+import idv.kuan.studio.sango.application.command.MarkBattleReportReadCommand;
 import idv.kuan.studio.sango.application.command.NewGameCommand;
 import idv.kuan.studio.sango.application.command.SaveCurrentGameCommand;
 import idv.kuan.studio.sango.application.command.ScoutCityCommand;
+import idv.kuan.studio.sango.audio.SangoAudioService;
 import idv.kuan.studio.sango.domain.service.TurnResolutionService;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 import idv.kuan.studio.sango.repository.SaveGameRepository;
@@ -18,18 +20,21 @@ import idv.kuan.studio.sango.repository.save.LocalJsonSaveGameRepository;
  */
 public final class SangoServices {
     public static final int DEFAULT_SAVE_SLOT = 1;
+    public static final int SAVE_SLOT_COUNT = 3;
     public static final String DEFAULT_SCENARIO_ID = "prototype_warlords";
 
     private static boolean initialized;
     private static GameDefinitionRepository definitionRepository;
     private static SaveGameRepository saveGameRepository;
     private static GameSession gameSession;
+    private static SangoAudioService audioService;
     private static NewGameCommand newGameCommand;
     private static ExecuteDomesticActionCommand domesticActionCommand;
     private static ScoutCityCommand scoutCityCommand;
     private static LaunchExpeditionCommand launchExpeditionCommand;
     private static EndTurnCommand endTurnCommand;
     private static SaveCurrentGameCommand saveCurrentGameCommand;
+    private static MarkBattleReportReadCommand markBattleReportReadCommand;
 
     private SangoServices() {
     }
@@ -42,6 +47,7 @@ public final class SangoServices {
         definitionRepository = new AssetJsonGameDefinitionRepository();
         saveGameRepository = new LocalJsonSaveGameRepository();
         gameSession = new GameSession();
+        audioService = new SangoAudioService();
         TurnResolutionService turnResolutionService = new TurnResolutionService(
             definitionRepository
         );
@@ -54,7 +60,27 @@ public final class SangoServices {
         );
         endTurnCommand = new EndTurnCommand(saveGameRepository, turnResolutionService);
         saveCurrentGameCommand = new SaveCurrentGameCommand(saveGameRepository);
+        markBattleReportReadCommand = new MarkBattleReportReadCommand(saveGameRepository);
         initialized = true;
+    }
+
+    public static synchronized void dispose() {
+        if (!initialized) {
+            return;
+        }
+        audioService.dispose();
+        initialized = false;
+        definitionRepository = null;
+        saveGameRepository = null;
+        gameSession = null;
+        audioService = null;
+        newGameCommand = null;
+        domesticActionCommand = null;
+        scoutCityCommand = null;
+        launchExpeditionCommand = null;
+        endTurnCommand = null;
+        saveCurrentGameCommand = null;
+        markBattleReportReadCommand = null;
     }
 
     public static GameDefinitionRepository definitions() {
@@ -70,6 +96,11 @@ public final class SangoServices {
     public static GameSession session() {
         requireInitialized();
         return gameSession;
+    }
+
+    public static SangoAudioService audio() {
+        requireInitialized();
+        return audioService;
     }
 
     public static NewGameCommand newGameCommand() {
@@ -100,6 +131,11 @@ public final class SangoServices {
     public static SaveCurrentGameCommand saveCurrentGameCommand() {
         requireInitialized();
         return saveCurrentGameCommand;
+    }
+
+    public static MarkBattleReportReadCommand markBattleReportReadCommand() {
+        requireInitialized();
+        return markBattleReportReadCommand;
     }
 
     private static void requireInitialized() {

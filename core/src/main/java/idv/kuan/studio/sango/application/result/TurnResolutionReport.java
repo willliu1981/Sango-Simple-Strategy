@@ -11,6 +11,7 @@ public final class TurnResolutionReport {
     private final int resolvedYear;
     private final int resolvedMonth;
     private final List<TurnEvent> events = new ArrayList<>();
+    private final List<String> battleReportIds = new ArrayList<>();
 
     public TurnResolutionReport(int resolvedYear, int resolvedMonth) {
         this.resolvedYear = resolvedYear;
@@ -20,6 +21,12 @@ public final class TurnResolutionReport {
     public void add(TurnEvent event) {
         if (event != null) {
             events.add(event);
+        }
+    }
+
+    public void addBattleReportId(String battleReportId) {
+        if (battleReportId != null && !battleReportId.trim().isEmpty()) {
+            battleReportIds.add(battleReportId);
         }
     }
 
@@ -33,6 +40,14 @@ public final class TurnResolutionReport {
 
     public List<TurnEvent> getEvents() {
         return Collections.unmodifiableList(events);
+    }
+
+    public List<String> getBattleReportIds() {
+        return Collections.unmodifiableList(battleReportIds);
+    }
+
+    public boolean hasBattles() {
+        return !battleReportIds.isEmpty();
     }
 
     public boolean isEmpty() {

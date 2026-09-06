@@ -10,9 +10,13 @@ import idv.kuan.studio.libgdx.simpleui.context.provider.ApplicationContextConfig
 import idv.kuan.studio.libgdx.simpleui.resource.FontChars;
 import idv.kuan.studio.libgdx.simpleui.resource.ResourceManager;
 import idv.kuan.studio.libgdx.simpleui.validation.ValidationMode;
-import idv.kuan.studio.sango.ui.LobbyScreen;
+import idv.kuan.studio.sango.ui.BattleReportScreen;
 import idv.kuan.studio.sango.ui.CityScreen;
+import idv.kuan.studio.sango.ui.LobbyScreen;
+import idv.kuan.studio.sango.ui.MonthReportScreen;
 import idv.kuan.studio.sango.ui.NewGameScreen;
+import idv.kuan.studio.sango.ui.SaveLoadScreen;
+import idv.kuan.studio.sango.ui.SettingsScreen;
 import idv.kuan.studio.sango.ui.StrategicMapScreen;
 import idv.kuan.studio.sango.ui.id.ScreenId;
 
@@ -55,6 +59,10 @@ public final class SangoAppContextConfigProvider implements ApplicationContextCo
             .registerScreen(ScreenId.NEW_GAME, NewGameScreen::new)
             .registerScreen(ScreenId.STRATEGIC_MAP, StrategicMapScreen::new)
             .registerScreen(ScreenId.CITY, CityScreen::new)
+            .registerScreen(ScreenId.MONTH_REPORT, MonthReportScreen::new)
+            .registerScreen(ScreenId.BATTLE_REPORT, BattleReportScreen::new)
+            .registerScreen(ScreenId.SAVE_LOAD, SaveLoadScreen::new)
+            .registerScreen(ScreenId.SETTINGS, SettingsScreen::new)
             .skipToValidation()
             .setVolidationMode(resolveValidationMode())
             .build();

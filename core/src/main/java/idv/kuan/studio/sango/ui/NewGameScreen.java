@@ -1,6 +1,7 @@
 package idv.kuan.studio.sango.ui;
 
 import java.text.NumberFormat;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -21,6 +22,9 @@ import idv.kuan.studio.libgdx.simpleui.Sui;
 import idv.kuan.studio.libgdx.simpleui.SuiScreen;
 import idv.kuan.studio.libgdx.simpleui.builder.BuiltUI;
 import idv.kuan.studio.sango.application.request.NewGameRequest;
+import idv.kuan.studio.sango.audio.MusicTrack;
+import idv.kuan.studio.sango.audio.SoundEffect;
+import idv.kuan.studio.sango.data.SangoPreferences;
 import idv.kuan.studio.sango.domain.definition.CityDefinition;
 import idv.kuan.studio.sango.domain.definition.FactionDefinition;
 import idv.kuan.studio.sango.domain.definition.ScenarioDefinition;
@@ -32,7 +36,7 @@ import idv.kuan.studio.sango.ui.support.ScreenBackground;
 import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
 
 /**
- * 選擇劇本勢力並建立真正 GameState 的新局畫面。
+ * 選擇劇本、勢力與存檔槽，建立新的 GameState。
  */
 public final class NewGameScreen extends SuiScreen {
     private static final String BACKGROUND_PATH = "picture/lobby/sango_lobby_background.png";
@@ -40,6 +44,11 @@ public final class NewGameScreen extends SuiScreen {
         "faction_1_button",
         "faction_2_button",
         "faction_3_button"
+    };
+    private static final String[] SLOT_BUTTON_IDS = {
+        "new_game_slot_1_button",
+        "new_game_slot_2_button",
+        "new_game_slot_3_button"
     };
     private static final Color STATUS_NORMAL_COLOR = new Color(0.77f, 0.70f, 0.59f, 1f);
     private static final Color STATUS_ERROR_COLOR = new Color(0.95f, 0.43f, 0.30f, 1f);
@@ -49,8 +58,9 @@ public final class NewGameScreen extends SuiScreen {
 
     private Actor overwriteMask;
     private ScenarioDefinition scenarioDefinition;
-    private List<FactionDefinition> factionDefinitions = java.util.Collections.emptyList();
+    private List<FactionDefinition> factionDefinitions = Collections.emptyList();
     private String selectedFactionId;
+    private int selectedSaveSlot = 1;
 
     @Override
     protected BuiltUI buildUI(UIFactory uiFactory) {
@@ -77,7 +87,10 @@ public final class NewGameScreen extends SuiScreen {
             return;
         }
         closeOverwriteMask();
+        SangoServices.audio().playMusic(MusicTrack.LOBBY);
+        selectedSaveSlot = chooseDefaultSlot();
         loadDefinitionsAndSelectDefault();
+        refreshSlotButtons();
     }
 
     @Override
@@ -86,7 +99,11 @@ public final class NewGameScreen extends SuiScreen {
             @Override
             public boolean keyDown(int keycode) {
                 if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                    handleBackAction();
+                    if (overwriteMask != null && overwriteMask.isVisible()) {
+                        closeOverwriteMask();
+                    } else {
+                        returnToLobby();
+                    }
                     return true;
                 }
                 return false;
@@ -119,6 +136,9 @@ public final class NewGameScreen extends SuiScreen {
         for (String factionButtonId : FACTION_BUTTON_IDS) {
             SangoUiStyles.applySecondaryButton(button(factionButtonId));
         }
+        for (String slotButtonId : SLOT_BUTTON_IDS) {
+            SangoUiStyles.applySecondaryButton(button(slotButtonId));
+        }
         SangoUiStyles.applySecondaryButton(button("new_game_back_button"));
         SangoUiStyles.applyPrimaryButton(button("start_game_button"));
         SangoUiStyles.applySecondaryButton(button("overwrite_cancel_button"));
@@ -129,6 +149,9 @@ public final class NewGameScreen extends SuiScreen {
         ui.onClick("faction_1_button", () -> selectFactionByIndex(0));
         ui.onClick("faction_2_button", () -> selectFactionByIndex(1));
         ui.onClick("faction_3_button", () -> selectFactionByIndex(2));
+        ui.onClick("new_game_slot_1_button", () -> selectSaveSlot(1));
+        ui.onClick("new_game_slot_2_button", () -> selectSaveSlot(2));
+        ui.onClick("new_game_slot_3_button", () -> selectSaveSlot(3));
         ui.onClick("new_game_back_button", this::returnToLobby);
         ui.onClick("start_game_button", this::requestStartGame);
         ui.onClick("overwrite_cancel_button", this::closeOverwriteMask);
@@ -139,6 +162,15 @@ public final class NewGameScreen extends SuiScreen {
         Actor main = ui.getActor("main");
         main.getColor().a = 0f;
         main.addAction(Actions.fadeIn(0.32f));
+    }
+
+    private int chooseDefaultSlot() {
+        for (int slotNumber = 1; slotNumber <= SangoServices.SAVE_SLOT_COUNT; slotNumber++) {
+            if (SangoServices.saveGames().inspect(slotNumber).getState() == SaveSlotState.EMPTY) {
+                return slotNumber;
+            }
+        }
+        return SangoPreferences.getLastUsedSaveSlot();
     }
 
     private void loadDefinitionsAndSelectDefault() {
@@ -161,7 +193,7 @@ public final class NewGameScreen extends SuiScreen {
             }
             selectFactionByIndex(0);
             setStatus(
-                text("new_game_status_ready", "選擇勢力後即可建立新局。"),
+                text("new_game_status_ready", "選擇勢力與存檔槽後即可建立新局。"),
                 STATUS_NORMAL_COLOR
             );
         } catch (RuntimeException exception) {
@@ -169,10 +201,7 @@ public final class NewGameScreen extends SuiScreen {
             selectedFactionId = null;
             setButtonEnabled(button("start_game_button"), false);
             setStatus(
-                text(
-                    "new_game_status_definition_error",
-                    "無法載入劇本資料，請檢查 assets/data。"
-                ),
+                text("new_game_status_definition_error", "無法載入劇本資料，請檢查 assets/data。"),
                 STATUS_ERROR_COLOR
             );
         }
@@ -196,8 +225,38 @@ public final class NewGameScreen extends SuiScreen {
             return;
         }
         selectedFactionId = factionDefinitions.get(factionIndex).id;
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
         refreshFactionSelection();
         setButtonEnabled(button("start_game_button"), true);
+    }
+
+    private void selectSaveSlot(int slotNumber) {
+        selectedSaveSlot = slotNumber;
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
+        refreshSlotButtons();
+    }
+
+    private void refreshSlotButtons() {
+        for (int slotNumber = 1; slotNumber <= SangoServices.SAVE_SLOT_COUNT; slotNumber++) {
+            TextButton slotButton = button(SLOT_BUTTON_IDS[slotNumber - 1]);
+            SaveSlotState slotState = SangoServices.saveGames().inspect(slotNumber).getState();
+            String stateText = switch (slotState) {
+                case EMPTY -> text("new_game_slot_empty", "空白");
+                case AVAILABLE -> text("new_game_slot_occupied", "已有存檔");
+                case CORRUPT -> text("new_game_slot_corrupt", "損壞資料");
+            };
+            slotButton.setText(
+                text("new_game_slot_format", "槽位 {0}｜{1}", slotNumber, stateText)
+            );
+            if (slotNumber == selectedSaveSlot) {
+                SangoUiStyles.applySelectedButton(slotButton);
+            } else {
+                SangoUiStyles.applySecondaryButton(slotButton);
+            }
+        }
+        label("selected_slot_label").setText(
+            text("new_game_selected_slot_format", "新局將保存至槽位 {0}", selectedSaveSlot)
+        );
     }
 
     private void refreshFactionSelection() {
@@ -218,7 +277,6 @@ public final class NewGameScreen extends SuiScreen {
         CityDefinition cityDefinition = SangoServices.definitions().requireCity(
             factionDefinition.capitalCityId
         );
-
         label("scenario_name_label").setText(
             localized(scenarioDefinition.nameKey, scenarioDefinition.id)
         );
@@ -257,13 +315,19 @@ public final class NewGameScreen extends SuiScreen {
             );
             return;
         }
-
         SaveSlotState saveSlotState = SangoServices.saveGames()
-            .inspect(SangoServices.DEFAULT_SAVE_SLOT)
+            .inspect(selectedSaveSlot)
             .getState();
         if (saveSlotState == SaveSlotState.EMPTY) {
             createNewGame();
         } else {
+            label("overwrite_description_label").setText(
+                text(
+                    "overwrite_description_format",
+                    "存檔槽 {0} 已有資料。確定建立備份並以新局覆寫？",
+                    selectedSaveSlot
+                )
+            );
             openOverwriteMask();
         }
     }
@@ -276,20 +340,21 @@ public final class NewGameScreen extends SuiScreen {
                 selectedFactionId
             );
             GameState gameState = SangoServices.newGameCommand().execute(
-                SangoServices.DEFAULT_SAVE_SLOT,
+                selectedSaveSlot,
                 request
             );
-            SangoServices.session().setCurrentState(gameState);
+            SangoServices.session().clear();
+            SangoServices.session().setCurrentState(selectedSaveSlot, gameState);
+            SangoPreferences.setLastUsedSaveSlot(selectedSaveSlot);
+            SangoServices.audio().playSound(SoundEffect.CONFIRM);
             Sui.screens.set(ScreenId.STRATEGIC_MAP);
         } catch (RuntimeException exception) {
             Gdx.app.error("NewGame", "建立新局失敗。", exception);
             setStatus(
-                text(
-                    "new_game_status_create_failed",
-                    "建立新局失敗；若已有舊存檔，可回 Lobby 再嘗試繼續。"
-                ),
+                text("new_game_status_create_failed", "建立新局失敗；原存檔不會被不完整資料取代。"),
                 STATUS_ERROR_COLOR
             );
+            SangoServices.audio().playSound(SoundEffect.COMMAND_ERROR);
         }
     }
 
@@ -302,15 +367,8 @@ public final class NewGameScreen extends SuiScreen {
         throw new IllegalStateException("找不到目前選取的勢力：" + selectedFactionId);
     }
 
-    private void handleBackAction() {
-        if (overwriteMask != null && overwriteMask.isVisible()) {
-            closeOverwriteMask();
-            return;
-        }
-        returnToLobby();
-    }
-
     private void returnToLobby() {
+        SangoServices.audio().playSound(SoundEffect.CANCEL);
         Sui.screens.set(ScreenId.LOBBY);
     }
 
@@ -319,6 +377,7 @@ public final class NewGameScreen extends SuiScreen {
         overwriteMask.getColor().a = 0f;
         overwriteMask.toFront();
         overwriteMask.addAction(Actions.fadeIn(0.16f));
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
     }
 
     private void closeOverwriteMask() {

@@ -5,7 +5,7 @@ package idv.kuan.studio.sango.domain.rule;
  */
 public enum StrategicActionFailureReason {
     NONE,
-    CAMPAIGN_FINISHED,
+    PLAYER_ELIMINATED,
     NO_ACTION_POINTS,
     ORIGIN_NOT_OWNED,
     TARGET_ALREADY_OWNED,
