@@ -11,8 +11,26 @@ public final class ScenarioDefinition {
     public int startMonth;
     public int initialTurn;
     public int actionPointsPerTurn;
+    public String mapId;
     public String[] factionIds;
+    public String opponentFactionId;
+    public String neutralFactionId;
+    public int turnLimitMonths;
+    public int enemyAttackDelayMonths;
+    public CampaignStartDefinition[] playerStarts;
 
     public ScenarioDefinition() {
+    }
+
+    public CampaignStartDefinition requirePlayerStart(String playerFactionId) {
+        if (playerStarts != null) {
+            for (CampaignStartDefinition playerStartDefinition : playerStarts) {
+                if (playerStartDefinition != null
+                    && playerFactionId.equals(playerStartDefinition.playerFactionId)) {
+                    return playerStartDefinition;
+                }
+            }
+        }
+        throw new IllegalArgumentException("劇本缺少玩家起始設定：" + playerFactionId);
     }
 }

@@ -1,34 +1,30 @@
 package idv.kuan.studio.sango.application.command;
 
+import idv.kuan.studio.sango.application.result.TurnResolutionResult;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
+import idv.kuan.studio.sango.domain.service.TurnResolutionService;
 import idv.kuan.studio.sango.repository.SaveGameRepository;
 
 /**
- * 推進一個月份並恢復行動力。第一版尚未加入 AI 或被動資源結算。
+ * 完成某月份結算，且只有保存成功才回傳新狀態與報告。
  */
 public final class EndTurnCommand {
     private final SaveGameRepository saveGameRepository;
+    private final TurnResolutionService turnResolutionService;
 
-    public EndTurnCommand(SaveGameRepository saveGameRepository) {
+    public EndTurnCommand(
+        SaveGameRepository saveGameRepository,
+        TurnResolutionService turnResolutionService
+    ) {
         this.saveGameRepository = saveGameRepository;
+        this.turnResolutionService = turnResolutionService;
     }
 
-    public GameState execute(int slotNumber, GameState currentState) {
+    public TurnResolutionResult execute(int slotNumber, GameState currentState) {
         GameStateValidator.validate(currentState);
-
-        GameState nextState = currentState.copy();
-        nextState.currentTurn += 1;
-        nextState.currentMonth += 1;
-        if (nextState.currentMonth > 12) {
-            nextState.currentMonth = 1;
-            nextState.currentYear += 1;
-        }
-        nextState.actionPointsRemaining = nextState.actionPointsPerTurn;
-        nextState.lastActionCode = "END_TURN";
-
-        GameStateValidator.validate(nextState);
-        saveGameRepository.save(slotNumber, nextState);
-        return nextState;
+        TurnResolutionResult resolutionResult = turnResolutionService.resolve(currentState);
+        saveGameRepository.save(slotNumber, resolutionResult.getGameState());
+        return resolutionResult;
     }
 }

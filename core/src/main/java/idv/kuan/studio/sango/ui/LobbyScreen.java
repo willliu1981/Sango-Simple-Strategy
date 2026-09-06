@@ -149,7 +149,7 @@ public final class LobbyScreen extends SuiScreen {
                 SangoServices.DEFAULT_SAVE_SLOT
             );
             SangoServices.session().setCurrentState(gameState);
-            Sui.screens.set(ScreenId.CITY);
+            Sui.screens.set(ScreenId.STRATEGIC_MAP);
         } catch (SaveGameException | IllegalArgumentException exception) {
             Gdx.app.error("Lobby", "繼續遊戲時無法載入存檔。", exception);
             SangoServices.session().clear();

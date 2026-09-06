@@ -7,7 +7,8 @@
       "summaryKey": "faction_cao_cao_summary",
       "capitalCityId": "chenliu",
       "initialGold": 1200,
-      "initialFood": 2200
+      "initialFood": 2200,
+      "playable": true
     },
     {
       "id": "liu_bei",
@@ -16,7 +17,8 @@
       "summaryKey": "faction_liu_bei_summary",
       "capitalCityId": "pingyuan",
       "initialGold": 900,
-      "initialFood": 2100
+      "initialFood": 2100,
+      "playable": true
     },
     {
       "id": "sun_ce",
@@ -25,7 +27,28 @@
       "summaryKey": "faction_sun_ce_summary",
       "capitalCityId": "wu_commandery",
       "initialGold": 1100,
-      "initialFood": 2000
+      "initialFood": 2000,
+      "playable": true
+    },
+    {
+      "id": "yellow_turban",
+      "nameKey": "faction_yellow_turban",
+      "rulerNameKey": "ruler_yellow_turban",
+      "summaryKey": "faction_yellow_turban_summary",
+      "capitalCityId": "runan",
+      "initialGold": 700,
+      "initialFood": 1800,
+      "playable": false
+    },
+    {
+      "id": "neutral",
+      "nameKey": "faction_neutral",
+      "rulerNameKey": "ruler_neutral",
+      "summaryKey": "faction_neutral_summary",
+      "capitalCityId": "guangling",
+      "initialGold": 0,
+      "initialFood": 0,
+      "playable": false
     }
   ]
 }

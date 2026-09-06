@@ -1,24 +1,64 @@
 {
   "cities": [
     {
-      "id": "chenliu",
-      "nameKey": "city_chenliu",
-      "initialPopulation": 62000,
-      "initialAgriculture": 40,
-      "initialCommerce": 42,
-      "initialTroops": 1200,
-      "initialPublicOrder": 58,
-      "initialTraining": 35
-    },
-    {
       "id": "pingyuan",
       "nameKey": "city_pingyuan",
       "initialPopulation": 54000,
       "initialAgriculture": 46,
       "initialCommerce": 32,
+      "initialWaterControl": 42,
+      "initialDefense": 35,
       "initialTroops": 1000,
       "initialPublicOrder": 66,
       "initialTraining": 32
+    },
+    {
+      "id": "ye",
+      "nameKey": "city_ye",
+      "initialPopulation": 70000,
+      "initialAgriculture": 44,
+      "initialCommerce": 45,
+      "initialWaterControl": 40,
+      "initialDefense": 35,
+      "initialTroops": 950,
+      "initialPublicOrder": 55,
+      "initialTraining": 30
+    },
+    {
+      "id": "chenliu",
+      "nameKey": "city_chenliu",
+      "initialPopulation": 62000,
+      "initialAgriculture": 40,
+      "initialCommerce": 42,
+      "initialWaterControl": 35,
+      "initialDefense": 32,
+      "initialTroops": 1200,
+      "initialPublicOrder": 58,
+      "initialTraining": 35
+    },
+    {
+      "id": "runan",
+      "nameKey": "city_runan",
+      "initialPopulation": 58000,
+      "initialAgriculture": 50,
+      "initialCommerce": 30,
+      "initialWaterControl": 28,
+      "initialDefense": 30,
+      "initialTroops": 950,
+      "initialPublicOrder": 52,
+      "initialTraining": 30
+    },
+    {
+      "id": "guangling",
+      "nameKey": "city_guangling",
+      "initialPopulation": 60000,
+      "initialAgriculture": 42,
+      "initialCommerce": 44,
+      "initialWaterControl": 38,
+      "initialDefense": 34,
+      "initialTroops": 950,
+      "initialPublicOrder": 57,
+      "initialTraining": 31
     },
     {
       "id": "wu_commandery",
@@ -26,6 +66,8 @@
       "initialPopulation": 68000,
       "initialAgriculture": 38,
       "initialCommerce": 50,
+      "initialWaterControl": 50,
+      "initialDefense": 38,
       "initialTroops": 1100,
       "initialPublicOrder": 60,
       "initialTraining": 40

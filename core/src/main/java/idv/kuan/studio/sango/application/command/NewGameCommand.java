@@ -4,9 +4,14 @@ import java.util.Arrays;
 
 import idv.kuan.studio.sango.SangoVersion;
 import idv.kuan.studio.sango.application.request.NewGameRequest;
+import idv.kuan.studio.sango.domain.definition.CampaignStartDefinition;
 import idv.kuan.studio.sango.domain.definition.CityDefinition;
 import idv.kuan.studio.sango.domain.definition.FactionDefinition;
+import idv.kuan.studio.sango.domain.definition.MapCityNodeDefinition;
 import idv.kuan.studio.sango.domain.definition.ScenarioDefinition;
+import idv.kuan.studio.sango.domain.definition.StrategicMapDefinition;
+import idv.kuan.studio.sango.domain.model.ArmyState;
+import idv.kuan.studio.sango.domain.model.CampaignStatus;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
@@ -15,7 +20,7 @@ import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 import idv.kuan.studio.sango.repository.SaveGameRepository;
 
 /**
- * 依 Definition 建立第一份 GameState，驗證後再保存。
+ * 依 Definition 建立包含六城地圖、玩家、敵軍與中立勢力的 GameState。
  */
 public final class NewGameCommand {
     private final GameDefinitionRepository definitionRepository;
@@ -43,17 +48,29 @@ public final class NewGameCommand {
             );
         }
 
-        FactionDefinition factionDefinition = definitionRepository.requireFaction(
+        FactionDefinition playerFactionDefinition = definitionRepository.requireFaction(
             request.getPlayerFactionId()
         );
-        CityDefinition cityDefinition = definitionRepository.requireCity(
-            factionDefinition.capitalCityId
+        FactionDefinition opponentFactionDefinition = definitionRepository.requireFaction(
+            scenarioDefinition.opponentFactionId
+        );
+        FactionDefinition neutralFactionDefinition = definitionRepository.requireFaction(
+            scenarioDefinition.neutralFactionId
+        );
+        CampaignStartDefinition campaignStartDefinition = scenarioDefinition.requirePlayerStart(
+            request.getPlayerFactionId()
+        );
+        StrategicMapDefinition mapDefinition = definitionRepository.requireMap(
+            scenarioDefinition.mapId
         );
 
         GameState gameState = createGameState(
             scenarioDefinition,
-            factionDefinition,
-            cityDefinition
+            mapDefinition,
+            campaignStartDefinition,
+            playerFactionDefinition,
+            opponentFactionDefinition,
+            neutralFactionDefinition
         );
         GameStateValidator.validate(gameState);
         saveGameRepository.save(slotNumber, gameState);
@@ -62,37 +79,110 @@ public final class NewGameCommand {
 
     private GameState createGameState(
         ScenarioDefinition scenarioDefinition,
-        FactionDefinition factionDefinition,
-        CityDefinition cityDefinition
+        StrategicMapDefinition mapDefinition,
+        CampaignStartDefinition campaignStartDefinition,
+        FactionDefinition playerFactionDefinition,
+        FactionDefinition opponentFactionDefinition,
+        FactionDefinition neutralFactionDefinition
     ) {
-        FactionState factionState = new FactionState();
-        factionState.factionId = factionDefinition.id;
-        factionState.capitalCityId = factionDefinition.capitalCityId;
-        factionState.gold = factionDefinition.initialGold;
-        factionState.food = factionDefinition.initialFood;
+        CityState[] cityStates = new CityState[mapDefinition.nodes.length];
+        String neutralCapitalCityId = null;
+        for (int i = 0; i < mapDefinition.nodes.length; i++) {
+            MapCityNodeDefinition nodeDefinition = mapDefinition.nodes[i];
+            CityDefinition cityDefinition = definitionRepository.requireCity(nodeDefinition.cityId);
+            String ownerFactionId;
+            if (cityDefinition.id.equals(campaignStartDefinition.startCityId)) {
+                ownerFactionId = playerFactionDefinition.id;
+            } else if (cityDefinition.id.equals(campaignStartDefinition.targetCityId)) {
+                ownerFactionId = opponentFactionDefinition.id;
+            } else {
+                ownerFactionId = neutralFactionDefinition.id;
+                if (neutralCapitalCityId == null) {
+                    neutralCapitalCityId = cityDefinition.id;
+                }
+            }
+            cityStates[i] = createCityState(cityDefinition, ownerFactionId);
+        }
+        if (neutralCapitalCityId == null) {
+            throw new IllegalStateException("劇本至少需要一座中立城池。");
+        }
 
-        CityState cityState = new CityState();
-        cityState.cityId = cityDefinition.id;
-        cityState.ownerFactionId = factionDefinition.id;
-        cityState.population = cityDefinition.initialPopulation;
-        cityState.agriculture = cityDefinition.initialAgriculture;
-        cityState.commerce = cityDefinition.initialCommerce;
-        cityState.troops = cityDefinition.initialTroops;
-        cityState.publicOrder = cityDefinition.initialPublicOrder;
-        cityState.training = cityDefinition.initialTraining;
+        FactionState playerFactionState = createFactionState(
+            playerFactionDefinition,
+            campaignStartDefinition.startCityId,
+            true
+        );
+        FactionState opponentFactionState = createFactionState(
+            opponentFactionDefinition,
+            campaignStartDefinition.targetCityId,
+            true
+        );
+        FactionState neutralFactionState = createFactionState(
+            neutralFactionDefinition,
+            neutralCapitalCityId,
+            true
+        );
 
         GameState gameState = new GameState();
         gameState.schemaVersion = SangoVersion.GAME_STATE_SCHEMA_VERSION;
         gameState.scenarioId = scenarioDefinition.id;
-        gameState.playerFactionId = factionDefinition.id;
+        gameState.mapId = scenarioDefinition.mapId;
+        gameState.playerFactionId = playerFactionDefinition.id;
+        gameState.opponentFactionId = opponentFactionDefinition.id;
+        gameState.neutralFactionId = neutralFactionDefinition.id;
+        gameState.victoryTargetCityId = campaignStartDefinition.targetCityId;
+        gameState.campaignStatus = CampaignStatus.IN_PROGRESS;
         gameState.currentTurn = scenarioDefinition.initialTurn;
         gameState.currentYear = scenarioDefinition.startYear;
         gameState.currentMonth = scenarioDefinition.startMonth;
+        gameState.elapsedMonths = 0;
+        gameState.turnLimitMonths = scenarioDefinition.turnLimitMonths;
         gameState.actionPointsPerTurn = scenarioDefinition.actionPointsPerTurn;
         gameState.actionPointsRemaining = scenarioDefinition.actionPointsPerTurn;
+        gameState.enemyAttackCountdown = scenarioDefinition.enemyAttackDelayMonths;
+        gameState.nextArmySequence = 1;
         gameState.lastActionCode = "NEW_GAME";
-        gameState.factionStates = new FactionState[] { factionState };
-        gameState.cityStates = new CityState[] { cityState };
+        gameState.factionStates = new FactionState[] {
+            playerFactionState,
+            opponentFactionState,
+            neutralFactionState
+        };
+        gameState.cityStates = cityStates;
+        gameState.armyStates = new ArmyState[0];
         return gameState;
+    }
+
+    private FactionState createFactionState(
+        FactionDefinition factionDefinition,
+        String capitalCityId,
+        boolean active
+    ) {
+        FactionState factionState = new FactionState();
+        factionState.factionId = factionDefinition.id;
+        factionState.capitalCityId = capitalCityId;
+        factionState.gold = factionDefinition.initialGold;
+        factionState.food = factionDefinition.initialFood;
+        factionState.active = active;
+        return factionState;
+    }
+
+    private CityState createCityState(
+        CityDefinition cityDefinition,
+        String ownerFactionId
+    ) {
+        CityState cityState = new CityState();
+        cityState.cityId = cityDefinition.id;
+        cityState.ownerFactionId = ownerFactionId;
+        cityState.population = cityDefinition.initialPopulation;
+        cityState.agriculture = cityDefinition.initialAgriculture;
+        cityState.commerce = cityDefinition.initialCommerce;
+        cityState.waterControl = cityDefinition.initialWaterControl;
+        cityState.defense = cityDefinition.initialDefense;
+        cityState.troops = cityDefinition.initialTroops;
+        cityState.publicOrder = cityDefinition.initialPublicOrder;
+        cityState.training = cityDefinition.initialTraining;
+        cityState.harvestModifierPercent = 100;
+        cityState.scoutedUntilTurn = 0;
+        return cityState;
     }
 }

@@ -9,6 +9,8 @@ public final class CityDefinition {
     public int initialPopulation;
     public int initialAgriculture;
     public int initialCommerce;
+    public int initialWaterControl;
+    public int initialDefense;
     public int initialTroops;
     public int initialPublicOrder;
     public int initialTraining;

@@ -8,10 +8,32 @@
       "startMonth": 1,
       "initialTurn": 1,
       "actionPointsPerTurn": 3,
+      "mapId": "prototype_central_region",
       "factionIds": [
         "cao_cao",
         "liu_bei",
         "sun_ce"
+      ],
+      "opponentFactionId": "yellow_turban",
+      "neutralFactionId": "neutral",
+      "turnLimitMonths": 12,
+      "enemyAttackDelayMonths": 4,
+      "playerStarts": [
+        {
+          "playerFactionId": "cao_cao",
+          "startCityId": "chenliu",
+          "targetCityId": "runan"
+        },
+        {
+          "playerFactionId": "liu_bei",
+          "startCityId": "pingyuan",
+          "targetCityId": "ye"
+        },
+        {
+          "playerFactionId": "sun_ce",
+          "startCityId": "wu_commandery",
+          "targetCityId": "guangling"
+        }
       ]
     }
   ]

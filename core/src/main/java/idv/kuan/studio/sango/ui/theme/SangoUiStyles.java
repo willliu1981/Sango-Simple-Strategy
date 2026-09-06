@@ -1,6 +1,7 @@
 package idv.kuan.studio.sango.ui.theme;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
@@ -24,6 +25,11 @@ public final class SangoUiStyles {
     private static final Color FONT_NORMAL = new Color(0.95f, 0.88f, 0.72f, 1f);
     private static final Color FONT_OVER = new Color(1f, 0.95f, 0.80f, 1f);
     private static final Color FONT_DISABLED = new Color(0.45f, 0.43f, 0.39f, 1f);
+    private static final Color MAP_PLAYER = new Color(0.46f, 0.34f, 0.12f, 0.98f);
+    private static final Color MAP_ENEMY = new Color(0.48f, 0.10f, 0.07f, 0.98f);
+    private static final Color MAP_NEUTRAL = new Color(0.16f, 0.16f, 0.15f, 0.98f);
+    private static final Color MAP_SELECTED = new Color(0.78f, 0.45f, 0.10f, 1f);
+    private static final Color MAP_LINE = new Color(0.48f, 0.40f, 0.28f, 0.80f);
 
     private SangoUiStyles() {
     }
@@ -46,6 +52,41 @@ public final class SangoUiStyles {
 
     public static void applyDangerButton(TextButton button) {
         apply(button, DANGER_UP, DANGER_OVER, DANGER_DOWN);
+    }
+
+    public static TextButton.TextButtonStyle createMapNodeStyle(
+        BitmapFont bitmapFont,
+        MapNodeTone nodeTone,
+        boolean selected
+    ) {
+        if (bitmapFont == null || nodeTone == null) {
+            throw new IllegalArgumentException("bitmapFont 與 nodeTone 不可為 null。");
+        }
+        Skin skin = Sui.resources.manager().getSkin();
+        Color baseColor;
+        if (selected) {
+            baseColor = MAP_SELECTED;
+        } else if (nodeTone == MapNodeTone.PLAYER) {
+            baseColor = MAP_PLAYER;
+        } else if (nodeTone == MapNodeTone.ENEMY) {
+            baseColor = MAP_ENEMY;
+        } else {
+            baseColor = MAP_NEUTRAL;
+        }
+
+        TextButton.TextButtonStyle style = new TextButton.TextButtonStyle();
+        style.font = bitmapFont;
+        style.up = drawable(skin, baseColor);
+        style.over = drawable(skin, baseColor.cpy().mul(1.18f));
+        style.down = drawable(skin, baseColor.cpy().mul(0.78f));
+        style.fontColor = FONT_NORMAL.cpy();
+        style.overFontColor = FONT_OVER.cpy();
+        style.downFontColor = FONT_OVER.cpy();
+        return style;
+    }
+
+    public static Drawable createMapLineDrawable() {
+        return drawable(Sui.resources.manager().getSkin(), MAP_LINE);
     }
 
     private static void apply(

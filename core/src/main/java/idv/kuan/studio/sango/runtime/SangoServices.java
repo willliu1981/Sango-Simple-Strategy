@@ -2,8 +2,11 @@ package idv.kuan.studio.sango.runtime;
 
 import idv.kuan.studio.sango.application.command.EndTurnCommand;
 import idv.kuan.studio.sango.application.command.ExecuteDomesticActionCommand;
+import idv.kuan.studio.sango.application.command.LaunchExpeditionCommand;
 import idv.kuan.studio.sango.application.command.NewGameCommand;
 import idv.kuan.studio.sango.application.command.SaveCurrentGameCommand;
+import idv.kuan.studio.sango.application.command.ScoutCityCommand;
+import idv.kuan.studio.sango.domain.service.TurnResolutionService;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 import idv.kuan.studio.sango.repository.SaveGameRepository;
 import idv.kuan.studio.sango.repository.definition.AssetJsonGameDefinitionRepository;
@@ -23,6 +26,8 @@ public final class SangoServices {
     private static GameSession gameSession;
     private static NewGameCommand newGameCommand;
     private static ExecuteDomesticActionCommand domesticActionCommand;
+    private static ScoutCityCommand scoutCityCommand;
+    private static LaunchExpeditionCommand launchExpeditionCommand;
     private static EndTurnCommand endTurnCommand;
     private static SaveCurrentGameCommand saveCurrentGameCommand;
 
@@ -37,9 +42,17 @@ public final class SangoServices {
         definitionRepository = new AssetJsonGameDefinitionRepository();
         saveGameRepository = new LocalJsonSaveGameRepository();
         gameSession = new GameSession();
+        TurnResolutionService turnResolutionService = new TurnResolutionService(
+            definitionRepository
+        );
         newGameCommand = new NewGameCommand(definitionRepository, saveGameRepository);
         domesticActionCommand = new ExecuteDomesticActionCommand(saveGameRepository);
-        endTurnCommand = new EndTurnCommand(saveGameRepository);
+        scoutCityCommand = new ScoutCityCommand(definitionRepository, saveGameRepository);
+        launchExpeditionCommand = new LaunchExpeditionCommand(
+            definitionRepository,
+            saveGameRepository
+        );
+        endTurnCommand = new EndTurnCommand(saveGameRepository, turnResolutionService);
         saveCurrentGameCommand = new SaveCurrentGameCommand(saveGameRepository);
         initialized = true;
     }
@@ -67,6 +80,16 @@ public final class SangoServices {
     public static ExecuteDomesticActionCommand domesticActionCommand() {
         requireInitialized();
         return domesticActionCommand;
+    }
+
+    public static ScoutCityCommand scoutCityCommand() {
+        requireInitialized();
+        return scoutCityCommand;
+    }
+
+    public static LaunchExpeditionCommand launchExpeditionCommand() {
+        requireInitialized();
+        return launchExpeditionCommand;
     }
 
     public static EndTurnCommand endTurnCommand() {

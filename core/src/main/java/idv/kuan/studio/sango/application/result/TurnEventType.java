@@ -1,0 +1,24 @@
+package idv.kuan.studio.sango.application.result;
+
+/**
+ * 回合結算事件代碼。UI 依語系將事件格式化成人類可讀報告。
+ */
+public enum TurnEventType {
+    MILITARY_UPKEEP,
+    FOOD_SHORTAGE,
+    QUARTERLY_TAX,
+    FLOOD_OCCURRED,
+    FLOOD_AVOIDED,
+    HARVEST,
+    ARMY_ADVANCED,
+    ARMY_REINFORCED,
+    BATTLE_ATTACKER_WON,
+    BATTLE_DEFENDER_WON,
+    CITY_CAPTURED,
+    ENEMY_PREPARING,
+    ENEMY_REINFORCING,
+    ENEMY_MARCHING,
+    CAMPAIGN_VICTORY,
+    CAMPAIGN_DEFEAT_CAPITAL,
+    CAMPAIGN_DEFEAT_TIMEOUT
+}

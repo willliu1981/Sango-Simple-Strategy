@@ -5,8 +5,11 @@ package idv.kuan.studio.sango.domain.rule;
  */
 public enum DomesticActionFailureReason {
     NONE,
+    CAMPAIGN_FINISHED,
+    CITY_NOT_OWNED,
     NO_ACTION_POINTS,
     INSUFFICIENT_GOLD,
     INSUFFICIENT_FOOD,
-    INSUFFICIENT_POPULATION
+    INSUFFICIENT_POPULATION,
+    VALUE_AT_MAXIMUM
 }

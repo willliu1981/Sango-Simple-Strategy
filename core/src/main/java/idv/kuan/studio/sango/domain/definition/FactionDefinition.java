@@ -11,6 +11,7 @@ public final class FactionDefinition {
     public String capitalCityId;
     public int initialGold;
     public int initialFood;
+    public boolean playable;
 
     public FactionDefinition() {
     }

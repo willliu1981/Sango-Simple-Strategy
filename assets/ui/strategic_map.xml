@@ -1,0 +1,121 @@
+<ui xmlns="http://kuan.studio/simpleui">
+    <table id="main" i18n="literal" flags="fillParent" pad="24"
+        backgroundColor="0.008,0.007,0.006,0.76">
+        <table width="1840" height="1010" pad="24" backgroundColor="0.038,0.030,0.025,0.98">
+            <table width="1780" height="96">
+                <label fontKey="title" fontSize="58" width="390" height="82"
+                    align="left" textAlign="left" color="0.94,0.76,0.43,1">${text:map_title}</label>
+                <table width="700" height="90">
+                    <label id="map_scenario_label" fontSize="27" width="680" height="42"
+                        align="left" textAlign="left">${text:map_scenario_placeholder}</label>
+                    <row />
+                    <label id="map_date_label" fontSize="27" width="680" height="42"
+                        align="left" textAlign="left" color="0.72,0.66,0.56,1">${text:map_date_placeholder}</label>
+                </table>
+                <table width="660" height="90">
+                    <label id="map_turn_label" fontSize="28" width="640" height="42"
+                        align="right" textAlign="right">${text:map_turn_placeholder}</label>
+                    <row />
+                    <label id="map_objective_label" fontSize="25" width="640" height="44"
+                        align="right" textAlign="right" color="0.94,0.76,0.38,1">${text:map_objective_placeholder}</label>
+                </table>
+            </table>
+            <row />
+
+            <table width="1780" height="690" padTop="10">
+                <table width="1110" height="680" pad="20" backgroundColor="0.052,0.043,0.036,0.98">
+                    <table width="1060" height="56">
+                        <label id="map_name_label" fontKey="title" fontSize="40" width="760" height="50"
+                            align="left" textAlign="left" color="0.88,0.70,0.39,1">${text:map_name_placeholder}</label>
+                        <label id="map_legend_label" fontSize="23" width="300" height="46"
+                            align="right" textAlign="right" color="0.65,0.60,0.52,1">${text:map_legend}</label>
+                    </table>
+                    <row />
+                    <table width="1060" height="535" pad="12" backgroundColor="0.025,0.026,0.025,0.98">
+                        <group id="map_host" width="1030" height="505" touchChildrenOnly="true" />
+                    </table>
+                    <row />
+                    <label id="map_army_summary_label" fontSize="25" width="1060" height="62"
+                        align="left" textAlign="left" wrap="true" color="0.76,0.69,0.58,1">${text:map_army_none}</label>
+                </table>
+
+                <table width="30"></table>
+
+                <table width="640" height="680" pad="22" backgroundColor="0.060,0.049,0.041,0.98">
+                    <label id="selected_city_name_label" fontKey="title" fontSize="48" width="580" height="60"
+                        color="0.92,0.74,0.40,1">${text:map_selected_city_placeholder}</label>
+                    <row />
+                    <label id="selected_city_owner_label" fontSize="27" width="580" height="38"
+                        align="left" textAlign="left">${text:map_owner_placeholder}</label>
+                    <row />
+                    <label id="selected_city_intel_label" fontSize="25" width="580" height="92"
+                        align="left" textAlign="left" wrap="true" color="0.79,0.73,0.63,1">${text:map_intel_placeholder}</label>
+                    <row />
+                    <label id="selected_city_stats_label" fontSize="25" width="580" height="78"
+                        align="left" textAlign="left" wrap="true" color="0.70,0.78,0.75,1">${text:map_stats_placeholder}</label>
+                    <row />
+                    <label id="selected_city_route_label" fontSize="24" width="580" height="64"
+                        align="left" textAlign="left" wrap="true" color="0.68,0.62,0.54,1">${text:map_route_placeholder}</label>
+                    <row />
+                    <label fontKey="title" fontSize="32" width="580" height="46"
+                        color="0.86,0.68,0.37,1">${text:map_tactic_heading}</label>
+                    <row />
+                    <table width="580" height="70">
+                        <textButton id="tactic_balanced_button" fontSize="25" width="178" height="64">${text:button_tactic_balanced}</textButton>
+                        <textButton id="tactic_assault_button" fontSize="25" width="178" height="64"
+                            padLeft="16">${text:button_tactic_assault}</textButton>
+                        <textButton id="tactic_cautious_button" fontSize="25" width="178" height="64"
+                            padLeft="16">${text:button_tactic_cautious}</textButton>
+                    </table>
+                    <row />
+                    <textButton id="manage_city_button" fontSize="31" width="560" height="72"
+                        padTop="12">${text:button_manage_city}</textButton>
+                    <row />
+                    <table width="560" height="76" padTop="12">
+                        <textButton id="scout_city_button" fontSize="29" width="265" height="70">${text:button_scout_city}</textButton>
+                        <textButton id="launch_expedition_button" fontSize="29" width="279" height="70"
+                            padLeft="16">${text:button_launch_expedition}</textButton>
+                    </table>
+                    <row />
+                    <label id="map_font_probe" fontSize="27" width="1" height="1" visible="false">地圖節點我方敵軍中立目標</label>
+                </table>
+            </table>
+            <row />
+
+            <label id="map_status_label" fontSize="26" width="1780" height="66"
+                align="left" textAlign="left" wrap="true" color="0.79,0.72,0.61,1">${text:map_status_ready}</label>
+            <row />
+            <table width="1780" height="88" padTop="8">
+                <textButton id="map_save_button" fontSize="34" width="300" height="80">${text:button_save}</textButton>
+                <textButton id="map_return_lobby_button" fontSize="34" width="390" height="80"
+                    padLeft="20">${text:button_return_lobby}</textButton>
+                <textButton id="show_last_report_button" fontSize="34" width="360" height="80"
+                    padLeft="20">${text:button_show_last_report}</textButton>
+                <table width="170"></table>
+                <textButton id="end_month_button" fontSize="36" width="500" height="80">${text:button_end_month}</textButton>
+            </table>
+        </table>
+    </table>
+
+    <table id="turn_report_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0,0,0,0.88" flags="fillParent">
+        <table width="1260" height="820" pad="48" backgroundColor="0.050,0.040,0.033,0.995">
+            <label fontKey="title" fontSize="62" width="1120" height="82"
+                color="0.94,0.76,0.43,1">${text:report_heading}</label>
+            <row />
+            <label id="report_period_label" fontSize="30" width="1120" height="52"
+                color="0.75,0.68,0.57,1">${text:report_period_placeholder}</label>
+            <row />
+            <table width="1120" height="520" pad="28" backgroundColor="0.025,0.022,0.020,1">
+                <label id="report_content_label" fontSize="28" width="1040" height="460"
+                    align="left" textAlign="left" wrap="true" color="0.87,0.82,0.72,1">${text:report_empty}</label>
+            </table>
+            <row />
+            <table width="1120" height="88" padTop="24">
+                <textButton id="report_close_button" fontSize="36" width="500" height="82">${text:button_report_close}</textButton>
+                <textButton id="report_lobby_button" fontSize="36" width="500" height="82"
+                    padLeft="40">${text:button_return_lobby}</textButton>
+            </table>
+        </table>
+    </table>
+</ui>

@@ -23,10 +23,12 @@ public final class ExecuteDomesticActionCommand {
     public DomesticActionResult execute(
         int slotNumber,
         GameState currentState,
+        String cityId,
         DomesticActionType actionType
     ) {
         DomesticActionFailureReason failureReason = DomesticActionRules.evaluate(
             currentState,
+            cityId,
             actionType
         );
         if (failureReason != DomesticActionFailureReason.NONE) {
@@ -34,23 +36,25 @@ public final class ExecuteDomesticActionCommand {
         }
 
         GameState nextState = currentState.copy();
-        applyAction(nextState, actionType);
+        applyAction(nextState, cityId, actionType);
         GameStateValidator.validate(nextState);
         saveGameRepository.save(slotNumber, nextState);
         return DomesticActionResult.success(actionType, nextState);
     }
 
-    private void applyAction(GameState gameState, DomesticActionType actionType) {
+    private void applyAction(
+        GameState gameState,
+        String cityId,
+        DomesticActionType actionType
+    ) {
         FactionState factionState = gameState.requirePlayerFactionState();
-        CityState cityState = gameState.requireCapitalCityState();
+        CityState cityState = gameState.requireCityState(cityId);
 
         gameState.actionPointsRemaining -= actionType.getActionPointCost();
         gameState.lastActionCode = actionType.name();
 
         factionState.gold -= actionType.getGoldCost();
         factionState.food -= actionType.getFoodCost();
-        factionState.gold += actionType.getGoldGain();
-        factionState.food += actionType.getFoodGain();
 
         cityState.troops += actionType.getTroopGain();
         cityState.population += actionType.getPopulationDelta();
@@ -59,6 +63,12 @@ public final class ExecuteDomesticActionCommand {
         );
         cityState.commerce = clampToPercentage(
             cityState.commerce + actionType.getCommerceGain()
+        );
+        cityState.waterControl = clampToPercentage(
+            cityState.waterControl + actionType.getWaterControlGain()
+        );
+        cityState.defense = clampToPercentage(
+            cityState.defense + actionType.getDefenseGain()
         );
         cityState.training = clampToPercentage(
             cityState.training + actionType.getTrainingGain()

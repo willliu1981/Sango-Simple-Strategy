@@ -1,66 +1,24 @@
 package idv.kuan.studio.sango.domain.rule;
 
 /**
- * 第一個 Vertical Slice 可執行的四種內政命令與其固定規則。
+ * 內政命令只進行投資或即時軍事整備；農業與商業收益延後結算。
  */
 public enum DomesticActionType {
-    DEVELOP_AGRICULTURE(
-        1,
-        50,
-        0,
-        0,
-        200,
-        0,
-        5,
-        0,
-        0,
-        0
-    ),
-    DEVELOP_COMMERCE(
-        1,
-        0,
-        0,
-        150,
-        0,
-        0,
-        0,
-        5,
-        0,
-        0
-    ),
-    RECRUIT(
-        1,
-        100,
-        100,
-        0,
-        0,
-        200,
-        0,
-        0,
-        0,
-        -200
-    ),
-    TRAIN(
-        1,
-        50,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        5,
-        0
-    );
+    DEVELOP_AGRICULTURE(1, 50, 0, 0, 5, 0, 0, 0, 0, 0),
+    DEVELOP_COMMERCE(1, 50, 0, 0, 0, 5, 0, 0, 0, 0),
+    IMPROVE_WATER_CONTROL(1, 80, 0, 0, 0, 0, 5, 0, 0, 0),
+    RECRUIT(1, 100, 100, 200, 0, 0, 0, 0, 0, -200),
+    TRAIN(1, 50, 0, 0, 0, 0, 0, 0, 5, 0),
+    FORTIFY(1, 100, 0, 0, 0, 0, 0, 5, 0, 0);
 
     private final int actionPointCost;
     private final int goldCost;
     private final int foodCost;
-    private final int goldGain;
-    private final int foodGain;
     private final int troopGain;
     private final int agricultureGain;
     private final int commerceGain;
+    private final int waterControlGain;
+    private final int defenseGain;
     private final int trainingGain;
     private final int populationDelta;
 
@@ -68,22 +26,22 @@ public enum DomesticActionType {
         int actionPointCost,
         int goldCost,
         int foodCost,
-        int goldGain,
-        int foodGain,
         int troopGain,
         int agricultureGain,
         int commerceGain,
+        int waterControlGain,
+        int defenseGain,
         int trainingGain,
         int populationDelta
     ) {
         this.actionPointCost = actionPointCost;
         this.goldCost = goldCost;
         this.foodCost = foodCost;
-        this.goldGain = goldGain;
-        this.foodGain = foodGain;
         this.troopGain = troopGain;
         this.agricultureGain = agricultureGain;
         this.commerceGain = commerceGain;
+        this.waterControlGain = waterControlGain;
+        this.defenseGain = defenseGain;
         this.trainingGain = trainingGain;
         this.populationDelta = populationDelta;
     }
@@ -100,14 +58,6 @@ public enum DomesticActionType {
         return foodCost;
     }
 
-    public int getGoldGain() {
-        return goldGain;
-    }
-
-    public int getFoodGain() {
-        return foodGain;
-    }
-
     public int getTroopGain() {
         return troopGain;
     }
@@ -118,6 +68,14 @@ public enum DomesticActionType {
 
     public int getCommerceGain() {
         return commerceGain;
+    }
+
+    public int getWaterControlGain() {
+        return waterControlGain;
+    }
+
+    public int getDefenseGain() {
+        return defenseGain;
     }
 
     public int getTrainingGain() {

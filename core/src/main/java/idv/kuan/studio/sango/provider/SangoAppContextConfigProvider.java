@@ -13,6 +13,7 @@ import idv.kuan.studio.libgdx.simpleui.validation.ValidationMode;
 import idv.kuan.studio.sango.ui.LobbyScreen;
 import idv.kuan.studio.sango.ui.CityScreen;
 import idv.kuan.studio.sango.ui.NewGameScreen;
+import idv.kuan.studio.sango.ui.StrategicMapScreen;
 import idv.kuan.studio.sango.ui.id.ScreenId;
 
 /**
@@ -52,6 +53,7 @@ public final class SangoAppContextConfigProvider implements ApplicationContextCo
             .setDefaultStage(() -> new Stage(new FitViewport(DESIGN_WIDTH, DESIGN_HEIGHT)))
             .registerScreen(ScreenId.LOBBY, LobbyScreen::new)
             .registerScreen(ScreenId.NEW_GAME, NewGameScreen::new)
+            .registerScreen(ScreenId.STRATEGIC_MAP, StrategicMapScreen::new)
             .registerScreen(ScreenId.CITY, CityScreen::new)
             .skipToValidation()
             .setVolidationMode(resolveValidationMode())

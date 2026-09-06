@@ -1,0 +1,24 @@
+{
+  "maps": [
+    {
+      "id": "prototype_central_region",
+      "nameKey": "map_prototype_central_region",
+      "nodes": [
+        { "cityId": "pingyuan", "x": 0.14, "y": 0.72 },
+        { "cityId": "ye", "x": 0.36, "y": 0.84 },
+        { "cityId": "chenliu", "x": 0.47, "y": 0.55 },
+        { "cityId": "runan", "x": 0.31, "y": 0.24 },
+        { "cityId": "guangling", "x": 0.68, "y": 0.39 },
+        { "cityId": "wu_commandery", "x": 0.84, "y": 0.14 }
+      ],
+      "connections": [
+        { "fromCityId": "pingyuan", "toCityId": "ye", "travelMonths": 1 },
+        { "fromCityId": "ye", "toCityId": "chenliu", "travelMonths": 1 },
+        { "fromCityId": "chenliu", "toCityId": "runan", "travelMonths": 1 },
+        { "fromCityId": "chenliu", "toCityId": "guangling", "travelMonths": 1 },
+        { "fromCityId": "runan", "toCityId": "guangling", "travelMonths": 1 },
+        { "fromCityId": "guangling", "toCityId": "wu_commandery", "travelMonths": 1 }
+      ]
+    }
+  ]
+}

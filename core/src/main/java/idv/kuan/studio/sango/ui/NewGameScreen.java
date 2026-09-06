@@ -280,7 +280,7 @@ public final class NewGameScreen extends SuiScreen {
                 request
             );
             SangoServices.session().setCurrentState(gameState);
-            Sui.screens.set(ScreenId.CITY);
+            Sui.screens.set(ScreenId.STRATEGIC_MAP);
         } catch (RuntimeException exception) {
             Gdx.app.error("NewGame", "建立新局失敗。", exception);
             setStatus(
