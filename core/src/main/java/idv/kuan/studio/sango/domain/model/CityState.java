@@ -14,6 +14,7 @@ public final class CityState {
     public int troops;
     public int publicOrder;
     public int training;
+    public int morale;
     public int harvestModifierPercent;
     public int scoutedUntilTurn;
 
@@ -32,6 +33,7 @@ public final class CityState {
         copiedState.troops = troops;
         copiedState.publicOrder = publicOrder;
         copiedState.training = training;
+        copiedState.morale = morale;
         copiedState.harvestModifierPercent = harvestModifierPercent;
         copiedState.scoutedUntilTurn = scoutedUntilTurn;
         return copiedState;

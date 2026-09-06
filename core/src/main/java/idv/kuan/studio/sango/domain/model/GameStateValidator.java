@@ -178,6 +178,7 @@ public final class GameStateValidator {
         requireNonNegative(cityState.troops, "cityState.troops");
         requireRange(cityState.publicOrder, 0, 100, "cityState.publicOrder");
         requireRange(cityState.training, 0, 100, "cityState.training");
+        requireRange(cityState.morale, 0, 100, "cityState.morale");
         requireRange(
             cityState.harvestModifierPercent,
             0,
@@ -277,15 +278,25 @@ public final class GameStateValidator {
         requireRange(battleReport.attackerTraining, 0, 100, "battleReport.attackerTraining");
         requireRange(battleReport.defenderTraining, 0, 100, "battleReport.defenderTraining");
         requireRange(battleReport.defenderDefense, 0, 100, "battleReport.defenderDefense");
+        requireRange(battleReport.attackerMorale, 0, 100, "battleReport.attackerMorale");
+        requireRange(battleReport.defenderMorale, 0, 100, "battleReport.defenderMorale");
+        if (battleReport.outcome == BattleOutcome.UNOPPOSED_OCCUPATION
+            && (battleReport.defenderTroopsBefore != 0
+                || battleReport.attackerLosses != 0
+                || battleReport.defenderLosses != 0
+                || !battleReport.cityCaptured
+                || !battleReport.attackerFactionId.equals(battleReport.winnerFactionId))) {
+            throw new IllegalArgumentException("無抵抗佔領不可有守軍或戰鬥傷亡，且必須由攻方佔領。");
+        }
         requireNonNegative(battleReport.attackerLosses, "battleReport.attackerLosses");
         requireNonNegative(battleReport.defenderLosses, "battleReport.defenderLosses");
         requireNonNegative(battleReport.attackerSurvivors, "battleReport.attackerSurvivors");
         requireNonNegative(battleReport.defenderSurvivors, "battleReport.defenderSurvivors");
-        if (battleReport.attackerLosses + battleReport.attackerSurvivors
+        if ((long) battleReport.attackerLosses + battleReport.attackerSurvivors
             != battleReport.attackerTroopsBefore) {
             throw new IllegalArgumentException("戰報攻方損失與生還數不等於開戰兵力。");
         }
-        if (battleReport.defenderLosses + battleReport.defenderSurvivors
+        if ((long) battleReport.defenderLosses + battleReport.defenderSurvivors
             != battleReport.defenderTroopsBefore) {
             throw new IllegalArgumentException("戰報守方損失與生還數不等於開戰兵力。");
         }

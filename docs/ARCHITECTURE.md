@@ -1,4 +1,18 @@
-# Sango 0.4.0 Architecture
+# Sango 0.5.0 Architecture
+
+## 0.5.0 新增責任
+
+- `FactionPlacementDefinition`：新劇本的固定初始所有權；不存在時保留舊六城建立流程。
+- `CityState.morale` / `CityDefinition.initialMorale`：可變士氣與固定初值分離。
+- `MilitaryRules`：純 Java 攻守戰力、士氣倍率與部隊品質加權。
+- `BattleResolutionService`：有守軍戰鬥、無抵抗佔領、遷都與滅亡；保存事件快照而非 Definition 物件。
+- `EnemyTurnService`：多勢力前線選擇與實際資源支出，不再只驅動單一黃巾勢力。
+- `GameStateMigrator`：schema 2 → 3 → 4，保留舊地圖與歷史戰報。
+- `MapCameraState`：純 Java 相機數學；`StrategicMapWidget` 處理 Scene2D 手勢與裁切，不編輯 GameState。
+- `MonthReportScreen` 的 ScrollPane 只處理長月報呈現，不搬入 Domain 邏輯。
+
+目前存檔為 GameState schema 4；下方 0.3／0.4 的敘述保留作設計沿革。當前規則以 `RULES_0.5.0.md` 為準。
+
 
 ## 分層與依賴方向
 

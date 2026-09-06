@@ -1,12 +1,17 @@
 package idv.kuan.studio.sango.application.command;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import idv.kuan.studio.sango.SangoVersion;
 import idv.kuan.studio.sango.application.request.NewGameRequest;
 import idv.kuan.studio.sango.domain.definition.CampaignStartDefinition;
 import idv.kuan.studio.sango.domain.definition.CityDefinition;
 import idv.kuan.studio.sango.domain.definition.FactionDefinition;
+import idv.kuan.studio.sango.domain.definition.FactionPlacementDefinition;
 import idv.kuan.studio.sango.domain.definition.MapCityNodeDefinition;
 import idv.kuan.studio.sango.domain.definition.ScenarioDefinition;
 import idv.kuan.studio.sango.domain.definition.StrategicMapDefinition;
@@ -22,7 +27,7 @@ import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 import idv.kuan.studio.sango.repository.SaveGameRepository;
 
 /**
- * 依 Definition 建立包含六城地圖、玩家、敵軍與中立勢力的 GameState。
+ * 依 Definition 建立戰局；全國劇本採固定多勢力配置，舊六城劇本維持原配置。
  */
 public final class NewGameCommand {
     private final GameDefinitionRepository definitionRepository;
@@ -87,6 +92,11 @@ public final class NewGameCommand {
         FactionDefinition opponentFactionDefinition,
         FactionDefinition neutralFactionDefinition
     ) {
+        if (scenarioDefinition.initialFactions != null) {
+            return createFixedPlacementGame(
+                scenarioDefinition, mapDefinition, campaignStartDefinition, playerFactionDefinition
+            );
+        }
         CityState[] cityStates = new CityState[mapDefinition.nodes.length];
         String neutralCapitalCityId = null;
         for (int i = 0; i < mapDefinition.nodes.length; i++) {
@@ -157,6 +167,58 @@ public final class NewGameCommand {
         return gameState;
     }
 
+    private GameState createFixedPlacementGame(
+        ScenarioDefinition scenarioDefinition,
+        StrategicMapDefinition mapDefinition,
+        CampaignStartDefinition playerStart,
+        FactionDefinition playerFaction
+    ) {
+        Map<String, String> ownersByCityId = new LinkedHashMap<>();
+        List<FactionState> factionStates = new ArrayList<>();
+        for (FactionPlacementDefinition placement : scenarioDefinition.initialFactions) {
+            for (String cityId : placement.cityIds) {
+                ownersByCityId.put(cityId, placement.factionId);
+            }
+            factionStates.add(createFactionState(
+                definitionRepository.requireFaction(placement.factionId),
+                placement.capitalCityId,
+                true
+            ));
+        }
+        CityState[] cityStates = new CityState[mapDefinition.nodes.length];
+        for (int i = 0; i < mapDefinition.nodes.length; i++) {
+            CityDefinition cityDefinition = definitionRepository.requireCity(
+                mapDefinition.nodes[i].cityId
+            );
+            cityStates[i] = createCityState(cityDefinition, ownersByCityId.get(cityDefinition.id));
+        }
+        GameState gameState = new GameState();
+        gameState.schemaVersion = SangoVersion.GAME_STATE_SCHEMA_VERSION;
+        gameState.scenarioId = scenarioDefinition.id;
+        gameState.mapId = mapDefinition.id;
+        gameState.playerFactionId = playerFaction.id;
+        gameState.opponentFactionId = scenarioDefinition.opponentFactionId;
+        gameState.neutralFactionId = scenarioDefinition.neutralFactionId;
+        gameState.victoryTargetCityId = playerStart.targetCityId;
+        gameState.scenarioObjectiveStatus = ScenarioObjectiveStatus.IN_PROGRESS;
+        gameState.gameplayStatus = GameplayStatus.ACTIVE;
+        gameState.currentTurn = scenarioDefinition.initialTurn;
+        gameState.currentYear = scenarioDefinition.startYear;
+        gameState.currentMonth = scenarioDefinition.startMonth;
+        gameState.turnLimitMonths = scenarioDefinition.turnLimitMonths;
+        gameState.actionPointsPerTurn = scenarioDefinition.actionPointsPerTurn;
+        gameState.actionPointsRemaining = scenarioDefinition.actionPointsPerTurn;
+        gameState.enemyAttackCountdown = scenarioDefinition.enemyAttackDelayMonths;
+        gameState.nextArmySequence = 1;
+        gameState.nextBattleSequence = 1;
+        gameState.lastActionCode = "NEW_GAME";
+        gameState.factionStates = factionStates.toArray(new FactionState[0]);
+        gameState.cityStates = cityStates;
+        gameState.armyStates = new ArmyState[0];
+        gameState.battleReports = new BattleReport[0];
+        return gameState;
+    }
+
     private FactionState createFactionState(
         FactionDefinition factionDefinition,
         String capitalCityId,
@@ -186,6 +248,7 @@ public final class NewGameCommand {
         cityState.troops = cityDefinition.initialTroops;
         cityState.publicOrder = cityDefinition.initialPublicOrder;
         cityState.training = cityDefinition.initialTraining;
+        cityState.morale = cityDefinition.initialMorale;
         cityState.harvestModifierPercent = 100;
         cityState.scoutedUntilTurn = 0;
         return cityState;

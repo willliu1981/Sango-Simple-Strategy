@@ -9,8 +9,10 @@
                 color="0.75,0.68,0.57,1">${text:report_period_placeholder}</label>
             <row />
             <table width="1180" height="570" pad="34" backgroundColor="0.025,0.022,0.020,1">
-                <label id="month_report_content_label" fontSize="29" width="1090" height="500"
-                    align="left" textAlign="left" wrap="true" color="0.87,0.82,0.72,1">${text:report_empty}</label>
+                <group id="month_report_scroll_host" width="1090" height="500">
+                    <label id="month_report_content_label" fontSize="29" width="1066" height="1"
+                        align="left" textAlign="left" wrap="true" color="0.87,0.82,0.72,1">${text:report_empty}</label>
+                </group>
             </table>
             <row />
             <table width="1180" height="92" padTop="28">

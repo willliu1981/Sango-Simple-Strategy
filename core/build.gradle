@@ -25,7 +25,7 @@ dependencies {
 
 tasks.register('runVerticalSliceSmokeTest', JavaExec) {
   group = 'verification'
-  description = 'Runs the Sango 0.4.0 battle report, save slot, audio asset and free-play smoke test.'
+  description = 'Runs the Sango 0.5.0 battle report, save slot, audio asset and free-play smoke test.'
   dependsOn testClasses
   classpath = sourceSets.test.runtimeClasspath
   mainClass.set('idv.kuan.studio.sango.validation.VerticalSliceSmokeTest')
@@ -34,4 +34,27 @@ tasks.register('runVerticalSliceSmokeTest', JavaExec) {
 
 tasks.named('check') {
   dependsOn runVerticalSliceSmokeTest
+}
+
+
+tasks.register('runNationalCampaignSmokeTest', JavaExec) {
+  group = 'verification'
+  description = '驗證六勢力、42 城、士氣、空城佔領與舊存檔 migration。'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.NationalCampaignSmokeTest')
+  args rootProject.file('assets').absolutePath
+}
+
+tasks.register('runUiResourceSmokeTest', JavaExec) {
+  group = 'verification'
+  description = '驗證 XML、i18n、Actor ID 與不依賴 Graphics Context 的相機數學。'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.UiResourceSmokeTest')
+  args rootProject.file('assets').absolutePath
+}
+
+tasks.named('check') {
+  dependsOn 'runNationalCampaignSmokeTest', 'runUiResourceSmokeTest'
 }

@@ -32,10 +32,6 @@ public final class TurnReportTextFormatter {
 
     private String formatEvent(TurnEvent turnEvent) {
         TurnEventType eventType = turnEvent.getType();
-        boolean playerFactionEvent = SangoServices.session().hasCurrentState()
-            && SangoServices.session().requireCurrentState().playerFactionId
-                .equals(turnEvent.getFactionId());
-
         return switch (eventType) {
             case MILITARY_UPKEEP -> text(
                 "report_event_upkeep",
@@ -88,28 +84,18 @@ public final class TurnReportTextFormatter {
                 optionalCityName(turnEvent.getCityId()),
                 numberFormat.format(turnEvent.getPrimaryValue())
             );
-            case BATTLE_ATTACKER_WON -> playerFactionEvent
-                ? text(
-                    "report_event_player_attack_won",
-                    "我軍攻克 {0}；完整結果已加入戰報。",
-                    optionalCityName(turnEvent.getCityId())
-                )
-                : text(
-                    "report_event_enemy_attack_won",
-                    "敵軍攻下 {0}；完整結果已加入戰報。",
-                    optionalCityName(turnEvent.getCityId())
-                );
-            case BATTLE_DEFENDER_WON -> playerFactionEvent
-                ? text(
-                    "report_event_player_defense_won",
-                    "我軍守住 {0}；完整結果已加入戰報。",
-                    optionalCityName(turnEvent.getCityId())
-                )
-                : text(
-                    "report_event_player_attack_lost",
-                    "我軍進攻 {0} 失敗；完整結果已加入戰報。",
-                    optionalCityName(turnEvent.getCityId())
-                );
+            case BATTLE_ATTACKER_WON -> text(
+                "report_event_attack_winner_named", "", factionName(turnEvent.getFactionId()),
+                optionalCityName(turnEvent.getCityId())
+            );
+            case BATTLE_DEFENDER_WON -> text(
+                "report_event_defense_winner_named", "", factionName(turnEvent.getFactionId()),
+                optionalCityName(turnEvent.getCityId())
+            );
+            case CITY_OCCUPIED_UNOPPOSED -> text(
+                "report_event_unopposed", "", factionName(turnEvent.getFactionId()),
+                optionalCityName(turnEvent.getCityId()), numberFormat.format(turnEvent.getPrimaryValue())
+            );
             case CITY_CAPTURED -> text(
                 "report_event_city_captured",
                 "{0} 的控制權已轉移，現有駐軍 {1}。",
@@ -123,24 +109,17 @@ public final class TurnReportTextFormatter {
                 optionalCityName(turnEvent.getOtherCityId())
             );
             case ENEMY_PREPARING -> text(
-                "report_event_enemy_preparing",
-                "敵軍仍在 {0} 集結，預估 {1} 個月後出征。",
-                optionalCityName(turnEvent.getCityId()),
-                turnEvent.getPrimaryValue()
+                "report_event_preparing_named", "", factionName(turnEvent.getFactionId()),
+                optionalCityName(turnEvent.getCityId()), turnEvent.getPrimaryValue()
             );
             case ENEMY_REINFORCING -> text(
-                "report_event_enemy_reinforcing",
-                "敵軍在 {0} 補充 {1} 兵，出征延後。",
-                optionalCityName(turnEvent.getCityId()),
-                numberFormat.format(turnEvent.getPrimaryValue())
+                "report_event_reinforcing_named", "", factionName(turnEvent.getFactionId()),
+                optionalCityName(turnEvent.getCityId()), numberFormat.format(turnEvent.getPrimaryValue())
             );
             case ENEMY_MARCHING -> text(
-                "report_event_enemy_marching",
-                "敵軍 {0} 兵已由 {1} 向 {2} 出征，預計 {3} 個月抵達。",
-                numberFormat.format(turnEvent.getPrimaryValue()),
-                optionalCityName(turnEvent.getCityId()),
-                optionalCityName(turnEvent.getOtherCityId()),
-                turnEvent.getSecondaryValue()
+                "report_event_marching_named", "", factionName(turnEvent.getFactionId()),
+                numberFormat.format(turnEvent.getPrimaryValue()), optionalCityName(turnEvent.getCityId()),
+                optionalCityName(turnEvent.getOtherCityId()), turnEvent.getSecondaryValue()
             );
             case CAMPAIGN_VICTORY -> text(
                 "report_event_victory",
@@ -162,6 +141,11 @@ public final class TurnReportTextFormatter {
                 "我方已失去全部城池，無法再下達命令；仍可查看局勢或讀取其他存檔。"
             );
         };
+    }
+
+    private String factionName(String factionId) {
+        String nameKey = SangoServices.definitions().requireFaction(factionId).nameKey;
+        return text(nameKey, factionId);
     }
 
     private String optionalCityName(String cityId) {

@@ -3,12 +3,13 @@ package idv.kuan.studio.sango.repository.save;
 import idv.kuan.studio.sango.SangoVersion;
 import idv.kuan.studio.sango.domain.model.BattleReport;
 import idv.kuan.studio.sango.domain.model.CampaignStatus;
+import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 
 /**
- * 將舊版 GameState 升級為目前的存檔格式。
+ * 逐版遷移 2 -> 3 -> 4。僅遷移狀態結構，不替換舊劇本或憑空增加領地。
  */
 @SuppressWarnings("deprecation")
 public final class GameStateMigrator {
@@ -16,52 +17,71 @@ public final class GameStateMigrator {
         if (sourceState == null) {
             throw new IllegalArgumentException("GameState 不可為 null。");
         }
-        if (sourceState.schemaVersion == SangoVersion.GAME_STATE_SCHEMA_VERSION) {
-            normalizeCurrentState(sourceState);
-            return sourceState;
+        GameState migratedState = sourceState.copy();
+        if (migratedState.schemaVersion == 2) {
+            migrateSchemaTwoToThree(migratedState);
         }
-        if (sourceState.schemaVersion == SangoVersion.LEGACY_GAME_STATE_SCHEMA_VERSION) {
-            return migrateSchemaTwoToThree(sourceState);
+        if (migratedState.schemaVersion == 3) {
+            migrateSchemaThreeToFour(migratedState);
         }
-        throw new IllegalArgumentException(
-            "不支援的 GameState schemaVersion：" + sourceState.schemaVersion
-        );
+        if (migratedState.schemaVersion != SangoVersion.GAME_STATE_SCHEMA_VERSION) {
+            throw new IllegalArgumentException(
+                "不支援的 GameState schemaVersion：" + migratedState.schemaVersion
+            );
+        }
+        normalizeCurrentState(migratedState);
+        return migratedState;
     }
 
-    private GameState migrateSchemaTwoToThree(GameState sourceState) {
-        CampaignStatus legacyStatus = sourceState.campaignStatus;
+    private void migrateSchemaTwoToThree(GameState gameState) {
+        CampaignStatus legacyStatus = gameState.campaignStatus;
         if (legacyStatus == null) {
             legacyStatus = CampaignStatus.IN_PROGRESS;
         }
-
-        sourceState.scenarioObjectiveStatus = switch (legacyStatus) {
+        gameState.scenarioObjectiveStatus = switch (legacyStatus) {
             case IN_PROGRESS -> ScenarioObjectiveStatus.IN_PROGRESS;
             case VICTORY -> ScenarioObjectiveStatus.ACHIEVED;
             case DEFEAT -> ScenarioObjectiveStatus.FAILED;
         };
-        sourceState.gameplayStatus = sourceState.requirePlayerFactionState().active
-            ? GameplayStatus.ACTIVE
-            : GameplayStatus.ELIMINATED;
-        sourceState.nextBattleSequence = 1;
-        sourceState.battleReports = new BattleReport[0];
-        sourceState.campaignStatus = null;
-        sourceState.schemaVersion = SangoVersion.GAME_STATE_SCHEMA_VERSION;
-
-        if (sourceState.gameplayStatus == GameplayStatus.ACTIVE
-            && sourceState.actionPointsRemaining == 0
+        gameState.gameplayStatus = gameState.requirePlayerFactionState().active
+            ? GameplayStatus.ACTIVE : GameplayStatus.ELIMINATED;
+        gameState.nextBattleSequence = 1;
+        gameState.battleReports = new BattleReport[0];
+        gameState.campaignStatus = null;
+        gameState.schemaVersion = 3;
+        if (gameState.gameplayStatus == GameplayStatus.ACTIVE
+            && gameState.actionPointsRemaining == 0
             && legacyStatus != CampaignStatus.IN_PROGRESS) {
-            sourceState.actionPointsRemaining = sourceState.actionPointsPerTurn;
+            gameState.actionPointsRemaining = gameState.actionPointsPerTurn;
         }
-        return sourceState;
     }
 
-    private void normalizeCurrentState(GameState sourceState) {
-        if (sourceState.battleReports == null) {
-            sourceState.battleReports = new BattleReport[0];
+    private void migrateSchemaThreeToFour(GameState gameState) {
+        if (gameState.cityStates != null) {
+            for (CityState cityState : gameState.cityStates) {
+                if (cityState != null) {
+                    // 只在舊 schema 缺少城市士氣時初始化，不覆寫 schema 4 的合法零士氣。
+                    cityState.morale = Math.max(50, Math.min(100, cityState.publicOrder));
+                }
+            }
         }
-        if (sourceState.nextBattleSequence < 1) {
-            sourceState.nextBattleSequence = sourceState.battleReports.length + 1;
+        if (gameState.battleReports != null) {
+            for (BattleReport battleReport : gameState.battleReports) {
+                if (battleReport != null) {
+                    battleReport.moraleRecorded = false;
+                }
+            }
         }
-        sourceState.campaignStatus = null;
+        gameState.schemaVersion = 4;
+    }
+
+    private void normalizeCurrentState(GameState gameState) {
+        if (gameState.battleReports == null) {
+            gameState.battleReports = new BattleReport[0];
+        }
+        if (gameState.nextBattleSequence < 1) {
+            gameState.nextBattleSequence = gameState.battleReports.length + 1;
+        }
+        gameState.campaignStatus = null;
     }
 }

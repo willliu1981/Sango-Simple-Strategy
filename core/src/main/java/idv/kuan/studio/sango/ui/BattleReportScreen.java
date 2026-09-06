@@ -25,6 +25,7 @@ import idv.kuan.studio.sango.audio.SoundEffect;
 import idv.kuan.studio.sango.domain.definition.CityDefinition;
 import idv.kuan.studio.sango.domain.definition.FactionDefinition;
 import idv.kuan.studio.sango.domain.model.BattleReport;
+import idv.kuan.studio.sango.domain.model.BattleOutcome;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.runtime.SangoServices;
@@ -74,10 +75,7 @@ public final class BattleReportScreen extends SuiScreen {
         }
         BattleReport battleReport = requireSelectedReport();
         refreshReport(battleReport);
-        SangoServices.audio().playSound(SoundEffect.BATTLE_IMPACT);
-        if (battleReport.cityCaptured) {
-            SangoServices.audio().playSound(SoundEffect.CITY_CAPTURED);
-        }
+        playReportSound(battleReport);
         markCurrentReportRead(battleReport);
         refreshNextButton();
     }
@@ -116,7 +114,9 @@ public final class BattleReportScreen extends SuiScreen {
         boolean playerWon = gameState.playerFactionId.equals(battleReport.winnerFactionId);
 
         label("battle_report_title_label").setText(
-            text("battle_report_title_format", "{0}攻防戰", targetCityName)
+            battleReport.outcome == BattleOutcome.UNOPPOSED_OCCUPATION
+                ? text("battle_report_occupation_title", "", targetCityName)
+                : text("battle_report_title_format", "{0}攻防戰", targetCityName)
         );
         label("battle_report_period_label").setText(
             text(
@@ -174,9 +174,15 @@ public final class BattleReportScreen extends SuiScreen {
             )
         );
 
+        label("battle_report_morale_label").setText(
+            battleReport.moraleRecorded
+                ? text("battle_report_morale_format", "", battleReport.attackerMorale, battleReport.defenderMorale)
+                : text("battle_report_morale_legacy", "")
+        );
         Label resultLabel = label("battle_report_result_label");
         resultLabel.setText(buildResultText(gameState, battleReport, targetCityName));
-        resultLabel.setColor(playerWon ? PLAYER_WIN_COLOR : PLAYER_LOSS_COLOR);
+        resultLabel.setColor(playerWon || !battleReport.involvesFaction(gameState.playerFactionId)
+            ? PLAYER_WIN_COLOR : PLAYER_LOSS_COLOR);
         label("battle_report_capture_label").setText(
             battleReport.cityCaptured
                 ? text(
@@ -194,6 +200,12 @@ public final class BattleReportScreen extends SuiScreen {
         BattleReport battleReport,
         String targetCityName
     ) {
+        if (battleReport.outcome == BattleOutcome.UNOPPOSED_OCCUPATION) {
+            return text("battle_report_occupation_result", "", factionName(battleReport.winnerFactionId), targetCityName);
+        }
+        if (!battleReport.involvesFaction(gameState.playerFactionId)) {
+            return text("battle_report_other_factions_result", "", factionName(battleReport.winnerFactionId), targetCityName);
+        }
         boolean playerAttacker = gameState.playerFactionId.equals(battleReport.attackerFactionId);
         boolean playerWinner = gameState.playerFactionId.equals(battleReport.winnerFactionId);
         if (playerWinner && playerAttacker) {
@@ -259,9 +271,18 @@ public final class BattleReportScreen extends SuiScreen {
             SangoServices.session().getBattleReportReturnScreen()
         );
         refreshReport(unreadReports.get(0));
-        SangoServices.audio().playSound(SoundEffect.BATTLE_IMPACT);
+        playReportSound(unreadReports.get(0));
         markCurrentReportRead(unreadReports.get(0));
         refreshNextButton();
+    }
+
+    private void playReportSound(BattleReport battleReport) {
+        if (battleReport.outcome != BattleOutcome.UNOPPOSED_OCCUPATION) {
+            SangoServices.audio().playSound(SoundEffect.BATTLE_IMPACT);
+        }
+        if (battleReport.cityCaptured) {
+            SangoServices.audio().playSound(SoundEffect.CITY_CAPTURED);
+        }
     }
 
     private void refreshNextButton() {

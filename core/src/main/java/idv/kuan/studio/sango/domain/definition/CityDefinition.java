@@ -14,6 +14,7 @@ public final class CityDefinition {
     public int initialTroops;
     public int initialPublicOrder;
     public int initialTraining;
+    public int initialMorale;
 
     public CityDefinition() {
     }

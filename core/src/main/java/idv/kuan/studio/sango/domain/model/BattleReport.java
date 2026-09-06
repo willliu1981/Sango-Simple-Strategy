@@ -20,6 +20,10 @@ public final class BattleReport {
     public int attackerTraining;
     public int defenderTraining;
     public int defenderDefense;
+    public int attackerMorale;
+    public int defenderMorale;
+    /** 舊戰報沒有士氣快照，不能用目前城市資料偽造歷史數值。 */
+    public boolean moraleRecorded;
     public int attackerLosses;
     public int defenderLosses;
     public int attackerSurvivors;
@@ -48,6 +52,9 @@ public final class BattleReport {
         copiedReport.attackerTraining = attackerTraining;
         copiedReport.defenderTraining = defenderTraining;
         copiedReport.defenderDefense = defenderDefense;
+        copiedReport.attackerMorale = attackerMorale;
+        copiedReport.defenderMorale = defenderMorale;
+        copiedReport.moraleRecorded = moraleRecorded;
         copiedReport.attackerLosses = attackerLosses;
         copiedReport.defenderLosses = defenderLosses;
         copiedReport.attackerSurvivors = attackerSurvivors;

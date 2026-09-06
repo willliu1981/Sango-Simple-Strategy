@@ -42,7 +42,7 @@ import idv.kuan.studio.sango.repository.save.SaveSlotMetadata;
 import idv.kuan.studio.sango.repository.save.SaveSlotState;
 
 /**
- * 不依賴 Graphics Context 的 0.4.0 戰報、自由征戰與存檔 smoke test。
+ * 不依賴 Graphics Context 的舊六城劇本、戰報、自由征戰與存檔回歸測試。
  */
 public final class VerticalSliceSmokeTest {
     private static final int SAVE_SLOT = 1;
@@ -98,7 +98,7 @@ public final class VerticalSliceSmokeTest {
             );
             validateAudioAssets(assetsPath);
 
-            System.out.println("Sango 0.4.0 battle report and flow smoke test: PASS");
+            System.out.println("Sango legacy campaign regression (schema 4): PASS");
         } finally {
             temporaryRootDirectory.deleteDirectory();
         }
@@ -330,8 +330,8 @@ public final class VerticalSliceSmokeTest {
             reloadedReportState.requireBattleReport(firstBattleReport.battleId).read,
             "戰報已讀狀態必須持久化"
         );
-        assertEquals(680, gameState.requireCityState(PLAYER_CAPITAL_ID).troops, "敗軍生還者返回主城");
-        assertEquals(523, gameState.requireCityState(VICTORY_TARGET_ID).troops, "首戰後敵城守軍");
+        assertEquals(696, gameState.requireCityState(PLAYER_CAPITAL_ID).troops, "敗軍生還者返回主城");
+        assertEquals(513, gameState.requireCityState(VICTORY_TARGET_ID).troops, "首戰後敵城守軍");
 
         gameState = requireDomesticSuccess(
             commands.domesticActionCommand.execute(
@@ -354,9 +354,9 @@ public final class VerticalSliceSmokeTest {
             gameState,
             PLAYER_CAPITAL_ID,
             VICTORY_TARGET_ID,
-            BattleTactic.BALANCED
+            BattleTactic.ASSAULT
         );
-        assertTrue(secondExpedition.isSuccessful(), "整備後第二次出征應成功");
+        assertTrue(secondExpedition.isSuccessful(), "徵兵降低訓練後改採強攻，第二次出征應成功");
         assertEquals(600, secondExpedition.getDispatchedTroops(), "第二次派出兵力");
 
         TurnResolutionResult victoryResult = commands.endTurnCommand.execute(
@@ -398,6 +398,8 @@ public final class VerticalSliceSmokeTest {
         CommandSet commands = new CommandSet(definitionRepository, saveDirectory);
         GameState gameState = commands.newGame();
         gameState.enemyAttackCountdown = 4;
+        // 多勢力 AI 會挑選較弱前線；本案例明確將主城設為目標以驗證遷都。
+        gameState.requireCityState(PLAYER_CAPITAL_ID).troops = 1;
 
         gameState = commands.endTurnCommand.execute(SAVE_SLOT, gameState).getGameState();
         gameState = commands.endTurnCommand.execute(SAVE_SLOT, gameState).getGameState();

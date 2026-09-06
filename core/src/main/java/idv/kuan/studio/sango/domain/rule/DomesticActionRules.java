@@ -69,6 +69,8 @@ public final class DomesticActionRules {
         if (actionType.getDefenseGain() > 0 && cityState.defense >= 100) {
             return true;
         }
-        return actionType.getTrainingGain() > 0 && cityState.training >= 100;
+        return actionType.getTrainingGain() > 0
+            && cityState.training >= 100
+            && (actionType.getMoraleDelta() <= 0 || cityState.morale >= 100);
     }
 }

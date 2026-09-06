@@ -10,10 +10,10 @@
                 <table width="600" height="645" pad="28" backgroundColor="0.070,0.057,0.047,0.98">
                     <label fontKey="title" fontSize="48" width="530" height="60" color="0.90,0.72,0.40,1">${text:new_game_scenario_heading}</label>
                     <row />
-                    <label id="scenario_name_label" fontSize="34" width="530" height="62" wrap="true">${text:scenario_prototype_name}</label>
+                    <label id="scenario_name_label" fontSize="34" width="530" height="62" wrap="true">${text:scenario_china_name}</label>
                     <row />
                     <label id="scenario_description_label" fontSize="26" width="530" height="175"
-                        align="left" textAlign="left" wrap="true" color="0.76,0.70,0.61,1">${text:scenario_prototype_description}</label>
+                        align="left" textAlign="left" wrap="true" color="0.76,0.70,0.61,1">${text:scenario_china_description}</label>
                     <row />
                     <label fontKey="title" fontSize="34" width="530" height="50" color="0.88,0.70,0.39,1">${text:new_game_save_slot_heading}</label>
                     <row />
@@ -35,19 +35,25 @@
                         <textButton id="faction_3_button" fontSize="32" width="295" height="74" padLeft="18">${text:faction_sun_ce}</textButton>
                     </table>
                     <row />
-                    <table width="940" height="435" pad="28" backgroundColor="0.040,0.034,0.030,1">
-                        <label id="selected_faction_label" fontSize="33" width="870" height="52" align="left" textAlign="left">${text:new_game_selected_faction_placeholder}</label>
+                    <table width="940" height="80">
+                        <textButton id="faction_4_button" fontSize="32" width="295" height="74">${text:faction_yuan_shao}</textButton>
+                        <textButton id="faction_5_button" fontSize="32" width="295" height="74" padLeft="18">${text:faction_liu_biao}</textButton>
+                        <textButton id="faction_6_button" fontSize="32" width="295" height="74" padLeft="18">${text:faction_ma_teng}</textButton>
+                    </table>
+                    <row />
+                    <table width="940" height="355" pad="20" backgroundColor="0.040,0.034,0.030,1">
+                        <label id="selected_faction_label" fontSize="33" width="870" height="44" align="left" textAlign="left">${text:new_game_selected_faction_placeholder}</label>
                         <row />
-                        <label id="selected_ruler_label" fontSize="29" width="870" height="48" align="left" textAlign="left">${text:new_game_selected_ruler_placeholder}</label>
+                        <label id="selected_ruler_label" fontSize="29" width="870" height="38" align="left" textAlign="left">${text:new_game_selected_ruler_placeholder}</label>
                         <row />
-                        <label id="selected_city_label" fontSize="29" width="870" height="48" align="left" textAlign="left">${text:new_game_selected_city_placeholder}</label>
+                        <label id="selected_city_label" fontSize="29" width="870" height="38" align="left" textAlign="left">${text:new_game_selected_city_placeholder}</label>
                         <row />
-                        <label id="selected_resources_label" fontSize="29" width="870" height="54" align="left" textAlign="left">${text:new_game_selected_resources_placeholder}</label>
+                        <label id="selected_resources_label" fontSize="29" width="870" height="46" align="left" textAlign="left">${text:new_game_selected_resources_placeholder}</label>
                         <row />
-                        <label id="selected_summary_label" fontSize="27" width="870" height="115" align="left" textAlign="left"
+                        <label id="selected_summary_label" fontSize="27" width="870" height="78" align="left" textAlign="left"
                             wrap="true" color="0.72,0.66,0.57,1">${text:new_game_selected_summary_placeholder}</label>
                         <row />
-                        <label fontSize="25" width="870" height="60" wrap="true" color="0.64,0.59,0.52,1">${text:new_game_scenario_actions}</label>
+                        <label fontSize="24" width="870" height="46" wrap="true" color="0.64,0.59,0.52,1">${text:new_game_scenario_actions}</label>
                     </table>
                 </table>
             </table>

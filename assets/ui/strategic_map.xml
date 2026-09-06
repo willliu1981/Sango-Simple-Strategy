@@ -35,8 +35,16 @@
                             align="right" textAlign="right" color="0.65,0.60,0.52,1">${text:map_legend}</label>
                     </table>
                     <row />
-                    <table width="1068" height="500" pad="10" backgroundColor="0.025,0.026,0.025,0.98">
-                        <group id="map_host" width="1040" height="476" touchChildrenOnly="true" />
+                    <table width="1068" height="44">
+                        <textButton id="map_zoom_in_button" fontSize="28" width="82" height="40">${text:map_zoom_in}</textButton>
+                        <textButton id="map_zoom_out_button" fontSize="28" width="82" height="40" padLeft="12">${text:map_zoom_out}</textButton>
+                        <textButton id="map_fit_button" fontSize="24" width="130" height="40" padLeft="12">${text:map_fit_all}</textButton>
+                        <textButton id="map_focus_button" fontSize="24" width="180" height="40" padLeft="12">${text:map_focus_selected}</textButton>
+                        <label fontSize="21" width="530" height="40" color="0.70,0.65,0.56,1">${text:map_navigation_hint}</label>
+                    </table>
+                    <row />
+                    <table width="1068" height="452" pad="10" backgroundColor="0.025,0.026,0.025,0.98">
+                        <group id="map_host" width="1040" height="428" touchChildrenOnly="true" />
                     </table>
                     <row />
                     <label id="map_army_summary_label" fontSize="24" width="1068" height="68"
@@ -84,7 +92,7 @@
                             padLeft="14">${text:button_launch_expedition}</textButton>
                     </table>
                     <row />
-                    <label id="map_font_probe" fontSize="27" width="1" height="1" visible="false">地圖節點我方敵軍中立目標戰事未讀</label>
+                    <label id="map_font_probe" fontSize="27" width="1" height="1" visible="false">${text:map_node_font_probe}</label>
                 </table>
             </table>
             <row />

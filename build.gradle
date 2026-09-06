@@ -62,12 +62,14 @@ def generateAssetsIndex = tasks.register('generateAssetsIndex') {
 
 def requiredLocalFontFiles = [
   file("${project.rootDir}/assets/font/SourceHanSansCN-Regular.otf"),
-  file("${project.rootDir}/assets/font/SourceHanSansCN-Heavy.otf")
+  file("${project.rootDir}/assets/font/SourceHanSansCN-Heavy.otf"),
+  file("${project.rootDir}/assets/skin/default/default.fnt"),
+  file("${project.rootDir}/assets/skin/default/default.png")
 ]
 
 def verifyRequiredLocalFonts = tasks.register('verifyRequiredLocalFonts') {
   group = 'verification'
-  description = 'Verifies that the developer-local Source Han Sans font assets are present.'
+  description = '驗證本機中文字型與 Skin 所需的 bitmap 字型資產。'
   inputs.files(requiredLocalFontFiles)
 
   doLast {
@@ -78,7 +80,7 @@ def verifyRequiredLocalFonts = tasks.register('verifyRequiredLocalFonts') {
       throw new GradleException(
         '缺少 Sango 中文字型資產：' +
           missingFontPaths.collect { project.rootDir.toPath().relativize(it.toPath()) }.join(', ') +
-          '。請先執行 tools/prepare-local-fonts.ps1。'
+          '。請先執行 tools/prepare-local-fonts.ps1 -SourceProject <原 Sango 專案路徑>。'
       )
     }
   }
@@ -102,7 +104,7 @@ project(':android').tasks.configureEach { androidTask ->
 }
 
 subprojects {
-  version = '0.4.0'
+  version = '0.5.1'
   ext.appName = 'Sango'
   repositories {
     mavenCentral()

@@ -21,7 +21,7 @@ import idv.kuan.studio.sango.repository.save.LocalJsonSaveGameRepository;
 public final class SangoServices {
     public static final int DEFAULT_SAVE_SLOT = 1;
     public static final int SAVE_SLOT_COUNT = 3;
-    public static final String DEFAULT_SCENARIO_ID = "prototype_warlords";
+    public static final String DEFAULT_SCENARIO_ID = "warlords_china";
 
     private static boolean initialized;
     private static GameDefinitionRepository definitionRepository;

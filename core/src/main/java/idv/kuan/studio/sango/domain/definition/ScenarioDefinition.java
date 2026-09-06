@@ -18,6 +18,8 @@ public final class ScenarioDefinition {
     public int turnLimitMonths;
     public int enemyAttackDelayMonths;
     public CampaignStartDefinition[] playerStarts;
+    /** 新劇本的固定勢力配置；null 表示保留舊六城的依玩家配置模式。 */
+    public FactionPlacementDefinition[] initialFactions;
 
     public ScenarioDefinition() {
     }

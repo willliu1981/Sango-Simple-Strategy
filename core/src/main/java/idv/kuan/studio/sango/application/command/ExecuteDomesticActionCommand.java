@@ -70,6 +70,7 @@ public final class ExecuteDomesticActionCommand {
         cityState.defense = clampToPercentage(
             cityState.defense + actionType.getDefenseGain()
         );
+        cityState.morale = clampToPercentage(cityState.morale + actionType.getMoraleDelta());
         cityState.training = clampToPercentage(
             cityState.training + actionType.getTrainingGain()
         );

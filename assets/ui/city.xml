@@ -59,6 +59,8 @@
                             <row /><label id="public_order_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.72,0.84,0.80,1">0 / 100</label>
                             <row /><label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_training}</label>
                             <row /><label id="training_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.88,0.72,0.58,1">0 / 100</label>
+                            <row /><label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_morale}</label>
+                            <row /><label id="morale_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.90,0.73,0.48,1">0 / 100</label>
                             <row /><label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_quarterly_tax}</label>
                             <row /><label id="tax_estimate_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.94,0.78,0.44,1">0</label>
                             <row /><label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_harvest}</label>
@@ -100,8 +102,8 @@
                 wrap="true" color="0.79,0.72,0.61,1">${text:city_status_ready}</label>
             <row />
             <table width="1780" height="88" padTop="8">
-                <textButton id="return_map_button" fontSize="34" width="430" height="80">${text:button_return_map}</textButton>
-                <textButton id="city_settings_button" fontSize="34" width="300" height="80" padLeft="20">${text:button_settings}</textButton>
+                <textButton id="city_settings_button" fontSize="34" width="300" height="80">${text:button_settings}</textButton>
+                <textButton id="return_map_button" fontSize="34" width="430" height="80" padLeft="20">${text:button_return_map}</textButton>
                 <table width="490"></table>
                 <textButton id="city_end_month_button" fontSize="36" width="520" height="80">${text:button_end_month}</textButton>
             </table>

@@ -1,5 +1,8 @@
 package idv.kuan.studio.sango.domain.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import idv.kuan.studio.sango.application.result.TurnEvent;
 import idv.kuan.studio.sango.application.result.TurnEventType;
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
@@ -11,9 +14,10 @@ import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
+import idv.kuan.studio.sango.domain.rule.MilitaryRules;
 
 /**
- * 決定軍隊抵達城池時的簡化攻城結果，並建立可持久化戰報。
+ * 處理抵達、增援、攻城與無抵抗佔領，並保存作戰當下的戰報快照。
  */
 public final class BattleResolutionService {
     public void resolveArrival(
@@ -23,113 +27,76 @@ public final class BattleResolutionService {
     ) {
         CityState targetCityState = gameState.requireCityState(armyState.targetCityId);
         if (armyState.factionId.equals(targetCityState.ownerFactionId)) {
-            targetCityState.troops += armyState.troops;
-            targetCityState.training = weightedTraining(
-                targetCityState.troops - armyState.troops,
-                targetCityState.training,
-                armyState.troops,
-                armyState.training
-            );
+            mergeTroops(targetCityState, armyState.troops, armyState.training, armyState.morale);
             turnResolutionReport.add(new TurnEvent(
-                TurnEventType.ARMY_REINFORCED,
-                armyState.factionId,
-                targetCityState.cityId,
-                armyState.originCityId,
-                armyState.troops,
-                0
+                TurnEventType.ARMY_REINFORCED, armyState.factionId,
+                targetCityState.cityId, armyState.originCityId, armyState.troops, 0
             ));
             return;
         }
 
-        int attackerTroopsBefore = armyState.troops;
-        int defenderTroopsBefore = targetCityState.troops;
-        int defenderTrainingBefore = targetCityState.training;
-        int defenderDefenseBefore = targetCityState.defense;
-        String defendingFactionId = targetCityState.ownerFactionId;
+        CityState defenderBefore = targetCityState.copy();
+        String defendingFactionId = defenderBefore.ownerFactionId;
         boolean capturedDefendingCapital = isDefendingCapital(
-            gameState,
-            defendingFactionId,
-            targetCityState.cityId
+            gameState, defendingFactionId, targetCityState.cityId
         );
-
-        int attackerStrength = calculateAttackerStrength(armyState);
-        int defenderStrength = calculateDefenderStrength(targetCityState);
-        boolean attackerWon = attackerStrength >= defenderStrength;
-        int attackerLosses = calculateAttackerLosses(
-            armyState,
-            attackerStrength,
-            defenderStrength
+        boolean unopposedOccupation = defenderBefore.troops == 0;
+        int attackerStrength = MilitaryRules.calculateAttackerStrength(armyState);
+        int defenderStrength = MilitaryRules.calculateDefenderStrength(defenderBefore);
+        boolean attackerWon = unopposedOccupation || attackerStrength >= defenderStrength;
+        int attackerLosses = unopposedOccupation ? 0 : calculateAttackerLosses(
+            armyState, attackerStrength, defenderStrength
         );
-        int defenderLosses = calculateDefenderLosses(
-            targetCityState,
-            attackerStrength,
-            defenderStrength
+        int defenderLosses = unopposedOccupation ? 0 : calculateDefenderLosses(
+            defenderBefore, attackerStrength, defenderStrength
         );
-        int attackerSurvivors = Math.max(0, attackerTroopsBefore - attackerLosses);
-        int defenderSurvivors = Math.max(0, defenderTroopsBefore - defenderLosses);
+        int attackerSurvivors = armyState.troops - attackerLosses;
+        int defenderSurvivors = defenderBefore.troops - defenderLosses;
 
         if (attackerWon) {
-            captureCity(
-                gameState,
-                armyState,
-                targetCityState,
-                defendingFactionId,
-                attackerSurvivors
-            );
-            turnResolutionReport.add(new TurnEvent(
-                TurnEventType.BATTLE_ATTACKER_WON,
-                armyState.factionId,
-                targetCityState.cityId,
-                armyState.originCityId,
-                attackerLosses,
-                defenderLosses
-            ));
-            turnResolutionReport.add(new TurnEvent(
-                TurnEventType.CITY_CAPTURED,
-                armyState.factionId,
-                targetCityState.cityId,
-                null,
-                attackerSurvivors,
-                0
-            ));
+            targetCityState.ownerFactionId = armyState.factionId;
+            targetCityState.troops = attackerSurvivors;
+            targetCityState.training = armyState.training;
+            targetCityState.morale = armyState.morale;
+            int occupationDamage = unopposedOccupation ? 5 : 10;
+            targetCityState.publicOrder = Math.max(0, targetCityState.publicOrder - occupationDamage);
+            targetCityState.defense = Math.max(0, targetCityState.defense - occupationDamage);
+            refreshFactionCapital(gameState, defendingFactionId);
+            refreshFactionCapital(gameState, armyState.factionId);
+            if (unopposedOccupation) {
+                turnResolutionReport.add(new TurnEvent(
+                    TurnEventType.CITY_OCCUPIED_UNOPPOSED, armyState.factionId,
+                    targetCityState.cityId, armyState.originCityId, attackerSurvivors, 0
+                ));
+            } else {
+                turnResolutionReport.add(new TurnEvent(
+                    TurnEventType.BATTLE_ATTACKER_WON, armyState.factionId,
+                    targetCityState.cityId, armyState.originCityId, attackerLosses, defenderLosses
+                ));
+                turnResolutionReport.add(new TurnEvent(
+                    TurnEventType.CITY_CAPTURED, armyState.factionId,
+                    targetCityState.cityId, null, attackerSurvivors, 0
+                ));
+            }
         } else {
-            targetCityState.troops = Math.max(1, defenderSurvivors);
+            targetCityState.troops = defenderSurvivors;
             returnSurvivors(gameState, armyState, attackerSurvivors);
             turnResolutionReport.add(new TurnEvent(
-                TurnEventType.BATTLE_DEFENDER_WON,
-                defendingFactionId,
-                targetCityState.cityId,
-                armyState.originCityId,
-                attackerLosses,
-                defenderLosses
+                TurnEventType.BATTLE_DEFENDER_WON, defendingFactionId,
+                targetCityState.cityId, armyState.originCityId, attackerLosses, defenderLosses
             ));
         }
 
         BattleReport battleReport = createBattleReport(
-            gameState,
-            armyState,
-            defendingFactionId,
-            attackerTroopsBefore,
-            defenderTroopsBefore,
-            defenderTrainingBefore,
-            defenderDefenseBefore,
-            attackerLosses,
-            defenderLosses,
-            attackerSurvivors,
-            defenderSurvivors,
-            attackerWon
+            gameState, armyState, defenderBefore,
+            attackerLosses, defenderLosses, attackerWon, unopposedOccupation
         );
         gameState.addBattleReport(battleReport);
         turnResolutionReport.addBattleReportId(battleReport.battleId);
-
         if (attackerWon) {
             evaluateScenarioAfterCapture(
-                gameState,
-                armyState.factionId,
-                defendingFactionId,
-                targetCityState.cityId,
-                capturedDefendingCapital,
-                turnResolutionReport
+                gameState, armyState.factionId, defendingFactionId,
+                targetCityState.cityId, capturedDefendingCapital, turnResolutionReport
             );
         }
     }
@@ -137,16 +104,11 @@ public final class BattleResolutionService {
     private BattleReport createBattleReport(
         GameState gameState,
         ArmyState armyState,
-        String defendingFactionId,
-        int attackerTroopsBefore,
-        int defenderTroopsBefore,
-        int defenderTrainingBefore,
-        int defenderDefenseBefore,
+        CityState defenderBefore,
         int attackerLosses,
         int defenderLosses,
-        int attackerSurvivors,
-        int defenderSurvivors,
-        boolean attackerWon
+        boolean attackerWon,
+        boolean unopposedOccupation
     ) {
         BattleReport battleReport = new BattleReport();
         battleReport.battleId = gameState.allocateBattleReportId();
@@ -156,38 +118,31 @@ public final class BattleResolutionService {
         battleReport.originCityId = armyState.originCityId;
         battleReport.targetCityId = armyState.targetCityId;
         battleReport.attackerFactionId = armyState.factionId;
-        battleReport.defenderFactionId = defendingFactionId;
+        battleReport.defenderFactionId = defenderBefore.ownerFactionId;
         battleReport.attackerTactic = armyState.tactic;
-        battleReport.attackerTroopsBefore = attackerTroopsBefore;
-        battleReport.defenderTroopsBefore = defenderTroopsBefore;
+        battleReport.attackerTroopsBefore = armyState.troops;
+        battleReport.defenderTroopsBefore = defenderBefore.troops;
         battleReport.attackerTraining = armyState.training;
-        battleReport.defenderTraining = defenderTrainingBefore;
-        battleReport.defenderDefense = defenderDefenseBefore;
+        battleReport.defenderTraining = defenderBefore.training;
+        battleReport.defenderDefense = defenderBefore.defense;
+        battleReport.attackerMorale = armyState.morale;
+        battleReport.defenderMorale = defenderBefore.morale;
+        battleReport.moraleRecorded = true;
         battleReport.attackerLosses = attackerLosses;
         battleReport.defenderLosses = defenderLosses;
-        battleReport.attackerSurvivors = attackerSurvivors;
-        battleReport.defenderSurvivors = defenderSurvivors;
-        battleReport.outcome = attackerWon
-            ? BattleOutcome.ATTACKER_VICTORY
-            : BattleOutcome.DEFENDER_VICTORY;
+        battleReport.attackerSurvivors = armyState.troops - attackerLosses;
+        battleReport.defenderSurvivors = defenderBefore.troops - defenderLosses;
+        if (unopposedOccupation) {
+            battleReport.outcome = BattleOutcome.UNOPPOSED_OCCUPATION;
+        } else {
+            battleReport.outcome = attackerWon
+                ? BattleOutcome.ATTACKER_VICTORY : BattleOutcome.DEFENDER_VICTORY;
+        }
         battleReport.cityCaptured = attackerWon;
         battleReport.winnerFactionId = attackerWon
-            ? armyState.factionId
-            : defendingFactionId;
+            ? armyState.factionId : defenderBefore.ownerFactionId;
         battleReport.read = false;
         return battleReport;
-    }
-
-    private int calculateAttackerStrength(ArmyState armyState) {
-        long trainedStrength = (long) armyState.troops * (100 + armyState.training);
-        long tacticStrength = trainedStrength * armyState.tactic.getStrengthPercent();
-        return safeStrength(tacticStrength / 10_000L);
-    }
-
-    private int calculateDefenderStrength(CityState cityState) {
-        long trainedStrength = (long) cityState.troops * (100 + cityState.training);
-        long fortifiedStrength = trainedStrength * (100 + cityState.defense / 2);
-        return safeStrength(fortifiedStrength / 10_000L);
     }
 
     private int calculateAttackerLosses(
@@ -195,20 +150,11 @@ public final class BattleResolutionService {
         int attackerStrength,
         int defenderStrength
     ) {
-        int baseLossPercent = clamp(
-            defenderStrength * 50 / Math.max(1, attackerStrength),
-            15,
-            80
-        );
+        int baseLossPercent = clamp((long) defenderStrength * 50 / Math.max(1, attackerStrength), 15, 80);
         int adjustedLossPercent = clamp(
-            baseLossPercent * armyState.tactic.getCasualtyPercent() / 100,
-            10,
-            90
+            (long) baseLossPercent * armyState.tactic.getCasualtyPercent() / 100, 10, 90
         );
-        return Math.min(
-            armyState.troops,
-            Math.max(1, armyState.troops * adjustedLossPercent / 100)
-        );
+        return (int) ((long) armyState.troops * adjustedLossPercent / 100);
     }
 
     private int calculateDefenderLosses(
@@ -216,65 +162,48 @@ public final class BattleResolutionService {
         int attackerStrength,
         int defenderStrength
     ) {
-        int lossPercent = clamp(
-            attackerStrength * 60 / Math.max(1, defenderStrength),
-            20,
-            95
-        );
-        return Math.min(
-            cityState.troops,
-            Math.max(1, cityState.troops * lossPercent / 100)
-        );
-    }
-
-    private void captureCity(
-        GameState gameState,
-        ArmyState armyState,
-        CityState targetCityState,
-        String defendingFactionId,
-        int attackerSurvivors
-    ) {
-        targetCityState.ownerFactionId = armyState.factionId;
-        targetCityState.troops = Math.max(1, attackerSurvivors);
-        targetCityState.training = armyState.training;
-        targetCityState.publicOrder = Math.max(20, targetCityState.publicOrder - 10);
-        targetCityState.defense = Math.max(0, targetCityState.defense - 10);
-        refreshFactionCapital(gameState, defendingFactionId);
+        int lossPercent = clamp((long) attackerStrength * 60 / Math.max(1, defenderStrength), 20, 95);
+        return (int) ((long) cityState.troops * lossPercent / 100);
     }
 
     private void refreshFactionCapital(GameState gameState, String factionId) {
         FactionState factionState = gameState.requireFactionState(factionId);
-        if (gameState.ownsCity(factionId, factionState.capitalCityId)) {
-            return;
-        }
-        if (gameState.findCitiesOwnedBy(factionId).isEmpty()) {
+        List<CityState> ownedCities = gameState.findCitiesOwnedBy(factionId);
+        if (ownedCities.isEmpty()) {
             factionState.active = false;
             factionState.capitalCityId = "";
+            // 勢力滅亡後撤銷尚在行軍的部隊，避免同月後續抵達又把滅亡狀態反轉。
+            List<String> disbandedArmyIds = new ArrayList<>();
+            for (ArmyState armyState : gameState.armyStates) {
+                if (factionId.equals(armyState.factionId)) {
+                    disbandedArmyIds.add(armyState.armyId);
+                }
+            }
+            for (String armyId : disbandedArmyIds) {
+                gameState.removeArmy(armyId);
+            }
             return;
         }
-        factionState.capitalCityId = gameState.findCitiesOwnedBy(factionId).get(0).cityId;
+        factionState.active = true;
+        if (!gameState.ownsCity(factionId, factionState.capitalCityId)) {
+            factionState.capitalCityId = ownedCities.get(0).cityId;
+        }
     }
 
-    private void returnSurvivors(
-        GameState gameState,
-        ArmyState armyState,
-        int attackerSurvivors
-    ) {
-        if (attackerSurvivors <= 0) {
+    private void returnSurvivors(GameState gameState, ArmyState armyState, int survivors) {
+        if (survivors <= 0) {
             return;
         }
         CityState originCityState = gameState.findCityState(armyState.originCityId);
-        if (originCityState != null
-            && armyState.factionId.equals(originCityState.ownerFactionId)) {
-            int existingTroops = originCityState.troops;
-            originCityState.troops += attackerSurvivors;
-            originCityState.training = weightedTraining(
-                existingTroops,
-                originCityState.training,
-                attackerSurvivors,
-                armyState.training
-            );
+        if (originCityState != null && armyState.factionId.equals(originCityState.ownerFactionId)) {
+            mergeTroops(originCityState, survivors, armyState.training, armyState.morale);
         }
+    }
+
+    private void mergeTroops(CityState cityState, int troops, int training, int morale) {
+        cityState.training = MilitaryRules.weightedQuality(cityState.troops, cityState.training, troops, training);
+        cityState.morale = MilitaryRules.weightedQuality(cityState.troops, cityState.morale, troops, morale);
+        cityState.troops = Math.addExact(cityState.troops, troops);
     }
 
     private boolean isDefendingCapital(
@@ -354,24 +283,7 @@ public final class BattleResolutionService {
         }
     }
 
-    private int weightedTraining(
-        int firstTroops,
-        int firstTraining,
-        int secondTroops,
-        int secondTraining
-    ) {
-        int totalTroops = firstTroops + secondTroops;
-        if (totalTroops <= 0) {
-            return 0;
-        }
-        return (firstTroops * firstTraining + secondTroops * secondTraining) / totalTroops;
-    }
-
-    private int safeStrength(long value) {
-        return (int) Math.max(1L, Math.min(Integer.MAX_VALUE, value));
-    }
-
-    private int clamp(int value, int minimum, int maximum) {
-        return Math.max(minimum, Math.min(maximum, value));
+    private int clamp(long value, int minimum, int maximum) {
+        return (int) Math.max(minimum, Math.min(maximum, value));
     }
 }

@@ -16,7 +16,7 @@ public final class GameState {
     public String victoryTargetCityId;
 
     /**
-     * 只供 schema 2 存檔遷移使用；schema 3 新存檔應為 null。
+     * 只供 schema 2 存檔遷移使用；schema 3 以上的新存檔應為 null。
      */
     @Deprecated
     public CampaignStatus campaignStatus;

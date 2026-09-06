@@ -43,7 +43,10 @@ public final class NewGameScreen extends SuiScreen {
     private static final String[] FACTION_BUTTON_IDS = {
         "faction_1_button",
         "faction_2_button",
-        "faction_3_button"
+        "faction_3_button",
+        "faction_4_button",
+        "faction_5_button",
+        "faction_6_button"
     };
     private static final String[] SLOT_BUTTON_IDS = {
         "new_game_slot_1_button",
@@ -149,6 +152,9 @@ public final class NewGameScreen extends SuiScreen {
         ui.onClick("faction_1_button", () -> selectFactionByIndex(0));
         ui.onClick("faction_2_button", () -> selectFactionByIndex(1));
         ui.onClick("faction_3_button", () -> selectFactionByIndex(2));
+        ui.onClick("faction_4_button", () -> selectFactionByIndex(3));
+        ui.onClick("faction_5_button", () -> selectFactionByIndex(4));
+        ui.onClick("faction_6_button", () -> selectFactionByIndex(5));
         ui.onClick("new_game_slot_1_button", () -> selectSaveSlot(1));
         ui.onClick("new_game_slot_2_button", () -> selectSaveSlot(2));
         ui.onClick("new_game_slot_3_button", () -> selectSaveSlot(3));
@@ -275,7 +281,7 @@ public final class NewGameScreen extends SuiScreen {
 
         FactionDefinition factionDefinition = requireSelectedFaction();
         CityDefinition cityDefinition = SangoServices.definitions().requireCity(
-            factionDefinition.capitalCityId
+            scenarioDefinition.requirePlayerStart(factionDefinition.id).startCityId
         );
         label("scenario_name_label").setText(
             localized(scenarioDefinition.nameKey, scenarioDefinition.id)

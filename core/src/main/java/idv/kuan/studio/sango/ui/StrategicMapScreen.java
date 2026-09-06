@@ -52,7 +52,7 @@ import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
 import idv.kuan.studio.sango.ui.widget.StrategicMapWidget;
 
 /**
- * 六城節點式戰略地圖，也是偵察、出征與月份推進的主畫面。
+ * 可平移縮放的戰略地圖，也是偵察、出征與月份推進的主畫面。
  */
 public final class StrategicMapScreen extends SuiScreen {
     private static final String BACKGROUND_PATH = "picture/lobby/sango_lobby_background.png";
@@ -169,6 +169,10 @@ public final class StrategicMapScreen extends SuiScreen {
     }
 
     private void applyStyles() {
+        SangoUiStyles.applySecondaryButton(button("map_zoom_in_button"));
+        SangoUiStyles.applySecondaryButton(button("map_zoom_out_button"));
+        SangoUiStyles.applySecondaryButton(button("map_fit_button"));
+        SangoUiStyles.applySecondaryButton(button("map_focus_button"));
         SangoUiStyles.applySecondaryButton(button("manage_city_button"));
         SangoUiStyles.applySecondaryButton(button("scout_city_button"));
         SangoUiStyles.applyPrimaryButton(button("launch_expedition_button"));
@@ -185,6 +189,10 @@ public final class StrategicMapScreen extends SuiScreen {
     }
 
     private void bindActions() {
+        ui.onClick("map_zoom_in_button", () -> strategicMapWidget.zoomBy(1.25f));
+        ui.onClick("map_zoom_out_button", () -> strategicMapWidget.zoomBy(0.8f));
+        ui.onClick("map_fit_button", strategicMapWidget::fitAll);
+        ui.onClick("map_focus_button", strategicMapWidget::focusSelectedCity);
         ui.onClick("manage_city_button", this::openSelectedCity);
         ui.onClick("scout_city_button", this::scoutSelectedCity);
         ui.onClick("launch_expedition_button", this::launchExpedition);
@@ -375,14 +383,24 @@ public final class StrategicMapScreen extends SuiScreen {
         Map<String, String> captionsByCityId = new LinkedHashMap<>();
         Map<String, MapNodeTone> tonesByCityId = new LinkedHashMap<>();
         Map<String, Integer> unreadBattlesByCityId = new LinkedHashMap<>();
+        for (BattleReport battleReport : gameState.battleReports) {
+            if (!battleReport.read) {
+                unreadBattlesByCityId.merge(battleReport.targetCityId, 1, Integer::sum);
+            }
+        }
         for (MapCityNodeDefinition nodeDefinition : mapDefinition.nodes) {
             CityState cityState = gameState.requireCityState(nodeDefinition.cityId);
             MapNodeTone nodeTone = toneForOwner(gameState, cityState.ownerFactionId);
-            String marker = markerForTone(nodeTone);
-            if (gameState.victoryTargetCityId.equals(cityState.cityId)) {
+            FactionDefinition ownerDefinition = SangoServices.definitions().requireFaction(cityState.ownerFactionId);
+            String marker = localized(ownerDefinition.nameKey, ownerDefinition.id);
+            if (gameState.playerFactionId.equals(cityState.ownerFactionId)) {
+                marker += text("map_player_suffix", "");
+            }
+            if (gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.IN_PROGRESS
+                && gameState.victoryTargetCityId.equals(cityState.cityId)) {
                 marker += "・" + text("map_marker_target", "目標");
             }
-            int unreadCount = gameState.countUnreadBattleReportsForCity(cityState.cityId);
+            int unreadCount = unreadBattlesByCityId.getOrDefault(cityState.cityId, 0);
             if (unreadCount > 0) {
                 marker += "\n" + text("map_marker_battle_format", "戰事 {0}", unreadCount);
             }
@@ -404,20 +422,10 @@ public final class StrategicMapScreen extends SuiScreen {
         if (gameState.playerFactionId.equals(ownerFactionId)) {
             return MapNodeTone.PLAYER;
         }
-        if (gameState.opponentFactionId.equals(ownerFactionId)) {
-            return MapNodeTone.ENEMY;
+        if (gameState.neutralFactionId.equals(ownerFactionId)) {
+            return MapNodeTone.NEUTRAL;
         }
-        return MapNodeTone.NEUTRAL;
-    }
-
-    private String markerForTone(MapNodeTone nodeTone) {
-        if (nodeTone == MapNodeTone.PLAYER) {
-            return text("map_marker_player", "我方");
-        }
-        if (nodeTone == MapNodeTone.ENEMY) {
-            return text("map_marker_enemy", "敵軍");
-        }
-        return text("map_marker_neutral", "中立");
+        return MapNodeTone.ENEMY;
     }
 
     private void refreshSelectedCityPanel(GameState gameState) {
@@ -503,16 +511,17 @@ public final class StrategicMapScreen extends SuiScreen {
 
     private String buildSelectedCityStats(CityState cityState, boolean exactIntel) {
         if (!exactIntel) {
-            return text("map_stats_unknown", "城防、訓練與內政狀態尚未掌握。");
+            return text("map_stats_unknown", "城防、訓練、士氣與內政狀態尚未掌握。");
         }
         return text(
             "map_stats_format",
-            "城防 {0}｜訓練 {1}｜農業 {2}｜商業 {3}｜治水 {4}",
+            "城防 {0}｜訓練 {1}｜農業 {2}｜商業 {3}｜治水 {4}｜士氣 {5}",
             cityState.defense,
             cityState.training,
             cityState.agriculture,
             cityState.commerce,
-            cityState.waterControl
+            cityState.waterControl,
+            cityState.morale
         );
     }
 
@@ -540,61 +549,46 @@ public final class StrategicMapScreen extends SuiScreen {
     }
 
     private CityState findAdjacentPlayerCity(GameState gameState, String targetCityId) {
-        StrategicMapDefinition mapDefinition = SangoServices.definitions().requireMap(
-            gameState.mapId
-        );
-        List<CityState> playerCities = gameState.findCitiesOwnedBy(gameState.playerFactionId);
-        String capitalCityId = gameState.requirePlayerFactionState().active
-            ? gameState.requirePlayerFactionState().capitalCityId
-            : "";
-        for (CityState playerCityState : playerCities) {
-            if (playerCityState.cityId.equals(capitalCityId)
-                && mapDefinition.findConnection(playerCityState.cityId, targetCityId) != null) {
-                return playerCityState;
+        StrategicMapDefinition mapDefinition = SangoServices.definitions().requireMap(gameState.mapId);
+        CityState bestOrigin = null;
+        int largestDispatch = -1;
+        for (CityState playerCity : gameState.findCitiesOwnedBy(gameState.playerFactionId)) {
+            if (mapDefinition.findConnection(playerCity.cityId, targetCityId) == null) {
+                continue;
+            }
+            int dispatch = SangoServices.launchExpeditionCommand().calculateDispatchTroops(playerCity);
+            if (dispatch > largestDispatch) {
+                bestOrigin = playerCity;
+                largestDispatch = dispatch;
             }
         }
-        for (CityState playerCityState : playerCities) {
-            if (mapDefinition.findConnection(playerCityState.cityId, targetCityId) != null) {
-                return playerCityState;
-            }
-        }
-        return null;
+        return bestOrigin;
     }
 
     private void refreshArmySummary(GameState gameState) {
         if (gameState.armyStates.length == 0) {
-            label("map_army_summary_label").setText(
-                text(
-                    "map_army_none_format",
-                    "目前沒有行軍中的部隊。敵軍預估 {0} 個月後完成下一次集結。",
-                    gameState.enemyAttackCountdown
-                )
-            );
+            label("map_army_summary_label").setText(text(
+                "map_army_none_multi", "", gameState.enemyAttackCountdown
+            ));
             return;
         }
-        StringBuilder summaryBuilder = new StringBuilder();
+        ArmyState shownArmy = gameState.armyStates[0];
         for (ArmyState armyState : gameState.armyStates) {
-            if (summaryBuilder.length() > 0) {
-                summaryBuilder.append("　｜　");
+            if (gameState.playerFactionId.equals(armyState.factionId)) {
+                shownArmy = armyState;
+                break;
             }
-            boolean playerArmy = gameState.playerFactionId.equals(armyState.factionId);
-            summaryBuilder.append(
-                playerArmy
-                    ? text("map_army_player_prefix", "我軍")
-                    : text("map_army_enemy_prefix", "敵軍")
-            );
-            summaryBuilder.append(' ')
-                .append(numberFormat.format(armyState.troops))
-                .append(' ')
-                .append(text("map_army_route_word", "兵："))
-                .append(cityName(armyState.originCityId))
-                .append(" → ")
-                .append(cityName(armyState.targetCityId))
-                .append("（")
-                .append(armyState.remainingTravelMonths)
-                .append(text("map_month_remaining_suffix", " 月抵達）"));
         }
-        label("map_army_summary_label").setText(summaryBuilder.toString());
+        FactionDefinition armyFaction = SangoServices.definitions().requireFaction(shownArmy.factionId);
+        String summary = text(
+            "map_army_summary_multi", "", localized(armyFaction.nameKey, armyFaction.id),
+            shownArmy.troops, shownArmy.morale, cityName(shownArmy.originCityId),
+            cityName(shownArmy.targetCityId), shownArmy.remainingTravelMonths
+        );
+        if (gameState.armyStates.length > 1) {
+            summary += "\n" + text("map_army_more", "", gameState.armyStates.length - 1);
+        }
+        label("map_army_summary_label").setText(summary);
     }
 
     private void openSelectedCity() {

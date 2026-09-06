@@ -1,3 +1,5 @@
+> 這是 **0.4.0 歷史驗證紀錄**，不是本次 0.5.0 的測試結論。新版請看 [VALIDATION_0.5.0.md](VALIDATION_0.5.0.md)。
+
 # Validation record — 0.4.0
 
 ## 交付環境已通過

@@ -78,6 +78,7 @@ public final class CityScreen extends SuiScreen {
         endMonthConfirmMask = attachModalMask("city_end_month_mask");
         battlePromptMask = attachModalMask("city_battle_prompt_mask");
         applyStyles();
+        applyDomesticActionButtonTexts();
         bindActions();
         currentStatusMessage = text(
             "city_status_ready",
@@ -162,6 +163,25 @@ public final class CityScreen extends SuiScreen {
         SangoUiStyles.applyPrimaryButton(button("city_end_month_confirm_button"));
         SangoUiStyles.applySecondaryButton(button("city_battle_prompt_later_button"));
         SangoUiStyles.applyDangerButton(button("city_battle_prompt_view_button"));
+    }
+
+    private void applyDomesticActionButtonTexts() {
+        button("recruit_button").setText(
+            multilineText(
+                "button_recruit",
+                "徵兵｜100 金・100 糧\\n兵力 +200・訓練 -5・士氣 -5"
+            )
+        );
+        button("train_button").setText(
+            multilineText(
+                "button_train",
+                "訓練｜50 金\\n訓練 +5・士氣 +5"
+            )
+        );
+    }
+
+    private String multilineText(String key, String fallbackText) {
+        return text(key, fallbackText).replace("\\n", "\n");
     }
 
     private void bindActions() {
@@ -468,6 +488,7 @@ public final class CityScreen extends SuiScreen {
         label("defense_value_label").setText(cityState.defense + " / 100");
         label("public_order_value_label").setText(cityState.publicOrder + " / 100");
         label("training_value_label").setText(cityState.training + " / 100");
+        label("morale_value_label").setText(cityState.morale + " / 100");
         label("tax_estimate_value_label").setText(
             numberFormat.format(SeasonalEconomyRules.calculateQuarterlyTax(cityState))
         );
@@ -586,11 +607,11 @@ public final class CityScreen extends SuiScreen {
             );
             case RECRUIT -> text(
                 "city_status_recruit_success",
-                "完成徵兵：兵力 +200、人口 -200，並扣除金 100、糧 100。"
+                "完成徵兵：兵力 +200、人口 -200、訓練 -5、士氣 -5（最低 0）；金 -100、糧 -100。"
             );
             case TRAIN -> text(
                 "city_status_train_success",
-                "完成訓練：訓練 +5，並扣除金 50。"
+                "完成訓練：訓練與士氣各 +5（最高 100）；金 -50。"
             );
         };
     }

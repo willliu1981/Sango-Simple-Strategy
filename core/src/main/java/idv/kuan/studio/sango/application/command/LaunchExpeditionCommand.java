@@ -74,7 +74,7 @@ public final class LaunchExpeditionCommand {
         armyState.remainingTravelMonths = connectionDefinition.travelMonths;
         armyState.troops = dispatchedTroops;
         armyState.training = originCityState.training;
-        armyState.morale = Math.max(50, originCityState.publicOrder);
+        armyState.morale = originCityState.morale;
         armyState.tactic = battleTactic;
         nextState.addArmy(armyState);
         nextState.lastActionCode = "LAUNCH_EXPEDITION";

@@ -5,6 +5,10 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -34,6 +38,9 @@ public final class MonthReportScreen extends SuiScreen {
 
     private final ScreenBackground screenBackground = new ScreenBackground();
     private final TurnReportTextFormatter reportFormatter = new TurnReportTextFormatter();
+    private Group reportScrollHost;
+    private Table reportContent;
+    private ScrollPane reportScrollPane;
 
     @Override
     protected BuiltUI buildUI(UIFactory uiFactory) {
@@ -48,6 +55,19 @@ public final class MonthReportScreen extends SuiScreen {
     @Override
     protected void onUIBuilt(BuiltUI builtUI) {
         screenBackground.attach(stage, BACKGROUND_PATH);
+        reportScrollHost = ui.getActor("month_report_scroll_host", Group.class);
+        Label reportLabel = label("month_report_content_label");
+        reportLabel.remove();
+        reportLabel.setAlignment(Align.topLeft);
+        reportContent = new Table();
+        reportContent.top().left();
+        reportContent.add(reportLabel).top().left().growX();
+        reportScrollPane = new ScrollPane(reportContent);
+        reportScrollPane.setScrollingDisabled(true, false);
+        reportScrollPane.setOverscroll(false, false);
+        reportScrollPane.setFadeScrollBars(false);
+        reportScrollHost.addActor(reportScrollPane);
+        resizeReportScrollPane();
         SangoUiStyles.applySecondaryButton(button("month_report_close_button"));
         SangoUiStyles.applyPrimaryButton(button("month_report_battle_button"));
         ui.onClick("month_report_close_button", this::closeReport);
@@ -60,6 +80,7 @@ public final class MonthReportScreen extends SuiScreen {
     @Override
     protected void afterShow() {
         SangoServices.audio().playMusic(MusicTrack.STRATEGY);
+        stage.setScrollFocus(reportScrollPane);
         TurnResolutionReport report = SangoServices.session().getLastTurnReport();
         if (report == null) {
             label("month_report_period_label").setText(
@@ -81,6 +102,9 @@ public final class MonthReportScreen extends SuiScreen {
             )
         );
         label("month_report_content_label").setText(reportFormatter.format(report));
+        resizeReportScrollPane();
+        reportScrollPane.setScrollY(0f);
+        reportScrollPane.updateVisualScroll();
         int battleCount = report.getBattleReportIds().size();
         button("month_report_battle_button").setText(
             text("button_view_battles_format", "查看戰報（{0}）", battleCount)
@@ -110,12 +134,24 @@ public final class MonthReportScreen extends SuiScreen {
     @Override
     protected void afterResize(int width, int height) {
         screenBackground.resize(stage);
+        resizeReportScrollPane();
     }
 
     @Override
     protected void beforeDispose() {
         screenBackground.remove();
         super.beforeDispose();
+    }
+
+    private void resizeReportScrollPane() {
+        if (reportScrollHost == null || reportScrollPane == null) {
+            return;
+        }
+        float contentWidth = Math.max(1f, reportScrollHost.getWidth() - 24f);
+        reportScrollPane.setBounds(0f, 0f, reportScrollHost.getWidth(), reportScrollHost.getHeight());
+        reportContent.getCell(label("month_report_content_label")).width(contentWidth);
+        reportContent.invalidateHierarchy();
+        reportScrollPane.validate();
     }
 
     private void openFirstBattleReport() {
