@@ -85,6 +85,17 @@ GameplayStatus
 - 音訊由 `tools/generate-prototype-audio.py` 以基本波形、五聲音階與程序節奏原創合成，不含第三方遊戲、影視或商業曲目取樣。
 - 這批素材定位為功能驗證用 Prototype Audio，不等同正式商業配樂或專業 Foley。
 
+### 預計加入的 Suno BGM、公開散布與權利
+
+目前 repository 內的 BGM 與音效仍是程序化 Prototype Audio。後續若以 Suno 生成的 BGM 取代 `assets/audio/music/*.ogg`，只有在下列條件均已確認時，才可將音檔納入公開 source、release 或可下載遊戲：
+
+- 曲目必須在 Suno Pro 或 Premier 訂閱有效期間生成，並經 Suno 核准的下載管道取得；應保留曲目 ID、生成日期、訂閱層級與下載日期等內部佐證。
+- 不可使用免費／Basic 方案生成的曲目。Suno 對該方案的限制是合法、個人且非商業使用；遊戲免費或 repository 不收費，不能單獨證明公開散布與該限制相容。
+- 不可使用未取得權利的上傳音訊、歌詞、人聲、他人作品的延伸／Remix，或足以導向特定真人歌手、樂團或既有作品的提示與素材。
+- BGM 不隨 Sango 原始碼的授權自動取得額外使用權；其使用與再散布仍受 Suno 條款及可能存在的第三方權利約束。
+
+Suno 的付費權利是服務條款上的使用授權，不保證音檔具備著作權、唯一性或不會與他人輸出相似。依臺灣智慧財產局的說明，AI 生成內容是否受著作權保護，仍取決於人類實際創意投入與個案事實。若收到具體侵權通知或權利來源無法確認，維護者應先下架或替換相關 BGM。本段是公開風險與使用政策說明，不構成法律意見；正式發行前應再次核對當時有效的 Suno 條款，必要時諮詢音樂著作權專業律師。
+
 ## 第一次執行前：準備中文字型
 
 Source ZIP 不重複攜帶 StudyRoutine 已有的兩個大型 Source Han Sans 字型二進位檔。Windows PowerShell：
@@ -278,4 +289,4 @@ core/src/main/java/idv/kuan/studio/sango/
 
 ## 第三方與授權
 
-詳見 `THIRD_PARTY_NOTICES.md`。SimpleUI snapshot 未附授權檔；對外散布前必須確認適用授權。
+詳見 `THIRD_PARTY_NOTICES.md`。SimpleUI snapshot 未附授權檔；對外散布前必須確認適用授權。若未來加入 Suno BGM，請一併遵守上方的來源紀錄、公開散布與下架處理規則。
