@@ -10,6 +10,7 @@ public final class ScenarioDefinition {
     public int startYear;
     public int startMonth;
     public int initialTurn;
+    /** 舊劇本資料相容欄位；0.5.2 起新局與下月額度由 NationalActionPointRules 計算。 */
     public int actionPointsPerTurn;
     public String mapId;
     public String[] factionIds;

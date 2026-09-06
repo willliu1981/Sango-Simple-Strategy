@@ -4,6 +4,7 @@ package idv.kuan.studio.sango.application.result;
  * 回合結算事件代碼。UI 依語系將事件格式化成人類可讀報告。
  */
 public enum TurnEventType {
+    ACTION_POINTS_REFRESHED,
     MILITARY_UPKEEP,
     FOOD_SHORTAGE,
     QUARTERLY_TAX,

@@ -38,6 +38,7 @@ import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.domain.rule.DomesticActionType;
+import idv.kuan.studio.sango.domain.rule.NationalActionPointRules;
 import idv.kuan.studio.sango.domain.rule.MilitaryRules;
 import idv.kuan.studio.sango.domain.service.BattleResolutionService;
 import idv.kuan.studio.sango.domain.service.EnemyTurnService;
@@ -122,7 +123,7 @@ public final class NationalCampaignSmokeTest {
             check(gameState.cityStates.length == 42, "新局建立全部城市狀態");
             check(gameState.factionStates.length == 8, "六勢力加黃巾與中立");
             check(gameState.findCitiesOwnedBy(factionId).size() == 2, "每個可玩勢力起始兩城");
-            check(gameState.actionPointsRemaining == 3, "每月三點行動力");
+            check(gameState.actionPointsRemaining == NationalActionPointRules.calculateMonthlyActionPoints(gameState), "新局依全城民心計算行動力");
             check(!gameState.ownsCity(factionId, gameState.victoryTargetCityId), "劇本目標不是己方城");
             check(world.findConnection(gameState.requirePlayerFactionState().capitalCityId,
                 gameState.victoryTargetCityId) != null, "初始劇本目標與首都相鄰");
@@ -246,7 +247,7 @@ public final class NationalCampaignSmokeTest {
                     check(targetCity.troops == expedition.getDispatchedTroops(), "攻軍轉為守軍");
                     check(targetCity.morale == 71 && battleReport.attackerMorale == 71, "士氣快照與駐軍士氣一致");
                     check(targetCity.defense == 75 && targetCity.publicOrder == 55, "無抵抗佔領只損耗 5 城防與民心");
-                    check(gameState.gameplayStatus == GameplayStatus.ACTIVE && gameState.actionPointsRemaining == 3,
+                    check(gameState.gameplayStatus == GameplayStatus.ACTIVE && gameState.actionPointsRemaining == NationalActionPointRules.calculateMonthlyActionPoints(gameState),
                         "目標結果不限制自由征戰且下月回滿行動力");
                     if (objectiveStatus != ScenarioObjectiveStatus.IN_PROGRESS) {
                         check(gameState.scenarioObjectiveStatus == objectiveStatus, "目標結論不被後續佔領覆寫");
@@ -404,7 +405,7 @@ public final class NationalCampaignSmokeTest {
                 verifyReportReferences(result.getReport());
                 GameStateValidator.validate(gameState);
                 check(gameState.gameplayStatus == GameplayStatus.ACTIVE, "長回合壓力測試玩家仍可操作");
-                check(gameState.actionPointsRemaining == 3, "每月重置行動力");
+                check(gameState.actionPointsRemaining == NationalActionPointRules.calculateMonthlyActionPoints(gameState), "每月重置行動力");
                 check(gameState.cityStates.length == 42, "回合過程不得丟失城市");
                 for (FactionState factionState : gameState.factionStates) {
                     long armyCount = Arrays.stream(gameState.armyStates)

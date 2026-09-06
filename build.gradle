@@ -104,7 +104,7 @@ project(':android').tasks.configureEach { androidTask ->
 }
 
 subprojects {
-  version = '0.5.1'
+  version = '0.5.2'
   ext.appName = 'Sango'
   repositories {
     mavenCentral()

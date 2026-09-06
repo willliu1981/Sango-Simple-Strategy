@@ -13,11 +13,14 @@
                         align="left" textAlign="left" color="0.72,0.66,0.56,1">${text:city_date_placeholder}</label>
                 </table>
                 <table width="560" height="90">
-                    <label id="turn_label" fontSize="28" width="540" height="42"
+                    <label id="turn_label" fontSize="23" width="540" height="26"
                         align="right" textAlign="right">${text:city_turn_placeholder}</label>
                     <row />
-                    <label id="action_points_label" fontSize="28" width="540" height="42"
+                    <label id="action_points_label" fontSize="28" width="540" height="32"
                         align="right" textAlign="right" color="0.94,0.76,0.38,1">${text:city_action_points_placeholder}</label>
+                    <row />
+                    <label id="national_order_label" fontSize="20" width="540" height="28"
+                        align="right" textAlign="right" color="0.73,0.78,0.69,1">${text:national_order_placeholder}</label>
                 </table>
             </table>
             <row />

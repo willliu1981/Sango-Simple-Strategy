@@ -1,5 +1,6 @@
 package idv.kuan.studio.sango.validation;
 
+import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import javax.imageio.ImageIO;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.stream.StreamSource;
@@ -19,6 +21,9 @@ import javax.xml.validation.SchemaFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import com.badlogic.gdx.utils.JsonReader;
+import com.badlogic.gdx.utils.JsonValue;
 
 import idv.kuan.studio.sango.ui.widget.MapCameraState;
 
@@ -98,6 +103,7 @@ public final class UiResourceSmokeTest {
         check(!Files.exists(sourceRoot.resolve("idv/kuan/studio/sango/ui/PrototypeCampaignScreen.java")),
             "淘汰 Prototype Screen 不可回歸");
         check(!Files.exists(assetsPath.resolve("ui/prototype_campaign.xml")), "淘汰 Prototype XML 不可回歸");
+        validateTerrainAssets(assetsPath);
         validateCamera();
         System.out.println("Sango UI resources and map camera: PASS; checks=" + checks);
     }
@@ -180,6 +186,46 @@ public final class UiResourceSmokeTest {
         factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
         factory.setExpandEntityReferences(false);
         return factory.newDocumentBuilder().parse(xmlPath.toFile());
+    }
+
+    private static void validateTerrainAssets(Path assetsPath) throws Exception {
+        JsonValue maps = new JsonReader().parse(Files.readString(assetsPath.resolve("data/maps/maps.json"))).get("maps");
+        int checkedMaps = 0;
+        for (JsonValue map = maps.child; map != null; map = map.next) {
+            String assetPath = map.getString("backgroundAssetPath");
+            check(assetPath.startsWith("picture/maps/") && !assetPath.contains(".."), "底圖路徑只指向已封裝資產");
+            Path terrainPath = assetsPath.resolve(assetPath).normalize();
+            check(Files.isRegularFile(terrainPath), "每個劇本地圖都必須附上實際底圖：" + map.getString("id"));
+            BufferedImage terrain = ImageIO.read(terrainPath.toFile());
+            check(terrain != null, "底圖可以解碼，不是只有檔名或無效影像");
+            check(terrain.getWidth() == 2040 && terrain.getHeight() == 1360,
+                "底圖保持 3:2，長邊不超過 2048，控制行動裝置貼圖大小");
+            check(Files.size(terrainPath) < 1500000L, "壓縮底圖大小應小於 1.5 MB");
+            MapCameraState terrainCamera = new MapCameraState();
+            terrainCamera.configure(1040f, 428f, 4200f, 2800f);
+            for (float requestedZoom : new float[] {0.1f, 0.5f, 1.0f, 1.75f}) {
+                terrainCamera.zoomAt(requestedZoom, 520f, 214f);
+                terrainCamera.centerOn(2600f, 1650f);
+                float left = terrainCamera.screenX(0f);
+                float bottom = terrainCamera.screenY(0f);
+                float width = 4200f * terrainCamera.getZoom();
+                float height = 2800f * terrainCamera.getZoom();
+                for (JsonValue node = map.get("nodes").child; node != null; node = node.next) {
+                    float cityX = node.getFloat("x");
+                    float cityY = node.getFloat("y");
+                    check(Math.abs(left + cityX * width - terrainCamera.screenX(cityX * 4200f)) < 0.002f,
+                        "底圖與城池 X 使用同一套相機轉換");
+                    check(Math.abs(bottom + cityY * height - terrainCamera.screenY(cityY * 2800f)) < 0.002f,
+                        "底圖與城池 Y 使用同一套相機轉換，不倒置或漂移");
+                }
+            }
+            checkedMaps += 1;
+        }
+        check(checkedMaps == 2, "六城舊存檔與 42 城新局都有各自底圖");
+        String cityXml = Files.readString(assetsPath.resolve("ui/city.xml"));
+        String mapXml = Files.readString(assetsPath.resolve("ui/strategic_map.xml"));
+        check(cityXml.contains("id=\"national_order_label\""), "內政可查看全城民心，不只顯示目前城池");
+        check(mapXml.contains("id=\"map_national_order_label\""), "戰略地圖可查看全城民心及下月預估");
     }
 
     private static void validateCamera() {

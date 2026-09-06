@@ -42,6 +42,7 @@ import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.ui.flow.MonthEndFlowController;
 import idv.kuan.studio.sango.ui.id.ScreenId;
 import idv.kuan.studio.sango.ui.support.ScreenBackground;
+import idv.kuan.studio.sango.ui.support.NationalOrderTextFormatter;
 import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
 
 /**
@@ -465,6 +466,7 @@ public final class CityScreen extends SuiScreen {
             text("city_action_points_prefix", "行動力：")
                 + gameState.actionPointsRemaining + " / " + gameState.actionPointsPerTurn
         );
+        label("national_order_label").setText(NationalOrderTextFormatter.formatPreview(gameState));
         label("city_name_heading_label").setText(
             localized(cityDefinition.nameKey, cityDefinition.id)
                 + text("city_management_suffix", "內政")

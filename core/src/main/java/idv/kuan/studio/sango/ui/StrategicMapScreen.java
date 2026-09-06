@@ -47,6 +47,8 @@ import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.ui.flow.MonthEndFlowController;
 import idv.kuan.studio.sango.ui.id.ScreenId;
 import idv.kuan.studio.sango.ui.support.ScreenBackground;
+import idv.kuan.studio.sango.ui.support.MapTerrainBackground;
+import idv.kuan.studio.sango.ui.support.NationalOrderTextFormatter;
 import idv.kuan.studio.sango.ui.theme.MapNodeTone;
 import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
 import idv.kuan.studio.sango.ui.widget.StrategicMapWidget;
@@ -63,6 +65,7 @@ public final class StrategicMapScreen extends SuiScreen {
     private static final float MAP_FALLBACK_HEIGHT = 505f;
 
     private final ScreenBackground screenBackground = new ScreenBackground();
+    private final MapTerrainBackground mapTerrainBackground = new MapTerrainBackground();
     private final NumberFormat numberFormat = NumberFormat.getIntegerInstance(Locale.TAIWAN);
     private final MonthEndFlowController monthEndFlowController = new MonthEndFlowController();
 
@@ -146,6 +149,10 @@ public final class StrategicMapScreen extends SuiScreen {
     protected void beforeDispose() {
         saveSilently();
         screenBackground.remove();
+        if (strategicMapWidget != null) {
+            strategicMapWidget.setTerrainDrawable(null);
+        }
+        mapTerrainBackground.dispose();
         super.beforeDispose();
     }
 
@@ -280,6 +287,9 @@ public final class StrategicMapScreen extends SuiScreen {
             gameState.mapId
         );
         String selectedCityId = ensureSelectedCity(gameState);
+        strategicMapWidget.setTerrainDrawable(
+            mapTerrainBackground.getOrLoad(mapDefinition.backgroundAssetPath)
+        );
 
         label("map_scenario_label").setText(
             text("map_scenario_prefix", "劇本：")
@@ -295,6 +305,7 @@ public final class StrategicMapScreen extends SuiScreen {
                 + text("city_action_points_prefix", "行動力：")
                 + gameState.actionPointsRemaining + " / " + gameState.actionPointsPerTurn
         );
+        label("map_national_order_label").setText(NationalOrderTextFormatter.formatPreview(gameState));
         label("map_name_label").setText(localized(mapDefinition.nameKey, mapDefinition.id));
         refreshObjectiveLabel(gameState);
         refreshUnreadBattleLabel(gameState);

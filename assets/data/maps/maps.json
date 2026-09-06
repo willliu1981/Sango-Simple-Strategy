@@ -66,7 +66,8 @@
           "toCityId": "wu_commandery",
           "travelMonths": 1
         }
-      ]
+      ],
+      "backgroundAssetPath": "picture/maps/central_region_terrain.jpg"
     },
     {
       "id": "china_42",
@@ -624,7 +625,8 @@
           "toCityId": "jiaozhi",
           "travelMonths": 1
         }
-      ]
+      ],
+      "backgroundAssetPath": "picture/maps/china_42_terrain.jpg"
     }
   ]
 }

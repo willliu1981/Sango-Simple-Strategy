@@ -33,6 +33,11 @@ public final class TurnReportTextFormatter {
     private String formatEvent(TurnEvent turnEvent) {
         TurnEventType eventType = turnEvent.getType();
         return switch (eventType) {
+            case ACTION_POINTS_REFRESHED -> text(
+                "report_event_action_points", "",
+                NationalOrderTextFormatter.formatAverage(turnEvent.getSecondaryValue()),
+                turnEvent.getPrimaryValue()
+            );
             case MILITARY_UPKEEP -> text(
                 "report_event_upkeep",
                 "軍糧支出：-{0} 糧，用於維持 {1} 兵。",

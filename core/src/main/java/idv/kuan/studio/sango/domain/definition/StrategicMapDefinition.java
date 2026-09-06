@@ -6,6 +6,7 @@ package idv.kuan.studio.sango.domain.definition;
 public final class StrategicMapDefinition {
     public String id;
     public String nameKey;
+    public String backgroundAssetPath;
     public MapCityNodeDefinition[] nodes;
     public CityConnectionDefinition[] connections;
 

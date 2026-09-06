@@ -45,7 +45,7 @@
         <entry name="new_game_scenario_heading" value="劇本" description="new_game_scenario_heading" />
         <entry name="new_game_faction_heading" value="選擇勢力" description="new_game_faction_heading" />
         <entry name="new_game_scenario_date" value="起始：初平元年 · 西元 190 年" description="new_game_scenario_date" />
-        <entry name="new_game_scenario_actions" value="每月 3 行動力。目標成功或失敗皆可繼續；僅失去所有城池才停止操作。" description="new_game_scenario_actions" />
+        <entry name="new_game_scenario_actions" value="每月依全城民心獲得 3–9 行動力；每 15 民心多 1 點。目標成功或失敗皆可繼續。" description="new_game_scenario_actions" />
         <entry name="scenario_prototype_name" value="群雄割據（流程原型）" description="scenario_prototype_name" />
         <entry name="scenario_prototype_description" value="選擇一個勢力，在六城區域地圖經營主城。農業於九月秋收、商業於季末收稅；敵軍會集結進攻。請在十二個月內攻下指定敵城。" description="scenario_prototype_description" />
         <entry name="new_game_selected_faction_placeholder" value="勢力：尚未選擇" description="new_game_selected_faction_placeholder" />
@@ -86,7 +86,7 @@
         <entry name="city_title" value="城池內政" description="city_title" />
         <entry name="city_overview_heading" value="領地概況" description="city_overview_heading" />
         <entry name="city_actions_heading" value="本回合命令" description="city_actions_heading" />
-        <entry name="city_actions_note" value="內政投資只提升城池能力，不會立即產生金或糧；成功命令消耗 1 點行動力並自動存檔。" description="city_actions_note" />
+        <entry name="city_actions_note" value="所有城池共用行動力；平均民心每 15 點多 1 點，每月給予 3–9 點，未使用不保留。" description="city_actions_note" />
         <entry name="city_rule_summary" value="軍糧按守軍與野戰軍總兵力每月扣除。徵兵降低訓練與士氣；訓練恢復訓練與士氣，士氣 50 為基準戰力。 治水降低 6 月洪災風險與秋收損失；城防只加成守軍。空城無抵抗佔領，戰鬥零傷亡。" description="city_rule_summary" />
         <entry name="city_scenario_placeholder" value="劇本：尚未載入" description="city_scenario_placeholder" />
         <entry name="city_date_placeholder" value="年代：尚未載入" description="city_date_placeholder" />
@@ -248,7 +248,7 @@
         <entry name="end_month_confirm_title_placeholder" value="結束本月？" description="end_month_confirm_title_placeholder" />
         <entry name="end_month_confirm_title_format" value="確定結束 {0} 年 {1} 月？" description="end_month_confirm_title_format" />
         <entry name="end_month_confirm_description_placeholder" value="月底將進行軍糧、季節收入、行軍、戰鬥與敵軍行動結算。" description="end_month_confirm_description_placeholder" />
-        <entry name="end_month_confirm_description_format" value="剩餘行動力：{0} / {1}。月底將結算軍糧、季節收入、行軍、戰鬥與敵軍行動。未使用的行動力不會保留。" description="end_month_confirm_description_format" />
+        <entry name="end_month_confirm_description_format" value="剩餘行動力：{0} / {1}。月底結算軍糧、季節收入、行軍、戰鬥與敵軍行動，再按全城民心計算下月 3–9 點。未用點數不保留。" description="end_month_confirm_description_format" />
         <entry name="button_end_month_confirm" value="確認結束本月" description="button_end_month_confirm" />
         <entry name="battle_prompt_title_placeholder" value="本月發生戰鬥" description="battle_prompt_title_placeholder" />
         <entry name="battle_prompt_title_format" value="{0} 發生戰鬥" description="battle_prompt_title_format" />
@@ -417,5 +417,9 @@
         <entry name="city_jiaozhi" value="交趾" description="city_jiaozhi" />
         <entry name="city_nanhai" value="南海" description="city_nanhai" />
         <entry name="map_node_font_probe" value="武威 天水 安定 長安 洛陽 陳留 許昌 汝南 宛 漢中 武都 梓潼 成都 江州 永安 建寧 雲南 晉陽 上黨 鄴 平原 南皮 薊 北平 襄平 北海 小沛 下邳 壽春 廣陵 建業 吳郡 會稽 鄱陽 豫章 襄陽 江陵 江夏 長沙 武陵 交趾 南海 曹操軍 劉備軍 孫策軍 袁紹軍 劉表軍 馬騰軍 黃巾殘部 中立 我方 敵軍 目標 戰事 未讀" description="map_node_font_probe" />
+        <entry name="national_order_placeholder" value="全城民心 -- ・下月預估 -- 點" description="national_order_placeholder" />
+        <entry name="national_order_preview_format" value="全城民心 {0}（{1} 城）・下月預估 {2} 點" description="national_order_preview_format" />
+        <entry name="report_event_action_points" value="下月行動力：{1} 點（結算後全城平均民心 {0}；本月剩餘不保留）。" description="report_event_action_points" />
+
     </scope>
 </i18n>

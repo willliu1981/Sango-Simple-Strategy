@@ -23,6 +23,7 @@ import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
+import idv.kuan.studio.sango.domain.rule.NationalActionPointRules;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 import idv.kuan.studio.sango.repository.SaveGameRepository;
 
@@ -79,6 +80,8 @@ public final class NewGameCommand {
             opponentFactionDefinition,
             neutralFactionDefinition
         );
+        gameState.actionPointsPerTurn = NationalActionPointRules.calculateMonthlyActionPoints(gameState);
+        gameState.actionPointsRemaining = gameState.actionPointsPerTurn;
         GameStateValidator.validate(gameState);
         saveGameRepository.save(slotNumber, gameState);
         return gameState;
@@ -150,8 +153,6 @@ public final class NewGameCommand {
         gameState.currentMonth = scenarioDefinition.startMonth;
         gameState.elapsedMonths = 0;
         gameState.turnLimitMonths = scenarioDefinition.turnLimitMonths;
-        gameState.actionPointsPerTurn = scenarioDefinition.actionPointsPerTurn;
-        gameState.actionPointsRemaining = scenarioDefinition.actionPointsPerTurn;
         gameState.enemyAttackCountdown = scenarioDefinition.enemyAttackDelayMonths;
         gameState.nextArmySequence = 1;
         gameState.nextBattleSequence = 1;
@@ -206,8 +207,6 @@ public final class NewGameCommand {
         gameState.currentYear = scenarioDefinition.startYear;
         gameState.currentMonth = scenarioDefinition.startMonth;
         gameState.turnLimitMonths = scenarioDefinition.turnLimitMonths;
-        gameState.actionPointsPerTurn = scenarioDefinition.actionPointsPerTurn;
-        gameState.actionPointsRemaining = scenarioDefinition.actionPointsPerTurn;
         gameState.enemyAttackCountdown = scenarioDefinition.enemyAttackDelayMonths;
         gameState.nextArmySequence = 1;
         gameState.nextBattleSequence = 1;

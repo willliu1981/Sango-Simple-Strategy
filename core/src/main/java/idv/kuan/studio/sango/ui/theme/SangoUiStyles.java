@@ -29,7 +29,8 @@ public final class SangoUiStyles {
     private static final Color MAP_ENEMY = new Color(0.48f, 0.10f, 0.07f, 0.98f);
     private static final Color MAP_NEUTRAL = new Color(0.16f, 0.16f, 0.15f, 0.98f);
     private static final Color MAP_SELECTED = new Color(0.78f, 0.45f, 0.10f, 1f);
-    private static final Color MAP_LINE = new Color(0.48f, 0.40f, 0.28f, 0.80f);
+    // 淺色山河底圖上使用較深的道路，避免與河流或紙紋混在一起。
+    private static final Color MAP_LINE = new Color(0.19f, 0.15f, 0.09f, 0.94f);
 
     private SangoUiStyles() {
     }

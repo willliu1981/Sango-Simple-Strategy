@@ -19,6 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
 
 import idv.kuan.studio.sango.domain.definition.CityConnectionDefinition;
@@ -46,6 +47,7 @@ public final class StrategicMapWidget extends WidgetGroup {
     private final List<ClickListener> nodeClickListeners = new ArrayList<>();
     private final Map<Integer, PointerPosition> pointers = new LinkedHashMap<>();
     private StrategicMapDefinition mapDefinition;
+    private Drawable terrainDrawable;
     private String selectedCityId;
     private float worldWidth;
     private float worldHeight;
@@ -86,6 +88,10 @@ public final class StrategicMapWidget extends WidgetGroup {
         this.selectedCityId = selectedCityId;
         rebuildChildren();
         invalidate();
+    }
+
+    public void setTerrainDrawable(Drawable terrainDrawable) {
+        this.terrainDrawable = terrainDrawable;
     }
 
     public void zoomBy(float factor) {
@@ -135,11 +141,29 @@ public final class StrategicMapWidget extends WidgetGroup {
         applyTransform(batch, computeTransform());
         batch.flush();
         if (clipBegin(0f, 0f, getWidth(), getHeight())) {
+            drawTerrain(batch, parentAlpha);
             drawChildren(batch, parentAlpha);
             batch.flush();
             clipEnd();
         }
         resetTransform(batch);
+    }
+
+    private void drawTerrain(Batch batch, float parentAlpha) {
+        if (terrainDrawable == null || worldWidth <= 0f || worldHeight <= 0f) {
+            return;
+        }
+        float originalPackedColor = batch.getPackedColor();
+        batch.setColor(getColor().r, getColor().g, getColor().b, getColor().a * parentAlpha);
+        // 與城池和道路完全共用同一組世界轉螢幕座標，並在同一裁切範圍內繪製。
+        terrainDrawable.draw(
+            batch,
+            camera.screenX(0f),
+            camera.screenY(0f),
+            worldWidth * camera.getZoom(),
+            worldHeight * camera.getZoom()
+        );
+        batch.setPackedColor(originalPackedColor);
     }
 
     @Override

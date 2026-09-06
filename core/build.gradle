@@ -58,3 +58,17 @@ tasks.register('runUiResourceSmokeTest', JavaExec) {
 tasks.named('check') {
   dependsOn 'runNationalCampaignSmokeTest', 'runUiResourceSmokeTest'
 }
+
+
+tasks.register('runNationalActionPointSmokeTest', JavaExec) {
+  group = 'verification'
+  description = '驗證全城民心聚合、3–9 點行動力、月份快照與舊存檔不回補。'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.NationalActionPointSmokeTest')
+  args rootProject.file('assets').absolutePath
+}
+
+tasks.named('check') {
+  dependsOn 'runNationalActionPointSmokeTest'
+}

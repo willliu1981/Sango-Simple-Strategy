@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import idv.kuan.studio.sango.SangoVersion;
+import idv.kuan.studio.sango.domain.rule.NationalActionPointRules;
 
 /**
  * 對新局與讀取後的戰局做結構驗證，避免損壞資料進入 UI。
@@ -49,8 +50,9 @@ public final class GameStateValidator {
         if (gameState.turnLimitMonths < 1) {
             throw new IllegalArgumentException("turnLimitMonths 必須大於或等於 1。");
         }
-        if (gameState.actionPointsPerTurn < 1) {
-            throw new IllegalArgumentException("actionPointsPerTurn 必須大於或等於 1。");
+        if (gameState.actionPointsPerTurn < NationalActionPointRules.MINIMUM_ACTION_POINTS
+            || gameState.actionPointsPerTurn > NationalActionPointRules.MAXIMUM_ACTION_POINTS) {
+            throw new IllegalArgumentException("actionPointsPerTurn 必須介於 3 到 9。");
         }
         if (gameState.actionPointsRemaining < 0
             || gameState.actionPointsRemaining > gameState.actionPointsPerTurn) {

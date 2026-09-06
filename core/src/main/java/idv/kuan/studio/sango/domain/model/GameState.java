@@ -29,6 +29,7 @@ public final class GameState {
     public int elapsedMonths;
     public int turnLimitMonths;
     public int actionPointsRemaining;
+    /** 月初已結算的額度快照；本月民心變動只影響下個月，不由讀檔或 UI 重設。 */
     public int actionPointsPerTurn;
     public int enemyAttackCountdown;
     public int nextArmySequence;

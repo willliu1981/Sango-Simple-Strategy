@@ -32,6 +32,7 @@ import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.domain.rule.DomesticActionFailureReason;
 import idv.kuan.studio.sango.domain.rule.DomesticActionType;
+import idv.kuan.studio.sango.domain.rule.NationalActionPointRules;
 import idv.kuan.studio.sango.domain.rule.SeasonalEconomyRules;
 import idv.kuan.studio.sango.domain.service.TurnResolutionService;
 import idv.kuan.studio.sango.repository.definition.AssetJsonGameDefinitionRepository;
@@ -181,7 +182,10 @@ public final class VerticalSliceSmokeTest {
         );
         assertEquals(1020, gameState.requirePlayerFactionState().gold, "治水後金");
         assertEquals(40, gameState.requireCityState(PLAYER_CAPITAL_ID).waterControl, "治水後能力");
-        assertEquals(0, gameState.actionPointsRemaining, "三次命令後行動力");
+        assertEquals(gameState.actionPointsPerTurn - 3, gameState.actionPointsRemaining, "三次命令消耗三點行動力");
+
+        // 獨立建立零行動力情境，避免把舊版固定三點當成新的民心規則。
+        gameState.actionPointsRemaining = 0;
 
         DomesticActionResult rejectedAction = commands.domesticActionCommand.execute(
             SAVE_SLOT,
@@ -273,7 +277,7 @@ public final class VerticalSliceSmokeTest {
         );
         assertTrue(scoutResult.isSuccessful(), "相鄰敵城偵察應成功");
         gameState = scoutResult.getGameState();
-        assertEquals(2, gameState.actionPointsRemaining, "偵察消耗行動力");
+        assertEquals(gameState.actionPointsPerTurn - 1, gameState.actionPointsRemaining, "偵察消耗行動力");
         assertEquals(1180, gameState.requirePlayerFactionState().gold, "偵察消耗金");
         assertEquals(
             4,
@@ -381,7 +385,7 @@ public final class VerticalSliceSmokeTest {
             "目標城控制權"
         );
         assertContainsEvent(victoryResult, TurnEventType.CAMPAIGN_VICTORY, "戰役勝利事件");
-        assertEquals(3, gameState.actionPointsRemaining, "達成目標後恢復下月行動力");
+        assertEquals(NationalActionPointRules.calculateMonthlyActionPoints(gameState), gameState.actionPointsRemaining, "達成目標後恢復下月行動力");
         DomesticActionResult freePlayAction = commands.domesticActionCommand.execute(
             SAVE_SLOT,
             gameState,
@@ -435,7 +439,7 @@ public final class VerticalSliceSmokeTest {
         );
         assertTrue(gameState.requirePlayerFactionState().active, "仍有其他城時勢力可保持 active");
         assertEquals("guangling", gameState.requirePlayerFactionState().capitalCityId, "敗北後替代主城");
-        assertEquals(3, gameState.actionPointsRemaining, "遷都後恢復下月行動力");
+        assertEquals(NationalActionPointRules.calculateMonthlyActionPoints(gameState), gameState.actionPointsRemaining, "遷都後恢復下月行動力");
         TurnResolutionResult continuedResult = commands.endTurnCommand.execute(SAVE_SLOT, gameState);
         assertEquals(7, continuedResult.getGameState().currentMonth, "遷都後仍可繼續推進月份");
     }
@@ -465,7 +469,7 @@ public final class VerticalSliceSmokeTest {
             TurnEventType.CAMPAIGN_DEFEAT_TIMEOUT,
             "期限敗北事件"
         );
-        assertEquals(3, gameState.actionPointsRemaining, "期限失敗後仍恢復行動力");
+        assertEquals(NationalActionPointRules.calculateMonthlyActionPoints(gameState), gameState.actionPointsRemaining, "期限失敗後仍恢復行動力");
         TurnResolutionResult continuedResult = commands.endTurnCommand.execute(SAVE_SLOT, gameState);
         assertEquals(3, continuedResult.getGameState().currentMonth, "期限失敗後仍可繼續月份");
     }

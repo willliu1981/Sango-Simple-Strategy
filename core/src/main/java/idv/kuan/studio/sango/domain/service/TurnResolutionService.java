@@ -15,6 +15,7 @@ import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
+import idv.kuan.studio.sango.domain.rule.NationalActionPointRules;
 import idv.kuan.studio.sango.domain.rule.SeasonalEconomyRules;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 
@@ -345,8 +346,22 @@ public final class TurnResolutionService {
             gameState.currentMonth = 1;
             gameState.currentYear += 1;
         }
-        gameState.actionPointsRemaining = gameState.gameplayStatus == GameplayStatus.ACTIVE
-            ? gameState.actionPointsPerTurn
-            : 0;
+        if (gameState.gameplayStatus == GameplayStatus.ACTIVE) {
+            // 先完成災害、攻佔、遷都與 AI，再以結算後的全部玩家領地計算下月額度。
+            NationalActionPointRules.PublicOrderSummary publicOrderSummary =
+                NationalActionPointRules.summarizePlayer(gameState);
+            gameState.actionPointsPerTurn = publicOrderSummary.monthlyActionPoints();
+            gameState.actionPointsRemaining = gameState.actionPointsPerTurn;
+            report.add(new TurnEvent(
+                TurnEventType.ACTION_POINTS_REFRESHED,
+                gameState.playerFactionId,
+                null,
+                null,
+                gameState.actionPointsPerTurn,
+                publicOrderSummary.averagePublicOrderTenths()
+            ));
+        } else {
+            gameState.actionPointsRemaining = 0;
+        }
     }
 }

@@ -22,8 +22,12 @@
             </table>
             <row />
 
-            <label id="map_unread_battle_label" fontSize="25" width="1788" height="44"
-                align="left" textAlign="left" color="0.95,0.45,0.31,1">${text:map_unread_battle_none}</label>
+            <table width="1788" height="44">
+                <label id="map_national_order_label" fontSize="24" width="1060" height="44"
+                    align="left" textAlign="left" color="0.73,0.78,0.69,1">${text:national_order_placeholder}</label>
+                <label id="map_unread_battle_label" fontSize="25" width="720" height="44"
+                    align="right" textAlign="right" color="0.95,0.45,0.31,1">${text:map_unread_battle_none}</label>
+            </table>
             <row />
 
             <table width="1788" height="670" padTop="4">
