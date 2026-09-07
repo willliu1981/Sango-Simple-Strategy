@@ -3,6 +3,7 @@ package idv.kuan.studio.sango.ui.flow;
 import idv.kuan.studio.sango.application.result.TurnResolutionResult;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.runtime.SangoServices;
+import idv.kuan.studio.sango.audio.MusicTrack;
 
 /**
  * 地圖與內政畫面共用的月底結算入口。
@@ -19,6 +20,7 @@ public final class MonthEndFlowController {
             resolutionResult.getGameState()
         );
         SangoServices.session().setLastTurnReport(resolutionResult.getReport());
+        SangoServices.audio().playMusic(MusicTrack.forMonth(resolutionResult.getGameState().currentMonth));
         return resolutionResult;
     }
 }

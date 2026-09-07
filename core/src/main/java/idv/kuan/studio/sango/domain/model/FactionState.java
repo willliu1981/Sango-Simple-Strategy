@@ -9,6 +9,9 @@ public final class FactionState {
     public int gold;
     public int food;
     public boolean active;
+    /** 只供非玩家勢力使用；玩家額度沿用 GameState 的既有快照欄位。 */
+    public int aiActionPointsPerTurn;
+    public int aiActionPointsRemaining;
 
     public FactionState() {
     }
@@ -20,6 +23,8 @@ public final class FactionState {
         copiedState.gold = gold;
         copiedState.food = food;
         copiedState.active = active;
+        copiedState.aiActionPointsPerTurn = aiActionPointsPerTurn;
+        copiedState.aiActionPointsRemaining = aiActionPointsRemaining;
         return copiedState;
     }
 }

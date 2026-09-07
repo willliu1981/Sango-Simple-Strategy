@@ -15,6 +15,11 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 import idv.kuan.studio.libgdx.simpleui.Sui;
 import idv.kuan.studio.libgdx.simpleui.SuiScreen;
@@ -22,7 +27,7 @@ import idv.kuan.studio.libgdx.simpleui.builder.BuiltUI;
 import idv.kuan.studio.sango.application.result.DomesticActionResult;
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
 import idv.kuan.studio.sango.application.result.TurnResolutionResult;
-import idv.kuan.studio.sango.audio.MusicTrack;
+import idv.kuan.studio.sango.ui.support.ScreenMusic;
 import idv.kuan.studio.sango.audio.SoundEffect;
 import idv.kuan.studio.sango.data.SangoPreferences;
 import idv.kuan.studio.sango.domain.definition.CityDefinition;
@@ -37,6 +42,14 @@ import idv.kuan.studio.sango.domain.rule.DomesticActionFailureReason;
 import idv.kuan.studio.sango.domain.rule.DomesticActionRules;
 import idv.kuan.studio.sango.domain.rule.DomesticActionType;
 import idv.kuan.studio.sango.domain.rule.SeasonalEconomyRules;
+import idv.kuan.studio.sango.domain.rule.CampaignBalance;
+import idv.kuan.studio.sango.domain.rule.OfficerCommandProfile;
+import idv.kuan.studio.sango.domain.rule.PopulationRules;
+import idv.kuan.studio.sango.domain.rule.PublicOrderRules;
+import idv.kuan.studio.sango.domain.rule.NationalActionPointRules;
+import idv.kuan.studio.sango.domain.rule.RecruitmentRules;
+import idv.kuan.studio.sango.domain.rule.TroopQualityRules;
+import idv.kuan.studio.sango.ui.support.TroopQualityTextFormatter;
 import idv.kuan.studio.sango.repository.save.SaveGameException;
 import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.ui.flow.MonthEndFlowController;
@@ -60,6 +73,11 @@ public final class CityScreen extends SuiScreen {
 
     private Actor endMonthConfirmMask;
     private Actor battlePromptMask;
+    private Actor recruitmentMask;
+    private Slider recruitmentSlider;
+    private TextField recruitmentInput;
+    private String recruitmentCityId;
+    private boolean updatingRecruitmentControls;
     private String currentStatusMessage;
     private Color currentStatusColor = STATUS_NORMAL_COLOR;
 
@@ -78,6 +96,8 @@ public final class CityScreen extends SuiScreen {
         screenBackground.attach(stage, BACKGROUND_PATH);
         endMonthConfirmMask = attachModalMask("city_end_month_mask");
         battlePromptMask = attachModalMask("city_battle_prompt_mask");
+        recruitmentMask = attachModalMask("recruitment_mask");
+        initializeRecruitmentControls();
         applyStyles();
         applyDomesticActionButtonTexts();
         bindActions();
@@ -94,13 +114,13 @@ public final class CityScreen extends SuiScreen {
             return;
         }
         closeModals();
-        SangoServices.audio().playMusic(MusicTrack.STRATEGY);
         currentStatusMessage = text(
             "city_status_ready",
             "內政投資不會立即產生金糧；收益會在季末或秋收結算。"
         );
         currentStatusColor = STATUS_NORMAL_COLOR;
         ensureCurrentGameState();
+        ScreenMusic.play(ScreenId.CITY);
         ensureSelectedCity();
         refreshView();
     }
@@ -151,6 +171,12 @@ public final class CityScreen extends SuiScreen {
     }
 
     private void applyStyles() {
+        SangoUiStyles.applySecondaryButton(button("recruitment_min_button"));
+        SangoUiStyles.applySecondaryButton(button("recruitment_minus_button"));
+        SangoUiStyles.applySecondaryButton(button("recruitment_plus_button"));
+        SangoUiStyles.applySecondaryButton(button("recruitment_max_button"));
+        SangoUiStyles.applySecondaryButton(button("recruitment_cancel_button"));
+        SangoUiStyles.applyPrimaryButton(button("recruitment_confirm_button"));
         SangoUiStyles.applySecondaryButton(button("agriculture_button"));
         SangoUiStyles.applySecondaryButton(button("commerce_button"));
         SangoUiStyles.applySecondaryButton(button("water_control_button"));
@@ -167,18 +193,9 @@ public final class CityScreen extends SuiScreen {
     }
 
     private void applyDomesticActionButtonTexts() {
-        button("recruit_button").setText(
-            multilineText(
-                "button_recruit",
-                "徵兵｜100 金・100 糧\\n兵力 +200・訓練 -5・士氣 -5"
-            )
-        );
-        button("train_button").setText(
-            multilineText(
-                "button_train",
-                "訓練｜50 金\\n訓練 +5・士氣 +5"
-            )
-        );
+        button("recruit_button").setText(multilineText("button_recruit", "徵兵｜選擇人數\\n按實際人數計算金糧"));
+        button("train_button").setText(text("button_train_format", "訓練｜{0} 金\\n最多覆蓋 {1} 兵",
+            DomesticActionType.TRAIN.getGoldCost(), numberFormat.format(OfficerCommandProfile.DEFAULT.trainingCoverage())));
     }
 
     private String multilineText(String key, String fallbackText) {
@@ -199,7 +216,13 @@ public final class CityScreen extends SuiScreen {
             () -> executeDomesticAction(DomesticActionType.IMPROVE_WATER_CONTROL)
         );
         ui.onClick("fortify_button", () -> executeDomesticAction(DomesticActionType.FORTIFY));
-        ui.onClick("recruit_button", () -> executeDomesticAction(DomesticActionType.RECRUIT));
+        ui.onClick("recruit_button", this::openRecruitment);
+        ui.onClick("recruitment_cancel_button", this::closeModals);
+        ui.onClick("recruitment_confirm_button", this::confirmRecruitment);
+        ui.onClick("recruitment_min_button", () -> setRecruitmentAmount(recruitmentMaximum() > 0 ? 1 : 0));
+        ui.onClick("recruitment_max_button", () -> setRecruitmentAmount(recruitmentMaximum()));
+        ui.onClick("recruitment_minus_button", () -> setRecruitmentAmount(Math.max(0, requestedRecruitmentAmount() - 100)));
+        ui.onClick("recruitment_plus_button", () -> setRecruitmentAmount(Math.min(recruitmentMaximum(), requestedRecruitmentAmount() + 100)));
         ui.onClick("train_button", () -> executeDomesticAction(DomesticActionType.TRAIN));
         ui.onClick("return_map_button", this::returnToMap);
         ui.onClick("city_settings_button", this::openSettings);
@@ -256,24 +279,30 @@ public final class CityScreen extends SuiScreen {
     }
 
     private void executeDomesticAction(DomesticActionType actionType) {
+        executeDomesticAction(actionType, CampaignBalance.DEFAULT_RECRUIT_AMOUNT);
+    }
+
+    private boolean executeDomesticAction(DomesticActionType actionType, int recruitmentAmount) {
         if (!SangoServices.session().hasCurrentState()) {
             showNoGameStateError();
-            return;
+            return false;
         }
-
+        boolean successful = false;
         try {
             int slotNumber = SangoServices.session().getCurrentSaveSlot();
+            GameState previousState = SangoServices.session().requireCurrentState();
+            String cityId = actionType == DomesticActionType.RECRUIT
+                ? recruitmentCityId : SangoServices.session().getSelectedCityId();
+            CityState previousCity = previousState.requireCityState(cityId);
             DomesticActionResult result = SangoServices.domesticActionCommand().execute(
-                slotNumber,
-                SangoServices.session().requireCurrentState(),
-                SangoServices.session().getSelectedCityId(),
-                actionType
-            );
+                slotNumber, previousState, cityId, actionType, recruitmentAmount);
             if (result.isSuccessful()) {
                 SangoServices.session().setCurrentState(slotNumber, result.getGameState());
-                currentStatusMessage = successMessage(result.getActionType());
+                currentStatusMessage = actionResultMessage(actionType, previousCity,
+                    result.getGameState().requireCityState(cityId), recruitmentAmount);
                 currentStatusColor = STATUS_SUCCESS_COLOR;
                 SangoServices.audio().playSound(SoundEffect.COMMAND_SUCCESS);
+                successful = true;
             } else {
                 currentStatusMessage = failureMessage(result.getFailureReason());
                 currentStatusColor = STATUS_ERROR_COLOR;
@@ -281,22 +310,151 @@ public final class CityScreen extends SuiScreen {
             }
         } catch (SaveGameException exception) {
             Gdx.app.error("City", "內政命令完成前存檔失敗。", exception);
-            currentStatusMessage = text(
-                "city_status_save_failed",
-                "存檔失敗，因此本次命令沒有套用。"
-            );
+            currentStatusMessage = text("city_status_save_failed", "存檔失敗，因此本次命令沒有套用。");
             currentStatusColor = STATUS_ERROR_COLOR;
             SangoServices.audio().playSound(SoundEffect.COMMAND_ERROR);
         } catch (RuntimeException exception) {
             Gdx.app.error("City", "執行內政命令失敗。", exception);
-            currentStatusMessage = text(
-                "city_status_action_failed",
-                "內政命令執行失敗，戰局狀態未更新。"
-            );
+            currentStatusMessage = text("city_status_action_failed", "內政命令執行失敗，戰局狀態未更新。");
             currentStatusColor = STATUS_ERROR_COLOR;
             SangoServices.audio().playSound(SoundEffect.COMMAND_ERROR);
         }
         refreshView();
+        return successful;
+    }
+
+    private String actionResultMessage(DomesticActionType actionType, CityState before, CityState after, int recruitmentAmount) {
+        if (actionType == DomesticActionType.RECRUIT) {
+            return text("city_recruit_result_format", "徵兵 {0} 人；金 -{1}、糧 -{2}。全軍訓練 {3}、士氣 {4}。",
+                numberFormat.format(recruitmentAmount), numberFormat.format(RecruitmentRules.goldCost(recruitmentAmount)),
+                numberFormat.format(RecruitmentRules.foodCost(recruitmentAmount)),
+                quality(TroopQualityRules.training(after)), quality(TroopQualityRules.morale(after)));
+        }
+        if (actionType == DomesticActionType.TRAIN) {
+            return text("city_train_result_format", "訓練覆蓋 {0}/{1} 人；全軍訓練 {2} → {3}、士氣 {4} → {5}。金 -{6}。",
+                numberFormat.format(Math.min(before.troops, OfficerCommandProfile.DEFAULT.trainingCoverage())),
+                numberFormat.format(before.troops), quality(TroopQualityRules.training(before)), quality(TroopQualityRules.training(after)),
+                quality(TroopQualityRules.morale(before)), quality(TroopQualityRules.morale(after)), DomesticActionType.TRAIN.getGoldCost());
+        }
+        return successMessage(actionType);
+    }
+
+    private void initializeRecruitmentControls() {
+        recruitmentInput = ui.getActor("recruitment_amount_input", TextField.class);
+        recruitmentInput.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
+        recruitmentInput.setMaxLength(5);
+        Slider.SliderStyle sliderStyle = new Slider.SliderStyle();
+        Drawable track = Sui.resources.manager().getSkin().newDrawable("white", new Color(0.19f, 0.16f, 0.12f, 1f));
+        track.setMinHeight(12f);
+        Drawable knob = Sui.resources.manager().getSkin().newDrawable("white", new Color(0.94f, 0.76f, 0.43f, 1f));
+        knob.setMinWidth(36f);
+        knob.setMinHeight(42f);
+        Drawable filledTrack = Sui.resources.manager().getSkin().newDrawable("white", new Color(0.59f, 0.39f, 0.16f, 1f));
+        filledTrack.setMinHeight(12f);
+        sliderStyle.background = track;
+        sliderStyle.knob = knob;
+        sliderStyle.knobBefore = filledTrack;
+        recruitmentSlider = new Slider(0f, 1f, 1f, false, sliderStyle);
+        ui.getActor("recruitment_slider_host", Table.class).add(recruitmentSlider).growX().height(70f);
+        recruitmentSlider.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (!updatingRecruitmentControls) {
+                    setRecruitmentAmount(Math.round(recruitmentSlider.getValue()));
+                }
+            }
+        });
+        recruitmentInput.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (!updatingRecruitmentControls && recruitmentCityId != null) {
+                    updatingRecruitmentControls = true;
+                    recruitmentSlider.setValue(Math.min(recruitmentMaximum(), requestedRecruitmentAmount()));
+                    updatingRecruitmentControls = false;
+                    refreshRecruitmentPreview();
+                }
+            }
+        });
+    }
+
+    private void openRecruitment() {
+        if (!SangoServices.session().hasCurrentState()) {
+            showNoGameStateError();
+            return;
+        }
+        recruitmentCityId = SangoServices.session().getSelectedCityId();
+        int maximum = recruitmentMaximum();
+        updatingRecruitmentControls = true;
+        recruitmentSlider.setRange(0f, Math.max(1, maximum));
+        recruitmentSlider.setDisabled(maximum == 0);
+        updatingRecruitmentControls = false;
+        setRecruitmentAmount(Math.min(CampaignBalance.DEFAULT_RECRUIT_AMOUNT, maximum));
+        openModal(recruitmentMask);
+    }
+
+    private int recruitmentMaximum() {
+        if (recruitmentCityId == null || !SangoServices.session().hasCurrentState()) {
+            return 0;
+        }
+        GameState gameState = SangoServices.session().requireCurrentState();
+        return RecruitmentRules.maximumRecruitable(gameState.requireCityState(recruitmentCityId),
+            gameState.requirePlayerFactionState(), OfficerCommandProfile.DEFAULT);
+    }
+
+    private int requestedRecruitmentAmount() {
+        try {
+            return Integer.parseInt(recruitmentInput.getText());
+        } catch (NumberFormatException exception) {
+            return 0;
+        }
+    }
+
+    private void setRecruitmentAmount(int amount) {
+        updatingRecruitmentControls = true;
+        int boundedAmount = Math.max(0, Math.min(recruitmentMaximum(), amount));
+        recruitmentInput.setText(Integer.toString(boundedAmount));
+        recruitmentSlider.setValue(boundedAmount);
+        updatingRecruitmentControls = false;
+        refreshRecruitmentPreview();
+    }
+
+    private void refreshRecruitmentPreview() {
+        GameState gameState = SangoServices.session().requireCurrentState();
+        CityState cityState = gameState.requireCityState(recruitmentCityId);
+        int amount = requestedRecruitmentAmount();
+        int previewAmount = Math.max(0, Math.min(CampaignBalance.MAXIMUM_RECRUITMENT, amount));
+        RecruitmentRules.Quote quote = RecruitmentRules.quote(gameState, cityState, previewAmount, OfficerCommandProfile.DEFAULT);
+        NationalActionPointRules.PublicOrderSummary national = NationalActionPointRules.summarizePlayer(gameState);
+        label("recruitment_title_label").setText(text("recruitment_title_format", "{0} · 徵兵", cityName(cityState.cityId)));
+        label("recruitment_limit_label").setText(text("recruitment_limit_format", "人口 {0}｜至少保留 {1}｜人口徵兵上限 {2}｜資源允許 {3} 人",
+            numberFormat.format(cityState.population), numberFormat.format(CampaignBalance.RECRUIT_POPULATION_RESERVE),
+            numberFormat.format(RecruitmentRules.populationLimit(cityState.population, OfficerCommandProfile.DEFAULT)), numberFormat.format(quote.maximum())));
+        label("recruitment_order_label").setText(text("recruitment_order_format", "本城民心 {0}｜全勢力平均 {1}｜有效民心 {2}｜新兵訓練 {3}、士氣 {4}",
+            cityState.publicOrder, NationalOrderTextFormatter.formatAverage(national.averagePublicOrderTenths()),
+            NationalOrderTextFormatter.formatAverage(PublicOrderRules.effectiveOrderHundredths(gameState, cityState) / 10),
+            quote.recruitTraining(), quote.recruitMorale()));
+        label("recruitment_preview_label").setText(text("recruitment_preview_format", "徵兵 {0} 人；人口剩餘 {1}\\n金 -{2}、糧 -{3}；消耗 1 AP\\n全軍訓練 {4} → {5}；士氣 {6} → {7}",
+            numberFormat.format(previewAmount), numberFormat.format(cityState.population - previewAmount),
+            numberFormat.format(quote.goldCost()), numberFormat.format(quote.foodCost()),
+            quality(TroopQualityRules.training(cityState)), quality(quote.resultingTraining()),
+            quality(TroopQualityRules.morale(cityState)), quality(quote.resultingMorale())));
+        DomesticActionFailureReason failure = DomesticActionRules.evaluate(gameState, recruitmentCityId, DomesticActionType.RECRUIT, amount);
+        label("recruitment_status_label").setText(failure == DomesticActionFailureReason.NONE
+            ? text("recruitment_ready", "確認後才會扣除人口、金糧與行動力；取消不消耗資源。") : failureMessage(failure));
+        setButtonEnabled(button("recruitment_confirm_button"), failure == DomesticActionFailureReason.NONE);
+    }
+
+    private void confirmRecruitment() {
+        int amount = requestedRecruitmentAmount();
+        if (executeDomesticAction(DomesticActionType.RECRUIT, amount)) {
+            closeModals();
+        } else {
+            label("recruitment_status_label").setText(currentStatusMessage);
+        }
+    }
+
+    private String quality(int scaledValue) {
+        return TroopQualityTextFormatter.format(scaledValue);
     }
 
     private void requestEndMonth() {
@@ -489,8 +647,8 @@ public final class CityScreen extends SuiScreen {
         label("water_control_value_label").setText(cityState.waterControl + " / 100");
         label("defense_value_label").setText(cityState.defense + " / 100");
         label("public_order_value_label").setText(cityState.publicOrder + " / 100");
-        label("training_value_label").setText(cityState.training + " / 100");
-        label("morale_value_label").setText(cityState.morale + " / 100");
+        label("training_value_label").setText(quality(TroopQualityRules.training(cityState)) + " / 100");
+        label("morale_value_label").setText(quality(TroopQualityRules.morale(cityState)) + " / 100");
         label("tax_estimate_value_label").setText(
             numberFormat.format(SeasonalEconomyRules.calculateQuarterlyTax(cityState))
         );
@@ -498,6 +656,11 @@ public final class CityScreen extends SuiScreen {
             numberFormat.format(SeasonalEconomyRules.calculateEstimatedHarvest(cityState))
         );
         label("season_forecast_label").setText(buildSeasonForecast(gameState, cityState));
+        PopulationRules.Projection populationProjection = PopulationRules.project(gameState, cityState, cityDefinition.populationCapacity);
+        label("population_projection_label").setText(text("population_projection_format", "人口容量 {0}｜年底預估 {1} 人（{2}%）\\n依當時民心與人口重新結算；本次僅為預估。",
+            numberFormat.format(populationProjection.capacity()),
+            (populationProjection.delta() > 0 ? "+" : "") + numberFormat.format(populationProjection.delta()),
+            populationProjection.annualRatePercent()));
 
         boolean cityOwned = gameState.playerFactionId.equals(cityState.ownerFactionId);
         if (cityOwned && gameState.gameplayStatus == GameplayStatus.ACTIVE) {
@@ -575,8 +738,8 @@ public final class CityScreen extends SuiScreen {
     ) {
         setButtonEnabled(
             button(actorId),
-            DomesticActionRules.evaluate(gameState, cityId, actionType)
-                == DomesticActionFailureReason.NONE
+            DomesticActionRules.evaluate(gameState, cityId, actionType,
+                actionType == DomesticActionType.RECRUIT ? 1 : 0) == DomesticActionFailureReason.NONE
         );
     }
 
@@ -609,11 +772,11 @@ public final class CityScreen extends SuiScreen {
             );
             case RECRUIT -> text(
                 "city_status_recruit_success",
-                "完成徵兵：兵力 +200、人口 -200、訓練 -5、士氣 -5（最低 0）；金 -100、糧 -100。"
+                "完成徵兵，部隊素質依兵力重新加權。"
             );
             case TRAIN -> text(
                 "city_status_train_success",
-                "完成訓練：訓練與士氣各 +5（最高 100）；金 -50。"
+                "完成覆蓋訓練，成果已回算全軍平均。"
             );
         };
     }
@@ -644,6 +807,9 @@ public final class CityScreen extends SuiScreen {
                 "city_status_insufficient_population",
                 "人口不足，無法繼續徵兵。"
             );
+            case INVALID_RECRUIT_AMOUNT -> text("recruitment_invalid_amount", "請輸入 1 到 10000 之間的徵兵數量。");
+            case RECRUIT_LIMIT_EXCEEDED -> text("recruitment_limit_exceeded", "超過本城本次可徵兵上限。");
+            case NO_TROOPS -> text("training_no_troops", "城內沒有士兵，不能執行訓練。");
             case VALUE_AT_MAXIMUM -> text(
                 "city_status_value_maximum",
                 "此項能力已達上限。"
@@ -667,10 +833,13 @@ public final class CityScreen extends SuiScreen {
     private void closeModals() {
         setVisible(endMonthConfirmMask, false);
         setVisible(battlePromptMask, false);
+        setVisible(recruitmentMask, false);
+        stage.setKeyboardFocus(null);
+        Gdx.input.setOnscreenKeyboardVisible(false);
     }
 
     private boolean isAnyModalVisible() {
-        return isVisible(endMonthConfirmMask) || isVisible(battlePromptMask);
+        return isVisible(endMonthConfirmMask) || isVisible(battlePromptMask) || isVisible(recruitmentMask);
     }
 
     private boolean isVisible(Actor actor) {
@@ -720,6 +889,6 @@ public final class CityScreen extends SuiScreen {
     }
 
     private String text(String entryName, String fallback, Object... arguments) {
-        return Sui.i18n.manager().getText("literal", entryName, fallback, arguments);
+        return Sui.i18n.manager().getText("literal", entryName, fallback, arguments).replace("\\n", "\n");
     }
 }

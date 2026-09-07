@@ -7,6 +7,7 @@ import java.util.Set;
 
 import idv.kuan.studio.sango.SangoVersion;
 import idv.kuan.studio.sango.domain.rule.NationalActionPointRules;
+import idv.kuan.studio.sango.domain.rule.TroopQualityRules;
 
 /**
  * 對新局與讀取後的戰局做結構驗證，避免損壞資料進入 UI。
@@ -161,6 +162,9 @@ public final class GameStateValidator {
         requireText(factionState.factionId, "factionState.factionId");
         requireNonNegative(factionState.gold, "factionState.gold");
         requireNonNegative(factionState.food, "factionState.food");
+        requireRange(factionState.aiActionPointsPerTurn, 0, 9, "factionState.aiActionPointsPerTurn");
+        requireRange(factionState.aiActionPointsRemaining, 0, factionState.aiActionPointsPerTurn,
+            "factionState.aiActionPointsRemaining");
         if (factionState.active) {
             requireText(factionState.capitalCityId, "factionState.capitalCityId");
         }
@@ -181,6 +185,8 @@ public final class GameStateValidator {
         requireRange(cityState.publicOrder, 0, 100, "cityState.publicOrder");
         requireRange(cityState.training, 0, 100, "cityState.training");
         requireRange(cityState.morale, 0, 100, "cityState.morale");
+        validateQualityFraction(cityState.training, cityState.trainingFraction, "cityState.trainingFraction");
+        validateQualityFraction(cityState.morale, cityState.moraleFraction, "cityState.moraleFraction");
         requireRange(
             cityState.harvestModifierPercent,
             0,
@@ -216,6 +222,8 @@ public final class GameStateValidator {
         }
         requireRange(armyState.training, 0, 100, "armyState.training");
         requireRange(armyState.morale, 0, 100, "armyState.morale");
+        validateQualityFraction(armyState.training, armyState.trainingFraction, "armyState.trainingFraction");
+        validateQualityFraction(armyState.morale, armyState.moraleFraction, "armyState.moraleFraction");
         if (armyState.tactic == null) {
             throw new IllegalArgumentException("armyState.tactic 不可為 null。");
         }
@@ -341,6 +349,13 @@ public final class GameStateValidator {
     ) {
         if (!cityStatesById.containsKey(cityId)) {
             throw new IllegalArgumentException(fieldName + " 沒有對應城池：" + cityId);
+        }
+    }
+
+    private static void validateQualityFraction(int quality, int fraction, String fieldName) {
+        requireRange(fraction, 0, TroopQualityRules.SCALE - 1, fieldName);
+        if (quality == 100 && fraction != 0) {
+            throw new IllegalArgumentException(fieldName + " 不可讓素質超過 100。");
         }
     }
 

@@ -16,7 +16,7 @@ public final class NationalOrderTextFormatter {
             NationalActionPointRules.summarizePlayer(gameState);
         return Sui.i18n.manager().getText(
             "literal", "national_order_preview_format", "",
-            formatAverage(publicOrderSummary.averagePublicOrderTenths()),
+            publicOrderSummary.totalPublicOrder(),
             publicOrderSummary.cityCount(),
             NationalActionPointRules.calculateMonthlyActionPoints(gameState)
         );

@@ -15,6 +15,7 @@ import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.rule.MilitaryRules;
+import idv.kuan.studio.sango.domain.rule.TroopQualityRules;
 
 /**
  * 處理抵達、增援、攻城與無抵抗佔領，並保存作戰當下的戰報快照。
@@ -27,7 +28,7 @@ public final class BattleResolutionService {
     ) {
         CityState targetCityState = gameState.requireCityState(armyState.targetCityId);
         if (armyState.factionId.equals(targetCityState.ownerFactionId)) {
-            mergeTroops(targetCityState, armyState.troops, armyState.training, armyState.morale);
+            TroopQualityRules.merge(targetCityState, armyState.troops, TroopQualityRules.training(armyState), TroopQualityRules.morale(armyState));
             turnResolutionReport.add(new TurnEvent(
                 TurnEventType.ARMY_REINFORCED, armyState.factionId,
                 targetCityState.cityId, armyState.originCityId, armyState.troops, 0
@@ -58,6 +59,8 @@ public final class BattleResolutionService {
             targetCityState.troops = attackerSurvivors;
             targetCityState.training = armyState.training;
             targetCityState.morale = armyState.morale;
+            targetCityState.trainingFraction = armyState.trainingFraction;
+            targetCityState.moraleFraction = armyState.moraleFraction;
             int occupationDamage = unopposedOccupation ? 5 : 10;
             targetCityState.publicOrder = Math.max(0, targetCityState.publicOrder - occupationDamage);
             targetCityState.defense = Math.max(0, targetCityState.defense - occupationDamage);
@@ -196,14 +199,8 @@ public final class BattleResolutionService {
         }
         CityState originCityState = gameState.findCityState(armyState.originCityId);
         if (originCityState != null && armyState.factionId.equals(originCityState.ownerFactionId)) {
-            mergeTroops(originCityState, survivors, armyState.training, armyState.morale);
+            TroopQualityRules.merge(originCityState, survivors, TroopQualityRules.training(armyState), TroopQualityRules.morale(armyState));
         }
-    }
-
-    private void mergeTroops(CityState cityState, int troops, int training, int morale) {
-        cityState.training = MilitaryRules.weightedQuality(cityState.troops, cityState.training, troops, training);
-        cityState.morale = MilitaryRules.weightedQuality(cityState.troops, cityState.morale, troops, morale);
-        cityState.troops = Math.addExact(cityState.troops, troops);
     }
 
     private boolean isDefendingCapital(

@@ -20,7 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import idv.kuan.studio.libgdx.simpleui.Sui;
 import idv.kuan.studio.libgdx.simpleui.SuiScreen;
 import idv.kuan.studio.libgdx.simpleui.builder.BuiltUI;
-import idv.kuan.studio.sango.audio.MusicTrack;
+import idv.kuan.studio.sango.ui.support.ScreenMusic;
 import idv.kuan.studio.sango.audio.SoundEffect;
 import idv.kuan.studio.sango.data.SangoPreferences;
 import idv.kuan.studio.sango.domain.definition.CityDefinition;
@@ -393,10 +393,7 @@ public final class SaveLoadScreen extends SuiScreen {
     }
 
     private void playExpectedMusic() {
-        ScreenId returnScreen = SangoServices.session().getSaveLoadReturnScreen();
-        SangoServices.audio().playMusic(
-            returnScreen == ScreenId.LOBBY ? MusicTrack.LOBBY : MusicTrack.STRATEGY
-        );
+        ScreenMusic.play(ScreenId.SAVE_LOAD);
     }
 
     private void openModal(Actor mask) {

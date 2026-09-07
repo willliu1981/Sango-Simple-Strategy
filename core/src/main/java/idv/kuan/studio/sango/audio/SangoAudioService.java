@@ -9,47 +9,62 @@ import com.badlogic.gdx.audio.Sound;
 
 import idv.kuan.studio.sango.data.SangoPreferences;
 
-/**
- * 集中管理背景音樂與短音效，避免 Screen 各自重複載入及釋放資源。
- */
+/** BGM 與音效的集中入口；鑑賞模式與遊戲季節模式共享串流管理，不同時搶播。 */
 public final class SangoAudioService {
-    private final Map<MusicTrack, Music> musicByTrack = new EnumMap<>(MusicTrack.class);
+    public static final float CROSSFADE_SECONDS = 2f;
+    private final MusicPlaybackController playback = new MusicPlaybackController(this::loadMusic, CROSSFADE_SECONDS);
     private final Map<SoundEffect, Sound> soundByEffect = new EnumMap<>(SoundEffect.class);
-
-    private MusicTrack desiredTrack;
-    private MusicTrack currentTrack;
+    private boolean galleryActive;
     private boolean paused;
     private boolean disposed;
 
     public void playMusic(MusicTrack musicTrack) {
-        if (disposed || musicTrack == null) {
-            return;
+        if (!disposed && !galleryActive) {
+            playback.request(musicTrack);
         }
-        desiredTrack = musicTrack;
-        if (!SangoPreferences.isMusicEnabled() || paused) {
-            stopCurrentMusic();
-            return;
-        }
-        if (currentTrack == musicTrack) {
-            Music currentMusic = musicByTrack.get(currentTrack);
-            if (currentMusic != null) {
-                currentMusic.setVolume(SangoPreferences.getMusicVolume());
-                if (!currentMusic.isPlaying()) {
-                    currentMusic.play();
-                }
-            }
-            return;
-        }
+    }
 
-        stopCurrentMusic();
-        Music music = loadMusic(musicTrack);
-        if (music == null) {
+    public void enterMusicPlayer(MusicTrack musicTrack) {
+        if (disposed || musicTrack == null || musicTrack == MusicTrack.LOBBY) {
             return;
         }
-        music.setLooping(true);
-        music.setVolume(SangoPreferences.getMusicVolume());
-        music.play();
-        currentTrack = musicTrack;
+        galleryActive = true;
+        playback.setUserPaused(false);
+        playback.request(musicTrack);
+        playback.retryRequestedTrack();
+    }
+
+    public void exitMusicPlayer(MusicTrack restoreTrack) {
+        galleryActive = false;
+        playback.setUserPaused(false);
+        playback.request(restoreTrack);
+    }
+
+    public void toggleMusicPlayerPause() {
+        if (galleryActive) {
+            playback.setUserPaused(!playback.isUserPaused());
+            if (!playback.isUserPaused()) {
+                playback.retryRequestedTrack();
+            }
+        }
+    }
+
+    public boolean isMusicPlayerPaused() {
+        return playback.isUserPaused();
+    }
+
+    public boolean hasMusicLoadFailure() {
+        return playback.hasRequestedTrackFailure();
+    }
+
+    public float getMusicPositionSeconds() {
+        return playback.positionSeconds();
+    }
+
+    public void update(float deltaSeconds) {
+        if (!disposed) {
+            playback.update(deltaSeconds, SangoPreferences.isMusicEnabled(), SangoPreferences.getMusicVolume());
+        }
     }
 
     public void playSound(SoundEffect soundEffect) {
@@ -63,30 +78,17 @@ public final class SangoAudioService {
     }
 
     public void applyPreferences() {
-        if (disposed) {
-            return;
-        }
-        if (!SangoPreferences.isMusicEnabled() || paused) {
-            stopCurrentMusic();
-            return;
-        }
-        if (desiredTrack != null) {
-            playMusic(desiredTrack);
-        }
+        update(0f);
     }
 
     public void pause() {
         paused = true;
-        if (currentTrack != null) {
-            Music currentMusic = musicByTrack.get(currentTrack);
-            if (currentMusic != null && currentMusic.isPlaying()) {
-                currentMusic.pause();
-            }
-        }
+        playback.pause();
     }
 
     public void resume() {
         paused = false;
+        playback.resume();
         applyPreferences();
     }
 
@@ -95,27 +97,16 @@ public final class SangoAudioService {
             return;
         }
         disposed = true;
-        for (Music music : musicByTrack.values()) {
-            music.dispose();
-        }
+        playback.dispose();
         for (Sound sound : soundByEffect.values()) {
             sound.dispose();
         }
-        musicByTrack.clear();
         soundByEffect.clear();
-        currentTrack = null;
-        desiredTrack = null;
     }
 
     private Music loadMusic(MusicTrack musicTrack) {
-        Music cachedMusic = musicByTrack.get(musicTrack);
-        if (cachedMusic != null) {
-            return cachedMusic;
-        }
         try {
-            Music loadedMusic = Gdx.audio.newMusic(Gdx.files.internal(musicTrack.getAssetPath()));
-            musicByTrack.put(musicTrack, loadedMusic);
-            return loadedMusic;
+            return Gdx.audio.newMusic(Gdx.files.internal(musicTrack.getAssetPath()));
         } catch (RuntimeException exception) {
             logAudioError("無法載入背景音樂：" + musicTrack.getAssetPath(), exception);
             return null;
@@ -135,17 +126,6 @@ public final class SangoAudioService {
             logAudioError("無法載入音效：" + soundEffect.getAssetPath(), exception);
             return null;
         }
-    }
-
-    private void stopCurrentMusic() {
-        if (currentTrack == null) {
-            return;
-        }
-        Music currentMusic = musicByTrack.get(currentTrack);
-        if (currentMusic != null) {
-            currentMusic.stop();
-        }
-        currentTrack = null;
     }
 
     private void logAudioError(String message, RuntimeException exception) {

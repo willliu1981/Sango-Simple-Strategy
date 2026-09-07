@@ -112,6 +112,7 @@ public final class LobbyScreen extends SuiScreen {
     }
 
     private void applyStyles() {
+        SangoUiStyles.applySecondaryButton(button("music_player_button"));
         SangoUiStyles.applyMenuButton(button("continue_button"));
         SangoUiStyles.applyPrimaryButton(button("new_game_button"));
         SangoUiStyles.applyMenuButton(button("load_game_button"));
@@ -123,6 +124,10 @@ public final class LobbyScreen extends SuiScreen {
     }
 
     private void bindActions() {
+        ui.onClick("music_player_button", () -> {
+            SangoServices.session().openMusicPlayer(ScreenId.LOBBY);
+            Sui.screens.set(ScreenId.MUSIC_PLAYER);
+        });
         ui.onClick("continue_button", this::continueCampaign);
         ui.onClick("new_game_button", this::openNewGame);
         ui.onClick("load_game_button", this::openLoadGame);

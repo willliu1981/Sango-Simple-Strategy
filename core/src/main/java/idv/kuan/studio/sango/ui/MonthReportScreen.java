@@ -19,7 +19,7 @@ import idv.kuan.studio.libgdx.simpleui.Sui;
 import idv.kuan.studio.libgdx.simpleui.SuiScreen;
 import idv.kuan.studio.libgdx.simpleui.builder.BuiltUI;
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
-import idv.kuan.studio.sango.audio.MusicTrack;
+import idv.kuan.studio.sango.ui.support.ScreenMusic;
 import idv.kuan.studio.sango.audio.SoundEffect;
 import idv.kuan.studio.sango.domain.model.BattleReport;
 import idv.kuan.studio.sango.domain.model.CityState;
@@ -79,7 +79,7 @@ public final class MonthReportScreen extends SuiScreen {
 
     @Override
     protected void afterShow() {
-        SangoServices.audio().playMusic(MusicTrack.STRATEGY);
+        ScreenMusic.play(ScreenId.MONTH_REPORT);
         stage.setScrollFocus(reportScrollPane);
         TurnResolutionReport report = SangoServices.session().getLastTurnReport();
         if (report == null) {

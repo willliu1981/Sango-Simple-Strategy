@@ -15,7 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import idv.kuan.studio.libgdx.simpleui.Sui;
 import idv.kuan.studio.libgdx.simpleui.SuiScreen;
 import idv.kuan.studio.libgdx.simpleui.builder.BuiltUI;
-import idv.kuan.studio.sango.audio.MusicTrack;
+import idv.kuan.studio.sango.ui.support.ScreenMusic;
 import idv.kuan.studio.sango.audio.SoundEffect;
 import idv.kuan.studio.sango.data.SangoPreferences;
 import idv.kuan.studio.sango.runtime.SangoServices;
@@ -105,6 +105,7 @@ public final class SettingsScreen extends SuiScreen {
     }
 
     private void applyStyles() {
+        SangoUiStyles.applySecondaryButton(button("settings_music_player_button"));
         SangoUiStyles.applySecondaryButton(button("settings_music_toggle_button"));
         SangoUiStyles.applySecondaryButton(button("settings_music_down_button"));
         SangoUiStyles.applySecondaryButton(button("settings_music_up_button"));
@@ -122,6 +123,10 @@ public final class SettingsScreen extends SuiScreen {
     }
 
     private void bindActions() {
+        ui.onClick("settings_music_player_button", () -> {
+            SangoServices.session().openMusicPlayer(ScreenId.SETTINGS);
+            Sui.screens.set(ScreenId.MUSIC_PLAYER);
+        });
         ui.onClick("settings_music_toggle_button", this::toggleMusic);
         ui.onClick("settings_music_down_button", () -> changeMusicVolume(-VOLUME_STEP));
         ui.onClick("settings_music_up_button", () -> changeMusicVolume(VOLUME_STEP));
@@ -261,11 +266,7 @@ public final class SettingsScreen extends SuiScreen {
     }
 
     private void playExpectedMusic() {
-        SangoServices.audio().playMusic(
-            SangoServices.session().getSettingsReturnScreen() == ScreenId.LOBBY
-                ? MusicTrack.LOBBY
-                : MusicTrack.STRATEGY
-        );
+        ScreenMusic.play(ScreenId.SETTINGS);
     }
 
     private void openModal(Actor mask) {

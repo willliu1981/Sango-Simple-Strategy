@@ -274,6 +274,9 @@ public final class AssetJsonGameDefinitionRepository implements GameDefinitionRe
             requireText(cityDefinition.id, "CityDefinition.id");
             requireText(cityDefinition.nameKey, "CityDefinition.nameKey");
             requireNonNegative(cityDefinition.initialPopulation, "CityDefinition.initialPopulation");
+            if (cityDefinition.populationCapacity < Math.max(1000, cityDefinition.initialPopulation)) {
+                throw new IllegalStateException("城市人口容量不可低於初始人口或 1000。");
+            }
             requireRange(cityDefinition.initialAgriculture, "CityDefinition.initialAgriculture");
             requireRange(cityDefinition.initialCommerce, "CityDefinition.initialCommerce");
             requireRange(cityDefinition.initialWaterControl, "CityDefinition.initialWaterControl");

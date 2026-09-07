@@ -20,6 +20,12 @@ public final class Main extends SuiGame {
     }
 
     @Override
+    public void render() {
+        SangoServices.audio().update(Gdx.graphics.getDeltaTime());
+        super.render();
+    }
+
+    @Override
     public void pause() {
         SangoServices.audio().pause();
         super.pause();

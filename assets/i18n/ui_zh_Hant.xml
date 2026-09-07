@@ -4,10 +4,10 @@
         <entry name="lobby_sango" value="SANGO" description="lobby_sango" />
         <entry name="lobby_title" value="簡易三國志" description="lobby_title" />
         <entry name="lobby_tagline" value="漢末群雄 · 天下待定" description="lobby_tagline" />
-        <entry name="lobby_intro" value="六大勢力逐鹿 42 城。投資內政、調整士氣、征服空城，並以月報與戰報掌握各地戰線。" description="lobby_intro" />
+        <entry name="lobby_intro" value="六大勢力逐鹿 42 城。治理人口、按需徵兵、分批訓練，在四季樂聲中自由征戰。" description="lobby_intro" />
         <entry name="lobby_main_menu" value="主選單" description="lobby_main_menu" />
         <entry name="lobby_vertical_slice" value="六勢力 · 全國 42 城 · 自由征戰" description="lobby_vertical_slice" />
-        <entry name="lobby_version" value="Strategy Prototype 0.5.1" description="lobby_version" />
+        <entry name="lobby_version" value="Strategy Prototype 0.6.0" description="lobby_version" />
         <entry name="button_continue" value="繼續遊戲" description="button_continue" />
         <entry name="button_new_game" value="開始新局" description="button_new_game" />
         <entry name="button_load_game" value="讀取存檔" description="button_load_game" />
@@ -86,8 +86,8 @@
         <entry name="city_title" value="城池內政" description="city_title" />
         <entry name="city_overview_heading" value="領地概況" description="city_overview_heading" />
         <entry name="city_actions_heading" value="本回合命令" description="city_actions_heading" />
-        <entry name="city_actions_note" value="所有城池共用行動力；平均民心每 15 點多 1 點，每月給予 3–9 點，未使用不保留。" description="city_actions_note" />
-        <entry name="city_rule_summary" value="軍糧按守軍與野戰軍總兵力每月扣除。徵兵降低訓練與士氣；訓練恢復訓練與士氣，士氣 50 為基準戰力。 治水降低 6 月洪災風險與秋收損失；城防只加成守軍。空城無抵抗佔領，戰鬥零傷亡。" description="city_rule_summary" />
+        <entry name="city_actions_note" value="每次成功命令消耗 1 AP；開墾與商業收益於季節結算。徵兵先選擇數量再確認。" description="city_actions_note" />
+        <entry name="city_rule_summary" value="徵兵可自行選擇人數，受人口曲線、金糧與人口保留量限制。新兵素質依兵力加權；訓練僅影響覆蓋兵數，再回算全軍平均。人口於十二月底依有效民心增減。" description="city_rule_summary" />
         <entry name="city_scenario_placeholder" value="劇本：尚未載入" description="city_scenario_placeholder" />
         <entry name="city_date_placeholder" value="年代：尚未載入" description="city_date_placeholder" />
         <entry name="city_turn_placeholder" value="回合：尚未載入" description="city_turn_placeholder" />
@@ -121,8 +121,8 @@
         <entry name="button_commerce" value="商業開發（50 金）" description="button_commerce" />
         <entry name="button_water_control" value="治水（80 金）" description="button_water_control" />
         <entry name="button_fortify" value="修築城防（100 金）" description="button_fortify" />
-        <entry name="button_recruit" value="徵兵｜100 金・100 糧\n兵力 +200・訓練 -5・士氣 -5" description="button_recruit" />
-        <entry name="button_train" value="訓練｜50 金\n訓練 +5・士氣 +5" description="button_train" />
+        <entry name="button_recruit" value="徵兵｜選擇人數\n人口・金糧・新兵素質預覽" description="button_recruit" />
+        <entry name="button_train" value="訓練｜50 金\n最多覆蓋 20,000 兵" description="button_train" />
         <entry name="city_status_ready" value="內政投資不會立即產生金糧；收益會在季末或秋收結算。" description="city_status_ready" />
         <entry name="city_status_load_failed" value="無法載入戰局；請返回 Lobby 並建立新局。" description="city_status_load_failed" />
         <entry name="city_status_save_failed" value="存檔失敗，因此本次命令沒有套用。" description="city_status_save_failed" />
@@ -132,8 +132,8 @@
         <entry name="city_status_commerce_success" value="完成商業投資：商業 +5。金錢將於季末商稅結算。" description="city_status_commerce_success" />
         <entry name="city_status_water_control_success" value="完成治水：治水 +5，洪災風險與秋收損失下降。" description="city_status_water_control_success" />
         <entry name="city_status_fortify_success" value="完成城防修築：城防 +5。" description="city_status_fortify_success" />
-        <entry name="city_status_recruit_success" value="完成徵兵：兵力 +200、人口 -200、訓練 -5、士氣 -5（最低 0）；金 -100、糧 -100。" description="city_status_recruit_success" />
-        <entry name="city_status_train_success" value="完成訓練：訓練與士氣各 +5（最高 100）；金 -50。" description="city_status_train_success" />
+        <entry name="city_status_recruit_success" value="完成徵兵，部隊素質依兵力重新加權。" description="city_status_recruit_success" />
+        <entry name="city_status_train_success" value="完成覆蓋訓練，成果已回算全軍平均。" description="city_status_train_success" />
         <entry name="city_status_no_action_points" value="行動力不足；可直接使用下方的「結束本月」。" description="city_status_no_action_points" />
         <entry name="city_status_insufficient_gold" value="金不足，無法執行此命令。" description="city_status_insufficient_gold" />
         <entry name="city_status_insufficient_food" value="糧不足，無法執行此命令。" description="city_status_insufficient_food" />
@@ -342,7 +342,7 @@
         <entry name="button_volume_up" value="＋10%" description="button_volume_up" />
         <entry name="button_open_save_screen" value="儲存遊戲" description="button_open_save_screen" />
         <entry name="button_save_return_lobby" value="保存並返回 Lobby" description="button_save_return_lobby" />
-        <entry name="settings_audio_note" value="本版 BGM 與音效為專案內程序合成的原創 Prototype 素材，可由音量按鈕即時調整。" description="settings_audio_note" />
+        <entry name="settings_audio_note" value="BGM 依季節切換，鑑賞可自由選曲。音樂與音效音量分開保存；實際播放仍取決於裝置音訊支援。" description="settings_audio_note" />
         <entry name="return_lobby_confirm_title" value="返回 Lobby？" description="return_lobby_confirm_title" />
         <entry name="return_lobby_confirm_description" value="目前進度將先保存。確定離開戰略／內政畫面並返回 Lobby？" description="return_lobby_confirm_description" />
         <entry name="settings_save_before_exit_failed" value="保存失敗，已取消返回或退出。" description="settings_save_before_exit_failed" />
@@ -417,9 +417,59 @@
         <entry name="city_jiaozhi" value="交趾" description="city_jiaozhi" />
         <entry name="city_nanhai" value="南海" description="city_nanhai" />
         <entry name="map_node_font_probe" value="武威 天水 安定 長安 洛陽 陳留 許昌 汝南 宛 漢中 武都 梓潼 成都 江州 永安 建寧 雲南 晉陽 上黨 鄴 平原 南皮 薊 北平 襄平 北海 小沛 下邳 壽春 廣陵 建業 吳郡 會稽 鄱陽 豫章 襄陽 江陵 江夏 長沙 武陵 交趾 南海 曹操軍 劉備軍 孫策軍 袁紹軍 劉表軍 馬騰軍 黃巾殘部 中立 我方 敵軍 目標 戰事 未讀" description="map_node_font_probe" />
-        <entry name="national_order_placeholder" value="全城民心 -- ・下月預估 -- 點" description="national_order_placeholder" />
-        <entry name="national_order_preview_format" value="全城民心 {0}（{1} 城）・下月預估 {2} 點" description="national_order_preview_format" />
-        <entry name="report_event_action_points" value="下月行動力：{1} 點（結算後全城平均民心 {0}；本月剩餘不保留）。" description="report_event_action_points" />
+        <entry name="national_order_placeholder" value="民心總和 -- ・下月預估 -- AP" description="national_order_placeholder" />
+        <entry name="national_order_preview_format" value="民心總和 {0}（{1} 城）・下月 {2} AP" description="national_order_preview_format" />
+        <entry name="report_event_action_points" value="下月行動力：{1} AP（結算後全城民心總和 {0}；本月剩餘不保留）。" description="report_event_action_points" />
 
+        <entry name="button_train_format" value="訓練｜{0} 金\n最多覆蓋 {1} 兵" description="button_train_format" />
+        <entry name="city_recruit_result_format" value="徵兵 {0} 人；金 -{1}、糧 -{2}。全軍訓練 {3}、士氣 {4}。" description="city_recruit_result_format" />
+        <entry name="city_train_result_format" value="訓練覆蓋 {0}/{1} 人；全軍訓練 {2} → {3}、士氣 {4} → {5}。金 -{6}。" description="city_train_result_format" />
+        <entry name="population_projection_format" value="人口容量 {0}｜年底預估 {1} 人（{2}%）\n依當時民心與人口重新結算；本次僅為預估。" description="population_projection_format" />
+        <entry name="population_projection_placeholder" value="人口容量與年底變化預估" description="population_projection_placeholder" />
+        <entry name="report_event_population" value="{0} 年底人口變化 {1}；目前人口 {2}。" description="report_event_population" />
+        <entry name="report_event_ai_actions" value="{0} 本月使用 {1}/{2} AP。" description="report_event_ai_actions" />
+        <entry name="recruitment_title" value="徵兵" description="recruitment_title" />
+        <entry name="recruitment_title_format" value="{0} · 徵兵" description="recruitment_title_format" />
+        <entry name="recruitment_description" value="拖動滑桿或輸入人數。每 2 兵需 1 金、1 糧，不足 2 兵向上計費；單次最多 10,000 人。" description="recruitment_description" />
+        <entry name="recruitment_placeholder" value="--" description="recruitment_placeholder" />
+        <entry name="recruitment_limit_format" value="人口 {0}｜至少保留 {1}｜人口徵兵上限 {2}｜資源允許 {3} 人" description="recruitment_limit_format" />
+        <entry name="recruitment_order_format" value="本城民心 {0}｜全勢力平均 {1}｜有效民心 {2}｜新兵訓練 {3}、士氣 {4}" description="recruitment_order_format" />
+        <entry name="recruitment_preview_format" value="徵兵 {0} 人；人口剩餘 {1}\n金 -{2}、糧 -{3}；消耗 1 AP\n全軍訓練 {4} → {5}；士氣 {6} → {7}" description="recruitment_preview_format" />
+        <entry name="recruitment_ready" value="確認後才會扣除人口、金糧與行動力；取消不消耗資源。" description="recruitment_ready" />
+        <entry name="recruitment_invalid_amount" value="請輸入 1 到 10000 之間的徵兵數量。" description="recruitment_invalid_amount" />
+        <entry name="recruitment_limit_exceeded" value="超過本城本次可徵兵上限。" description="recruitment_limit_exceeded" />
+        <entry name="recruitment_min" value="最少" description="recruitment_min" />
+        <entry name="recruitment_minus" value="−100" description="recruitment_minus" />
+        <entry name="recruitment_plus" value="+100" description="recruitment_plus" />
+        <entry name="recruitment_max" value="最多" description="recruitment_max" />
+        <entry name="recruitment_confirm" value="確認徵兵" description="recruitment_confirm" />
+        <entry name="training_no_troops" value="城內沒有士兵，不能執行訓練。" description="training_no_troops" />
+        <entry name="button_music_player" value="音樂鑑賞" description="button_music_player" />
+        <entry name="music_player_title" value="四時之聲 · 音樂鑑賞" description="music_player_title" />
+        <entry name="music_player_description" value="自由欣賞四季曲目，不推進月份、不消耗行動力。返回戰局時恢復當季 BGM。" description="music_player_description" />
+        <entry name="music_lobby" value="群雄序曲" description="music_lobby" />
+        <entry name="music_menu" value="主選單" description="music_menu" />
+        <entry name="music_spring" value="春風入城" description="music_spring" />
+        <entry name="music_summer" value="炎日運籌" description="music_summer" />
+        <entry name="music_autumn" value="暮秋望陣" description="music_autumn" />
+        <entry name="music_winter" value="寒夜圖謀" description="music_winter" />
+        <entry name="season_spring" value="春 · 一月至三月" description="season_spring" />
+        <entry name="season_summer" value="夏 · 四月至六月" description="season_summer" />
+        <entry name="season_autumn" value="秋 · 七月至九月" description="season_autumn" />
+        <entry name="season_winter" value="冬 · 十月至十二月" description="season_winter" />
+        <entry name="music_track_spring" value="春 · 春風入城" description="music_track_spring" />
+        <entry name="music_track_summer" value="夏 · 炎日運籌" description="music_track_summer" />
+        <entry name="music_track_autumn" value="秋 · 暮秋望陣" description="music_track_autumn" />
+        <entry name="music_track_winter" value="冬 · 寒夜圖謀" description="music_track_winter" />
+        <entry name="music_previous" value="上一首" description="music_previous" />
+        <entry name="music_next" value="下一首" description="music_next" />
+        <entry name="music_play" value="播放" description="music_play" />
+        <entry name="music_pause" value="暫停" description="music_pause" />
+        <entry name="music_enabled" value="音樂：開啟" description="music_enabled" />
+        <entry name="music_disabled" value="音樂：關閉" description="music_disabled" />
+        <entry name="music_load_failed" value="音樂載入失敗，請重新選曲。" description="music_load_failed" />
+        <entry name="music_muted_note" value="音樂已關閉或音量為零，可在設定調整。" description="music_muted_note" />
+        <entry name="music_paused_note" value="已暫停；播放會由目前位置繼續。" description="music_paused_note" />
+        <entry name="music_playing_note" value="單曲循環播放；切換曲目以兩秒淡入淡出銜接。" description="music_playing_note" />
     </scope>
 </i18n>

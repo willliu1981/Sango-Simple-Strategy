@@ -160,25 +160,29 @@ public final class NationalCampaignSmokeTest {
         DomesticActionResult recruitment = domesticCommand.execute(1, originalState, "chenliu", DomesticActionType.RECRUIT);
         check(recruitment.isSuccessful(), "徵兵成功");
         GameState nextState = recruitment.getGameState();
-        check(nextState.requireCapitalCityState().morale == 0, "徵兵士氣 -5，下限零");
-        check(nextState.requireCapitalCityState().training == 0, "徵兵訓練 -5，下限零");
+        check(nextState.requireCapitalCityState().morale > 3, "新兵士氣高於舊兵時，按兵數加權提升");
+        check(nextState.requireCapitalCityState().training > 3, "新兵訓練高於舊兵時，按兵數加權提升");
         check(nextState.requireCapitalCityState().troops == previousTroops + 200, "徵兵增加 200 人");
         check(originalState.requireCapitalCityState().morale == 3, "徵兵使用 copy-on-write");
         check(originalState.requireCapitalCityState().training == 3, "原狀態訓練不變");
         check(originalState.requireCapitalCityState().troops == previousTroops, "原狀態兵力不變");
         nextState.requireCapitalCityState().training = 100;
+        nextState.requireCapitalCityState().trainingFraction = 0;
+        int moraleBeforeTraining = nextState.requireCapitalCityState().morale;
         DomesticActionResult training = domesticCommand.execute(1, nextState, "chenliu", DomesticActionType.TRAIN);
         check(training.isSuccessful(), "訓練滿值但士氣不足時仍可訓練");
         nextState = training.getGameState();
         check(nextState.requireCapitalCityState().training == 100, "訓練上限 100");
-        check(nextState.requireCapitalCityState().morale == 5, "訓練恢復士氣 5");
+        check(nextState.requireCapitalCityState().morale == moraleBeforeTraining + 5, "覆蓋全部兵力時士氣增加 5");
         nextState.requireCapitalCityState().morale = 98;
+        nextState.requireCapitalCityState().moraleFraction = 0;
         nextState = domesticCommand.execute(1, nextState, "chenliu", DomesticActionType.TRAIN).getGameState();
         check(nextState.requireCapitalCityState().morale == 100, "士氣上限 100");
         nextState.actionPointsRemaining = 3;
         check(!domesticCommand.execute(1, nextState, "chenliu", DomesticActionType.TRAIN).isSuccessful(),
             "訓練與士氣皆滿時不浪費資源");
         nextState.requireCapitalCityState().morale = 0;
+        nextState.requireCapitalCityState().moraleFraction = 0;
         StrategicActionResult expedition = launchCommand.execute(1, nextState, "chenliu", "runan", BattleTactic.BALANCED);
         check(expedition.isSuccessful(), "零士氣仍能出征");
         check(expedition.getGameState().armyStates[0].morale == 0, "出征不可將零士氣重設為 50");
@@ -352,7 +356,7 @@ public final class NationalCampaignSmokeTest {
         check(!new String(fixtureBytes, StandardCharsets.UTF_8).contains("moraleRecorded"), "舊 fixture 沒有新版戰報欄位");
         LocalJsonSaveGameRepository legacySaves = new LocalJsonSaveGameRepository(legacyDirectory);
         GameState migratedState = legacySaves.load(1);
-        check(migratedState.schemaVersion == 4, "schema 3 遷移至 4");
+        check(migratedState.schemaVersion == 5, "schema 3 遷移至 4");
         check(migratedState.cityStates.length == 6 && migratedState.mapId.equals("prototype_central_region"),
             "舊戰局保留六城，不憑空加入新領地");
         check(migratedState.requireCityState("chenliu").morale == 50, "舊城低民心士氣初始化為 50");
@@ -374,7 +378,7 @@ public final class NationalCampaignSmokeTest {
         migratedState.requireCityState("chenliu").morale = 0;
         legacySaves.save(1, migratedState);
         check(legacySaves.load(1).requireCityState("chenliu").morale == 0,
-            "schema 4 重新載入不將士氣零值補回 50");
+            "schema 5 重新載入不將士氣零值補回 50");
         check(Arrays.equals(fixtureBytes, legacyDirectory.child("slot-01.backup.json").readBytes()),
             "升級首次保存保留原始 schema 3 backup");
         legacyDirectory.child("slot-01.json").writeString("broken", false, "UTF-8");

@@ -45,7 +45,7 @@ public final class NationalActionPointSmokeTest {
             throw new IllegalArgumentException("需要 assets 目錄路徑。");
         }
         Path assetsPath = Path.of(arguments[0]).toAbsolutePath().normalize();
-        FileHandle temporaryDirectory = new FileHandle(Files.createTempDirectory("sango-052-ap-").toFile());
+        FileHandle temporaryDirectory = new FileHandle(Files.createTempDirectory("sango-060-ap-").toFile());
         try {
             AssetJsonGameDefinitionRepository definitions = new AssetJsonGameDefinitionRepository(
                 new FileHandle(assetsPath.resolve("data/scenarios/scenarios.json").toFile()),
@@ -57,6 +57,7 @@ public final class NationalActionPointSmokeTest {
             NewGameCommand newGameCommand = new NewGameCommand(definitions, saves);
             GameState initialState = newGameCommand.execute(1, new NewGameRequest("warlords_china", "cao_cao"));
             validateAggregation(initialState);
+            validateThresholdCurve();
             validateMonthlySnapshot(initialState, definitions, saves);
             validateOccupation(initialState, definitions, saves);
             validateFloodBeforeRefresh(initialState, definitions);
@@ -64,6 +65,21 @@ public final class NationalActionPointSmokeTest {
             System.out.println("Sango national public order and 3-9 AP: PASS; checks=" + checks);
         } finally {
             temporaryDirectory.deleteDirectory();
+        }
+    }
+
+    private static void validateThresholdCurve() {
+        int[] thresholds = {200, 400, 650, 900, 1150, 1500};
+        for (int i = 0; i <= 4200; i++) {
+            int expected = 3;
+            for (int threshold : thresholds) {
+                if (i >= threshold) {
+                    expected += 1;
+                }
+            }
+            NationalActionPointRules.PublicOrderSummary summary =
+                new NationalActionPointRules.PublicOrderSummary(42, i);
+            check(summary.monthlyActionPoints() == expected, "全部 4201 個民心總和與階梯門檻");
         }
     }
 
@@ -78,7 +94,7 @@ public final class NationalActionPointSmokeTest {
                 firstCity.publicOrder = i;
                 secondCity.publicOrder = j;
                 NationalActionPointRules.PublicOrderSummary summary = NationalActionPointRules.summarizePlayer(gameState);
-                int expectedPoints = Math.min(9, 3 + (i + j) / 30);
+                int expectedPoints = (i + j >= 200 ? 4 : 3);
                 check(summary.cityCount() == 2 && summary.totalPublicOrder() == i + j, "只聚合玩家的全部領地");
                 check(summary.monthlyActionPoints() == expectedPoints, "雙城 10201 組民心組合與精確門檻");
                 check(summary.averagePublicOrderTenths() == (i + j) * 5, "平均值保留一位小數");
@@ -86,22 +102,22 @@ public final class NationalActionPointSmokeTest {
         }
         firstCity.publicOrder = 89;
         secondCity.publicOrder = 90;
-        check(NationalActionPointRules.calculateMonthlyActionPoints(gameState) == 8, "89.5 不提前升成 9 點");
+        check(NationalActionPointRules.calculateMonthlyActionPoints(gameState) == 3, "總和 179 仍為 3 點");
         firstCity.publicOrder = 90;
-        check(NationalActionPointRules.calculateMonthlyActionPoints(gameState) == 9, "90 達到 9 點");
+        check(NationalActionPointRules.calculateMonthlyActionPoints(gameState) == 3, "雙城各 90 只有 180 點總民心");
         firstCity.population = 1;
         secondCity.population = 999999;
         firstCity.publicOrder = 0;
         secondCity.publicOrder = 100;
         firstCity.morale = 100;
         secondCity.morale = 0;
-        check(NationalActionPointRules.calculateMonthlyActionPoints(gameState) == 6, "民心按城池等權重，不是人口或士氣");
+        check(NationalActionPointRules.calculateMonthlyActionPoints(gameState) == 3, "總民心不受人口或士氣影響");
         for (CityState cityState : gameState.cityStates) {
             if (!gameState.playerFactionId.equals(cityState.ownerFactionId)) {
                 cityState.publicOrder = 0;
             }
         }
-        check(NationalActionPointRules.calculateMonthlyActionPoints(gameState) == 6, "敵方與中立民心不得影響玩家");
+        check(NationalActionPointRules.calculateMonthlyActionPoints(gameState) == 3, "敵方與中立民心不得影響玩家");
         check(NationalOrderTextFormatter.formatAverage(895).equals("89.5"), "UI 顯示一位小數");
         check(NationalOrderTextFormatter.formatAverage(1000).equals("100.0"), "UI 正確顯示上界");
         gameState.gameplayStatus = GameplayStatus.ELIMINATED;
@@ -131,7 +147,7 @@ public final class NationalActionPointSmokeTest {
                 cityState.training = 50;
             }
             for (int i = 0; i < 20; i++) {
-                check(NationalActionPointRules.calculateMonthlyActionPoints(gameState) == 9, "可重複查詢下月預估");
+                check(NationalActionPointRules.calculateMonthlyActionPoints(gameState) == 3, "可重複查詢下月預估");
                 check(gameState.actionPointsRemaining == 2 && gameState.actionPointsPerTurn == previousCapacity,
                     "預估不改寫當月額度或剩餘行動力");
             }
@@ -141,15 +157,15 @@ public final class NationalActionPointSmokeTest {
             check(gameState.actionPointsRemaining == 2, "命令維持 copy-on-write");
             TurnResolutionResult resolution = turnService.resolve(commandResult.getGameState());
             GameState nextState = resolution.getGameState();
-            check(nextState.actionPointsPerTurn == 9 && nextState.actionPointsRemaining == 9,
-                "各任務結果於下月都依民心發九點，不累加舊點數");
+            check(nextState.actionPointsPerTurn == 3 && nextState.actionPointsRemaining == 3,
+                "各任務結果於下月都依民心發三點，不累加舊點數");
             check(nextState.currentMonth == gameState.currentMonth + 1, "月份仍正常前進一次");
             int refreshEventCount = 0;
             for (TurnEvent event : resolution.getReport().getEvents()) {
                 if (event.getType() == TurnEventType.ACTION_POINTS_REFRESHED) {
                     refreshEventCount += 1;
-                    check(event.getPrimaryValue() == 9 && event.getSecondaryValue() == 900,
-                        "月報明確記錄發放額度與結算後平均民心");
+                    check(event.getPrimaryValue() == 3 && event.getSecondaryValue() == 180,
+                        "月報明確記錄發放額度與結算後民心總和");
                     check(event.getCityId() == null && event.getOtherCityId() == null,
                         "民心事件不把勢力 ID 塞進城池欄位");
                 }
@@ -184,8 +200,8 @@ public final class NationalActionPointSmokeTest {
         NationalActionPointRules.PublicOrderSummary summary = NationalActionPointRules.summarizePlayer(nextState);
         check(summary.cityCount() == 3 && summary.totalPublicOrder() == 180,
             "新佔領空城民心扣五點後立即納入下月聚合");
-        check(nextState.actionPointsPerTurn == 7 && nextState.actionPointsRemaining == 7,
-            "先攻佔再計算 60 平均民心，不能錯用佔領前的九點");
+        check(nextState.actionPointsPerTurn == 3 && nextState.actionPointsRemaining == 3,
+            "先攻佔再計算總和，新增零民心城不會降低既有總民心");
     }
 
     private static void validateFloodBeforeRefresh(
@@ -196,7 +212,7 @@ public final class NationalActionPointSmokeTest {
         gameState.currentMonth = 6;
         gameState.enemyAttackCountdown = 99;
         for (CityState cityState : gameState.findCitiesOwnedBy(gameState.playerFactionId)) {
-            cityState.publicOrder = 60;
+            cityState.publicOrder = 100;
             cityState.waterControl = 0;
         }
         DeterministicEventRoller eventRoller = new DeterministicEventRoller();
@@ -216,10 +232,10 @@ public final class NationalActionPointSmokeTest {
         check(foundFloodYear, "找到可重現洪災的固定年月");
         TurnResolutionResult result = new TurnResolutionService(definitions).resolve(gameState);
         GameState nextState = result.getGameState();
-        check(NationalActionPointRules.summarizePlayer(nextState).averagePublicOrderTenths() < 600,
+        check(NationalActionPointRules.summarizePlayer(nextState).averagePublicOrderTenths() < 1000,
             "洪災先降低民心");
-        check(nextState.actionPointsPerTurn == 6 && nextState.actionPointsRemaining == 6,
-            "下月以洪災後民心計算六點，不誤發災前七點");
+        check(nextState.actionPointsPerTurn == 3 && nextState.actionPointsRemaining == 3,
+            "下月以洪災後總民心計算三點，不誤發災前四點");
         check(gameState.actionPointsRemaining == initialState.actionPointsRemaining,
             "月底結算不修改輸入狀態");
     }
@@ -239,7 +255,7 @@ public final class NationalActionPointSmokeTest {
         saves.save(1, legacyState);
         for (int i = 0; i < 5; i++) {
             GameState loadedState = saves.load(1);
-            check(loadedState.schemaVersion == 4, "不為額度規則改動強升存檔 Schema");
+            check(loadedState.schemaVersion == 5, "小數素質與 AI 額度使用 Schema 5");
             check(loadedState.actionPointsPerTurn == 3 && loadedState.actionPointsRemaining == 2,
                 "舊 0.5.1 月中存檔保留 2/3，不在讀檔時回補");
             loadedState = new GameStateMigrator().migrate(loadedState);
@@ -247,12 +263,12 @@ public final class NationalActionPointSmokeTest {
             saves.save(1, loadedState);
         }
         GameState nextMonth = new TurnResolutionService(definitions).resolve(saves.load(1)).getGameState();
-        check(nextMonth.actionPointsPerTurn == 9 && nextMonth.actionPointsRemaining == 9,
+        check(nextMonth.actionPointsPerTurn == 3 && nextMonth.actionPointsRemaining == 3,
             "舊存檔下一月自動採新公式");
-        nextMonth.actionPointsRemaining = 6;
+        nextMonth.actionPointsRemaining = 2;
         saves.save(2, nextMonth);
         GameState reloaded = saves.load(2);
-        check(reloaded.actionPointsRemaining == 6 && reloaded.actionPointsPerTurn == 9,
+        check(reloaded.actionPointsRemaining == 2 && reloaded.actionPointsPerTurn == 3,
             "新規則存檔保留已使用點數");
         reloaded.actionPointsRemaining = 0;
         saves.save(2, reloaded);

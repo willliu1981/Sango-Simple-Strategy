@@ -13,7 +13,8 @@ public enum ScreenId implements ScreenIdentifier {
     MONTH_REPORT("month_report"),
     BATTLE_REPORT("battle_report"),
     SAVE_LOAD("save_load"),
-    SETTINGS("settings");
+    SETTINGS("settings"),
+    MUSIC_PLAYER("music_player");
 
     private final String value;
 

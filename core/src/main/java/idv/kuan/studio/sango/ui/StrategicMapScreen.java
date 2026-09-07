@@ -27,7 +27,7 @@ import idv.kuan.studio.sango.application.command.LaunchExpeditionCommand;
 import idv.kuan.studio.sango.application.result.StrategicActionResult;
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
 import idv.kuan.studio.sango.application.result.TurnResolutionResult;
-import idv.kuan.studio.sango.audio.MusicTrack;
+import idv.kuan.studio.sango.ui.support.ScreenMusic;
 import idv.kuan.studio.sango.audio.SoundEffect;
 import idv.kuan.studio.sango.data.SangoPreferences;
 import idv.kuan.studio.sango.domain.definition.CityDefinition;
@@ -110,8 +110,8 @@ public final class StrategicMapScreen extends SuiScreen {
             return;
         }
         closeModals();
-        SangoServices.audio().playMusic(MusicTrack.STRATEGY);
         ensureCurrentGameState();
+        ScreenMusic.play(ScreenId.STRATEGIC_MAP);
         refreshView();
     }
 

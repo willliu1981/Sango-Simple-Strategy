@@ -29,17 +29,19 @@
                 <row />
                 <label fontSize="27" width="500" height="48" color="0.53,0.49,0.43,1">${text:lobby_vertical_slice}</label>
                 <row />
-                <textButton id="continue_button" fontSize="42" width="500" height="92" padTop="34">${text:button_continue}</textButton>
+                <textButton id="continue_button" fontSize="38" width="500" height="80" padTop="22">${text:button_continue}</textButton>
                 <row />
-                <textButton id="new_game_button" fontSize="42" width="500" height="92" padTop="18">${text:button_new_game}</textButton>
+                <textButton id="new_game_button" fontSize="38" width="500" height="80" padTop="14">${text:button_new_game}</textButton>
                 <row />
-                <textButton id="load_game_button" fontSize="42" width="500" height="92" padTop="18">${text:button_load_game}</textButton>
+                <textButton id="load_game_button" fontSize="38" width="500" height="80" padTop="14">${text:button_load_game}</textButton>
                 <row />
-                <textButton id="settings_button" fontSize="42" width="500" height="92" padTop="18">${text:button_settings}</textButton>
+                <textButton id="music_player_button" fontSize="38" width="500" height="80" padTop="14">${text:button_music_player}</textButton>
                 <row />
-                <textButton id="exit_button" fontSize="42" width="500" height="92" padTop="18">${text:button_exit}</textButton>
+                <textButton id="settings_button" fontSize="38" width="500" height="80" padTop="14">${text:button_settings}</textButton>
                 <row />
-                <table height="54"></table>
+                <textButton id="exit_button" fontSize="38" width="500" height="80" padTop="14">${text:button_exit}</textButton>
+                <row />
+                <table height="26"></table>
                 <row />
                 <label fontSize="26" width="500" height="44" color="0.45,0.41,0.36,1">${text:lobby_version}</label>
             </table>

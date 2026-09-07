@@ -15,6 +15,9 @@ public final class CityState {
     public int publicOrder;
     public int training;
     public int morale;
+    /** 百萬分之一點；與整數素質一起保存，不因讀檔而丟失。 */
+    public int trainingFraction;
+    public int moraleFraction;
     public int harvestModifierPercent;
     public int scoutedUntilTurn;
 
@@ -34,6 +37,8 @@ public final class CityState {
         copiedState.publicOrder = publicOrder;
         copiedState.training = training;
         copiedState.morale = morale;
+        copiedState.trainingFraction = trainingFraction;
+        copiedState.moraleFraction = moraleFraction;
         copiedState.harvestModifierPercent = harvestModifierPercent;
         copiedState.scoutedUntilTurn = scoutedUntilTurn;
         return copiedState;

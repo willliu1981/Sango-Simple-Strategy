@@ -7,7 +7,7 @@ public enum DomesticActionType {
     DEVELOP_AGRICULTURE(1, 50, 0, 0, 5, 0, 0, 0, 0, 0),
     DEVELOP_COMMERCE(1, 50, 0, 0, 0, 5, 0, 0, 0, 0),
     IMPROVE_WATER_CONTROL(1, 80, 0, 0, 0, 0, 5, 0, 0, 0),
-    RECRUIT(1, 100, 100, 200, 0, 0, 0, 0, -5, -200),
+    RECRUIT(1, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     TRAIN(1, 50, 0, 0, 0, 0, 0, 0, 5, 0),
     FORTIFY(1, 100, 0, 0, 0, 0, 0, 5, 0, 0);
 
@@ -84,7 +84,7 @@ public enum DomesticActionType {
 
     public int getMoraleDelta() {
         return switch (this) {
-            case RECRUIT -> -5;
+            case RECRUIT -> 0;
             case TRAIN -> 5;
             default -> 0;
         };

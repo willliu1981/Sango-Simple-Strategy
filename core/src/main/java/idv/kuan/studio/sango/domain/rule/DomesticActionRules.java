@@ -3,60 +3,75 @@ package idv.kuan.studio.sango.domain.rule;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
-import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
 
-/**
- * 內政命令的可執行性判斷。Command 與 UI 共用，避免兩邊規則不一致。
- */
+/** 玩家、AI、Command 與預覽共用的內政可執行性檢查。 */
 public final class DomesticActionRules {
     private DomesticActionRules() {
     }
 
+    public static DomesticActionFailureReason evaluate(GameState gameState, String cityId, DomesticActionType actionType) {
+        return evaluate(gameState, cityId, actionType, CampaignBalance.DEFAULT_RECRUIT_AMOUNT);
+    }
+
     public static DomesticActionFailureReason evaluate(
-        GameState gameState,
-        String cityId,
-        DomesticActionType actionType
+        GameState gameState, String cityId, DomesticActionType actionType, int recruitmentAmount
     ) {
         GameStateValidator.validate(gameState);
-        if (cityId == null || cityId.trim().isEmpty()) {
-            throw new IllegalArgumentException("cityId 不可為空。");
+        return evaluateForFaction(gameState, gameState.playerFactionId, cityId, actionType,
+            recruitmentAmount, OfficerCommandProfile.DEFAULT);
+    }
+
+    public static DomesticActionFailureReason evaluateForFaction(
+        GameState gameState, String factionId, String cityId, DomesticActionType actionType,
+        int recruitmentAmount, OfficerCommandProfile officer
+    ) {
+        if (actionType == null || officer == null) {
+            throw new IllegalArgumentException("內政命令與執行能力不可為 null。");
         }
-        if (actionType == null) {
-            throw new IllegalArgumentException("actionType 不可為 null。");
-        }
-        if (gameState.gameplayStatus != GameplayStatus.ACTIVE) {
+        FactionState factionState = gameState.requireFactionState(factionId);
+        if (!gameState.isGameplayActive() || !factionState.active) {
             return DomesticActionFailureReason.PLAYER_ELIMINATED;
         }
-
         CityState cityState = gameState.requireCityState(cityId);
-        if (!gameState.playerFactionId.equals(cityState.ownerFactionId)) {
+        if (!factionId.equals(cityState.ownerFactionId)) {
             return DomesticActionFailureReason.CITY_NOT_OWNED;
         }
-        if (gameState.actionPointsRemaining < actionType.getActionPointCost()) {
+        if (FactionActionPointRules.remaining(gameState, factionId) < actionType.getActionPointCost()) {
             return DomesticActionFailureReason.NO_ACTION_POINTS;
         }
-
-        FactionState factionState = gameState.requirePlayerFactionState();
-        if (factionState.gold < actionType.getGoldCost()) {
+        int goldCost = actionType.getGoldCost();
+        int foodCost = actionType.getFoodCost();
+        if (actionType == DomesticActionType.RECRUIT) {
+            if (recruitmentAmount < 1 || recruitmentAmount > CampaignBalance.MAXIMUM_RECRUITMENT) {
+                return DomesticActionFailureReason.INVALID_RECRUIT_AMOUNT;
+            }
+            if ((long) cityState.population - recruitmentAmount < CampaignBalance.RECRUIT_POPULATION_RESERVE) {
+                return DomesticActionFailureReason.INSUFFICIENT_POPULATION;
+            }
+            if (recruitmentAmount > RecruitmentRules.populationLimit(cityState.population, officer)
+                || (long) cityState.troops + recruitmentAmount > Integer.MAX_VALUE) {
+                return DomesticActionFailureReason.RECRUIT_LIMIT_EXCEEDED;
+            }
+            goldCost = RecruitmentRules.goldCost(recruitmentAmount);
+            foodCost = RecruitmentRules.foodCost(recruitmentAmount);
+        }
+        if (factionState.gold < goldCost) {
             return DomesticActionFailureReason.INSUFFICIENT_GOLD;
         }
-        if (factionState.food < actionType.getFoodCost()) {
+        if (factionState.food < foodCost) {
             return DomesticActionFailureReason.INSUFFICIENT_FOOD;
         }
-        if (cityState.population + actionType.getPopulationDelta() < 1000) {
-            return DomesticActionFailureReason.INSUFFICIENT_POPULATION;
+        if (actionType == DomesticActionType.TRAIN && cityState.troops == 0) {
+            return DomesticActionFailureReason.NO_TROOPS;
         }
-        if (wouldExceedMaximum(cityState, actionType)) {
+        if (wouldExceedMaximum(cityState, actionType, officer)) {
             return DomesticActionFailureReason.VALUE_AT_MAXIMUM;
         }
         return DomesticActionFailureReason.NONE;
     }
 
-    private static boolean wouldExceedMaximum(
-        CityState cityState,
-        DomesticActionType actionType
-    ) {
+    private static boolean wouldExceedMaximum(CityState cityState, DomesticActionType actionType, OfficerCommandProfile officer) {
         if (actionType.getAgricultureGain() > 0 && cityState.agriculture >= 100) {
             return true;
         }
@@ -69,8 +84,11 @@ public final class DomesticActionRules {
         if (actionType.getDefenseGain() > 0 && cityState.defense >= 100) {
             return true;
         }
-        return actionType.getTrainingGain() > 0
-            && cityState.training >= 100
-            && (actionType.getMoraleDelta() <= 0 || cityState.morale >= 100);
+        if (actionType == DomesticActionType.TRAIN) {
+            TroopQualityRules.TrainingProjection projection = TroopQualityRules.projectTraining(cityState, officer);
+            return projection.trainingScaled() == TroopQualityRules.training(cityState)
+                && projection.moraleScaled() == TroopQualityRules.morale(cityState);
+        }
+        return false;
     }
 }

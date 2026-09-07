@@ -10,6 +10,8 @@ import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
+import idv.kuan.studio.sango.domain.rule.ExpeditionRules;
+import idv.kuan.studio.sango.domain.rule.FactionActionPointRules;
 import idv.kuan.studio.sango.domain.rule.StrategicActionFailureReason;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 import idv.kuan.studio.sango.repository.SaveGameRepository;
@@ -18,11 +20,11 @@ import idv.kuan.studio.sango.repository.SaveGameRepository;
  * 由相鄰己方城池派出一支軍隊。第一版每個勢力同時只保留一支野戰軍。
  */
 public final class LaunchExpeditionCommand {
-    public static final int ACTION_POINT_COST = 1;
-    public static final int FOOD_COST = 100;
-    public static final int MINIMUM_GARRISON = 400;
-    public static final int MINIMUM_EXPEDITION = 400;
-    public static final int MAXIMUM_EXPEDITION = 1000;
+    public static final int ACTION_POINT_COST = ExpeditionRules.ACTION_POINT_COST;
+    public static final int FOOD_COST = ExpeditionRules.FOOD_COST;
+    public static final int MINIMUM_GARRISON = ExpeditionRules.MINIMUM_GARRISON;
+    public static final int MINIMUM_EXPEDITION = ExpeditionRules.MINIMUM_EXPEDITION;
+    public static final int MAXIMUM_EXPEDITION = ExpeditionRules.MAXIMUM_EXPEDITION;
 
     private final GameDefinitionRepository definitionRepository;
     private final SaveGameRepository saveGameRepository;
@@ -64,7 +66,7 @@ public final class LaunchExpeditionCommand {
 
         originCityState.troops -= dispatchedTroops;
         playerFactionState.food -= FOOD_COST;
-        nextState.actionPointsRemaining -= ACTION_POINT_COST;
+        FactionActionPointRules.spend(nextState, nextState.playerFactionId, ACTION_POINT_COST);
 
         ArmyState armyState = new ArmyState();
         armyState.armyId = nextState.allocateArmyId();
@@ -75,6 +77,8 @@ public final class LaunchExpeditionCommand {
         armyState.troops = dispatchedTroops;
         armyState.training = originCityState.training;
         armyState.morale = originCityState.morale;
+        armyState.trainingFraction = originCityState.trainingFraction;
+        armyState.moraleFraction = originCityState.moraleFraction;
         armyState.tactic = battleTactic;
         nextState.addArmy(armyState);
         nextState.lastActionCode = "LAUNCH_EXPEDITION";
@@ -85,9 +89,7 @@ public final class LaunchExpeditionCommand {
     }
 
     public int calculateDispatchTroops(CityState originCityState) {
-        int availableTroops = originCityState.troops - MINIMUM_GARRISON;
-        int dispatchedTroops = Math.min(MAXIMUM_EXPEDITION, availableTroops);
-        return Math.max(0, dispatchedTroops / 100 * 100);
+        return ExpeditionRules.calculateDispatchTroops(originCityState);
     }
 
     private StrategicActionFailureReason evaluate(

@@ -16,6 +16,8 @@ import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
 import idv.kuan.studio.sango.domain.rule.NationalActionPointRules;
+import idv.kuan.studio.sango.domain.rule.FactionActionPointRules;
+import idv.kuan.studio.sango.domain.rule.PopulationRules;
 import idv.kuan.studio.sango.domain.rule.SeasonalEconomyRules;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 
@@ -70,6 +72,7 @@ public final class TurnResolutionService {
         resolveHarvest(nextState, report);
         resolveArmyMovement(nextState, report);
         enemyTurnService.execute(nextState, mapDefinition, report);
+        resolveAnnualPopulation(nextState, report);
         advanceCampaignClock(nextState, report);
 
         nextState.lastActionCode = "END_TURN";
@@ -322,6 +325,21 @@ public final class TurnResolutionService {
         return false;
     }
 
+    private void resolveAnnualPopulation(GameState gameState, TurnResolutionReport report) {
+        if (gameState.currentMonth != 12) {
+            return;
+        }
+        for (CityState cityState : gameState.cityStates) {
+            int capacity = definitionRepository.requireCity(cityState.cityId).populationCapacity;
+            PopulationRules.Projection projection = PopulationRules.project(gameState, cityState, capacity);
+            cityState.population += projection.delta();
+            if (gameState.playerFactionId.equals(cityState.ownerFactionId)) {
+                report.add(new TurnEvent(TurnEventType.POPULATION_CHANGED, cityState.ownerFactionId,
+                    cityState.cityId, null, projection.delta(), cityState.population));
+            }
+        }
+    }
+
     private void advanceCampaignClock(
         GameState gameState,
         TurnResolutionReport report
@@ -346,19 +364,18 @@ public final class TurnResolutionService {
             gameState.currentMonth = 1;
             gameState.currentYear += 1;
         }
+        FactionActionPointRules.refreshAll(gameState, false);
         if (gameState.gameplayStatus == GameplayStatus.ACTIVE) {
-            // 先完成災害、攻佔、遷都與 AI，再以結算後的全部玩家領地計算下月額度。
+            // 先完成災害、攻佔、遷都、AI 與人口，再以結算後領地計算下月額度。
             NationalActionPointRules.PublicOrderSummary publicOrderSummary =
                 NationalActionPointRules.summarizePlayer(gameState);
-            gameState.actionPointsPerTurn = publicOrderSummary.monthlyActionPoints();
-            gameState.actionPointsRemaining = gameState.actionPointsPerTurn;
             report.add(new TurnEvent(
                 TurnEventType.ACTION_POINTS_REFRESHED,
                 gameState.playerFactionId,
                 null,
                 null,
                 gameState.actionPointsPerTurn,
-                publicOrderSummary.averagePublicOrderTenths()
+                (int) publicOrderSummary.totalPublicOrder()
             ));
         } else {
             gameState.actionPointsRemaining = 0;

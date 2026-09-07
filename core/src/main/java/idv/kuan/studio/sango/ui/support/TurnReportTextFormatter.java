@@ -35,9 +35,15 @@ public final class TurnReportTextFormatter {
         return switch (eventType) {
             case ACTION_POINTS_REFRESHED -> text(
                 "report_event_action_points", "",
-                NationalOrderTextFormatter.formatAverage(turnEvent.getSecondaryValue()),
+                numberFormat.format(turnEvent.getSecondaryValue()),
                 turnEvent.getPrimaryValue()
             );
+            case POPULATION_CHANGED -> text("report_event_population", "{0} 年底人口變化 {1}；目前人口 {2}。",
+                optionalCityName(turnEvent.getCityId()),
+                (turnEvent.getPrimaryValue() > 0 ? "+" : "") + numberFormat.format(turnEvent.getPrimaryValue()),
+                numberFormat.format(turnEvent.getSecondaryValue()));
+            case AI_ACTIONS_USED -> text("report_event_ai_actions", "{0} 本月使用 {1}/{2} AP。",
+                factionName(turnEvent.getFactionId()), turnEvent.getPrimaryValue(), turnEvent.getSecondaryValue());
             case MILITARY_UPKEEP -> text(
                 "report_event_upkeep",
                 "軍糧支出：-{0} 糧，用於維持 {1} 兵。",

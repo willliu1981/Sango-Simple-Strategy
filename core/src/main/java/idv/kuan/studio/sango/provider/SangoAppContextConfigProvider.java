@@ -13,6 +13,7 @@ import idv.kuan.studio.libgdx.simpleui.validation.ValidationMode;
 import idv.kuan.studio.sango.ui.BattleReportScreen;
 import idv.kuan.studio.sango.ui.CityScreen;
 import idv.kuan.studio.sango.ui.LobbyScreen;
+import idv.kuan.studio.sango.ui.MusicPlayerScreen;
 import idv.kuan.studio.sango.ui.MonthReportScreen;
 import idv.kuan.studio.sango.ui.NewGameScreen;
 import idv.kuan.studio.sango.ui.SaveLoadScreen;
@@ -63,6 +64,7 @@ public final class SangoAppContextConfigProvider implements ApplicationContextCo
             .registerScreen(ScreenId.BATTLE_REPORT, BattleReportScreen::new)
             .registerScreen(ScreenId.SAVE_LOAD, SaveLoadScreen::new)
             .registerScreen(ScreenId.SETTINGS, SettingsScreen::new)
+            .registerScreen(ScreenId.MUSIC_PLAYER, MusicPlayerScreen::new)
             .skipToValidation()
             .setVolidationMode(resolveValidationMode())
             .build();
@@ -77,7 +79,7 @@ public final class SangoAppContextConfigProvider implements ApplicationContextCo
         if (!Gdx.files.internal(fontPath).exists()) {
             throw new IllegalStateException(
                 "缺少 Sango 中文字型資產：" + fontPath
-                    + "。請先執行 tools/prepare-local-fonts.ps1。"
+                    + "。請先執行 tools/prepare-local-assets-0.6.0.ps1。"
             );
         }
     }

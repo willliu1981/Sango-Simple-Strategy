@@ -14,6 +14,9 @@ public final class ArmyState {
     public int troops;
     public int training;
     public int morale;
+    /** 百萬分之一點；與整數素質一起保存，不因讀檔而丟失。 */
+    public int trainingFraction;
+    public int moraleFraction;
     public BattleTactic tactic;
 
     public ArmyState() {
@@ -29,6 +32,8 @@ public final class ArmyState {
         copiedState.troops = troops;
         copiedState.training = training;
         copiedState.morale = morale;
+        copiedState.trainingFraction = trainingFraction;
+        copiedState.moraleFraction = moraleFraction;
         copiedState.tactic = tactic;
         return copiedState;
     }

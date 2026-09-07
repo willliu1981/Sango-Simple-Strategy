@@ -20,7 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import idv.kuan.studio.libgdx.simpleui.Sui;
 import idv.kuan.studio.libgdx.simpleui.SuiScreen;
 import idv.kuan.studio.libgdx.simpleui.builder.BuiltUI;
-import idv.kuan.studio.sango.audio.MusicTrack;
+import idv.kuan.studio.sango.ui.support.ScreenMusic;
 import idv.kuan.studio.sango.audio.SoundEffect;
 import idv.kuan.studio.sango.domain.definition.CityDefinition;
 import idv.kuan.studio.sango.domain.definition.FactionDefinition;
@@ -68,7 +68,7 @@ public final class BattleReportScreen extends SuiScreen {
 
     @Override
     protected void afterShow() {
-        SangoServices.audio().playMusic(MusicTrack.STRATEGY);
+        ScreenMusic.play(ScreenId.BATTLE_REPORT);
         if (!SangoServices.session().hasCurrentState()) {
             Sui.screens.set(ScreenId.LOBBY);
             return;

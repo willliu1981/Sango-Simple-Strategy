@@ -2,6 +2,8 @@ package idv.kuan.studio.sango.repository.save;
 
 import idv.kuan.studio.sango.SangoVersion;
 import idv.kuan.studio.sango.domain.model.BattleReport;
+import idv.kuan.studio.sango.domain.model.ArmyState;
+import idv.kuan.studio.sango.domain.rule.FactionActionPointRules;
 import idv.kuan.studio.sango.domain.model.CampaignStatus;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.GameState;
@@ -9,7 +11,7 @@ import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 
 /**
- * 逐版遷移 2 -> 3 -> 4。僅遷移狀態結構，不替換舊劇本或憑空增加領地。
+ * 逐版遷移 2 -> 3 -> 4 -> 5。僅遷移狀態結構，不替換舊劇本或憑空增加領地。
  */
 @SuppressWarnings("deprecation")
 public final class GameStateMigrator {
@@ -23,6 +25,9 @@ public final class GameStateMigrator {
         }
         if (migratedState.schemaVersion == 3) {
             migrateSchemaThreeToFour(migratedState);
+        }
+        if (migratedState.schemaVersion == 4) {
+            migrateSchemaFourToFive(migratedState);
         }
         if (migratedState.schemaVersion != SangoVersion.GAME_STATE_SCHEMA_VERSION) {
             throw new IllegalArgumentException(
@@ -73,6 +78,20 @@ public final class GameStateMigrator {
             }
         }
         gameState.schemaVersion = 4;
+    }
+
+    private void migrateSchemaFourToFive(GameState gameState) {
+        for (CityState cityState : gameState.cityStates) {
+            cityState.trainingFraction = 0;
+            cityState.moraleFraction = 0;
+        }
+        for (ArmyState armyState : gameState.armyStates) {
+            armyState.trainingFraction = 0;
+            armyState.moraleFraction = 0;
+        }
+        // 只補上原本不存在的 AI 快照，不回補玩家月中已花掉的 AP。
+        FactionActionPointRules.initializeMigratedAi(gameState);
+        gameState.schemaVersion = 5;
     }
 
     private void normalizeCurrentState(GameState gameState) {

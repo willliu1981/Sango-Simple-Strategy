@@ -33,9 +33,9 @@ import idv.kuan.studio.sango.ui.widget.MapCameraState;
 public final class UiResourceSmokeTest {
     private static final Pattern TEXT_REFERENCE = Pattern.compile("\\$\\{text:([a-zA-Z0-9_]+)}");
     private static final Pattern LITERAL_ACTOR_REFERENCE = Pattern.compile(
-        "(?:button|label|onClick|getActor|attachModalMask)\\(\\s*\"([a-zA-Z0-9_]+)\""
+        "(?:button|label|onClick|getActor|attachModalMask)\\(\\s*\"([a-zA-Z0-9_]+)\"(?!\\s*\\+)"
     );
-    private static final Pattern LITERAL_I18N_REFERENCE = Pattern.compile("\\btext\\(\\s*\"([a-zA-Z0-9_]+)\"");
+    private static final Pattern LITERAL_I18N_REFERENCE = Pattern.compile("\\btext\\(\\s*\"([a-zA-Z0-9_]+)\"(?!\\s*\\+)");
     private static final Pattern SCREEN_XML = Pattern.compile("registerXml\\(\"(ui/[a-zA-Z0-9_]+\\.xml)\"\\)");
     private static int checks;
 
@@ -93,6 +93,10 @@ public final class UiResourceSmokeTest {
         Set<String> factionScreenIds = actorIdsByXml.get("ui/new_game.xml");
         for (int i = 1; i <= 6; i++) {
             check(factionScreenIds.contains("faction_" + i + "_button"), "六個勢力按鈕 ID");
+        }
+        Set<String> musicScreenIds = actorIdsByXml.get("ui/music_player.xml");
+        for (int i = 0; i < 4; i++) {
+            check(musicScreenIds.contains("music_track_" + i + "_button"), "四首動態曲目按鈕 ID");
         }
         String cityXml = Files.readString(assetsPath.resolve("ui/city.xml"));
         check(cityXml.indexOf("id=\"city_settings_button\"") < cityXml.indexOf("id=\"return_map_button\""),

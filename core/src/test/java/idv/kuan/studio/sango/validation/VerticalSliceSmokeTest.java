@@ -99,7 +99,7 @@ public final class VerticalSliceSmokeTest {
             );
             validateAudioAssets(assetsPath);
 
-            System.out.println("Sango legacy campaign regression (schema 4): PASS");
+            System.out.println("Sango legacy campaign regression (schema 5): PASS");
         } finally {
             temporaryRootDirectory.deleteDirectory();
         }
@@ -298,6 +298,10 @@ public final class VerticalSliceSmokeTest {
         assertEquals(400, gameState.requireCityState(PLAYER_CAPITAL_ID).troops, "出征後留守兵力");
         assertEquals(1, gameState.armyStates.length, "出征後行軍部隊數");
 
+        // 隔離戰鬥與戰報回歸；AI 內政及扣點由獨立測試涵蓋。
+        for (var factionState : gameState.factionStates) {
+            factionState.aiActionPointsRemaining = 0;
+        }
         TurnResolutionResult firstBattleResult = commands.endTurnCommand.execute(
             SAVE_SLOT,
             gameState
@@ -363,6 +367,9 @@ public final class VerticalSliceSmokeTest {
         assertTrue(secondExpedition.isSuccessful(), "徵兵降低訓練後改採強攻，第二次出征應成功");
         assertEquals(600, secondExpedition.getDispatchedTroops(), "第二次派出兵力");
 
+        for (var factionState : secondExpedition.getGameState().factionStates) {
+            factionState.aiActionPointsRemaining = 0;
+        }
         TurnResolutionResult victoryResult = commands.endTurnCommand.execute(
             SAVE_SLOT,
             secondExpedition.getGameState()

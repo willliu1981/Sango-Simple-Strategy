@@ -9,75 +9,78 @@ import idv.kuan.studio.sango.domain.model.ArmyState;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
-import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
+import idv.kuan.studio.sango.domain.rule.DomesticActionFailureReason;
+import idv.kuan.studio.sango.domain.rule.DomesticActionRules;
 import idv.kuan.studio.sango.domain.rule.DomesticActionType;
+import idv.kuan.studio.sango.domain.rule.ExpeditionRules;
+import idv.kuan.studio.sango.domain.rule.FactionActionPointRules;
 import idv.kuan.studio.sango.domain.rule.MilitaryRules;
+import idv.kuan.studio.sango.domain.rule.OfficerCommandProfile;
+import idv.kuan.studio.sango.domain.rule.RecruitmentRules;
 
 /**
- * 多勢力最小 AI：共用集結週期，各自選擇前線、支付徵兵資源並進攻相鄰非己方城池。
- * 每勢力至多一支野戰軍；中立勢力不主動出兵，未選取的可玩勢力會正常行動。
+ * AI 使用與玩家相同的月額度、徵兵、訓練、資源及出征限制。
+ * 集結三月是出征策略的節奏，不是額外免費行動；持有野戰軍時仍可處理內政。
  */
 public final class EnemyTurnService {
-    private static final int MINIMUM_GARRISON = 300;
-    private static final int MINIMUM_EXPEDITION = 400;
-    private static final int MAXIMUM_EXPEDITION = 700;
-    private static final int MARCH_FOOD_COST = 100;
     private static final int ASSEMBLY_MONTHS = 3;
+    private static final int TARGET_GARRISON = 1_800;
+    private final DomesticActionService domesticActionService = new DomesticActionService();
 
-    public void execute(
-        GameState gameState,
-        StrategicMapDefinition mapDefinition,
-        TurnResolutionReport report
-    ) {
-        if (gameState.gameplayStatus != GameplayStatus.ACTIVE) {
+    public void execute(GameState gameState, StrategicMapDefinition mapDefinition, TurnResolutionReport report) {
+        if (!gameState.isGameplayActive()) {
             return;
         }
         gameState.enemyAttackCountdown = Math.max(0, gameState.enemyAttackCountdown - 1);
         for (FactionState factionState : gameState.factionStates) {
-            if (!factionState.active
-                || gameState.playerFactionId.equals(factionState.factionId)
-                || gameState.neutralFactionId.equals(factionState.factionId)
-                || gameState.hasArmyForFaction(factionState.factionId)) {
+            if (!factionState.active || gameState.playerFactionId.equals(factionState.factionId)
+                || gameState.neutralFactionId.equals(factionState.factionId)) {
                 continue;
             }
+            int budget = FactionActionPointRules.remaining(gameState, factionState.factionId);
+            int capacity = FactionActionPointRules.capacity(gameState, factionState.factionId);
             if (gameState.enemyAttackCountdown > 0) {
-                report.add(new TurnEvent(
-                    TurnEventType.ENEMY_PREPARING, factionState.factionId,
-                    factionState.capitalCityId, null, gameState.enemyAttackCountdown, 0
-                ));
-                continue;
+                report.add(new TurnEvent(TurnEventType.ENEMY_PREPARING, factionState.factionId,
+                    factionState.capitalCityId, null, gameState.enemyAttackCountdown, 0));
             }
-            executeFaction(gameState, mapDefinition, factionState, report);
+            for (int i = 0; i < budget; i++) {
+                if (tryMarch(gameState, mapDefinition, factionState, report)) {
+                    continue;
+                }
+                if (!tryDomesticAction(gameState, factionState, report)) {
+                    break;
+                }
+            }
+            int spent = budget - FactionActionPointRules.remaining(gameState, factionState.factionId);
+            if (spent > 0) {
+                report.add(new TurnEvent(TurnEventType.AI_ACTIONS_USED, factionState.factionId,
+                    null, null, spent, capacity));
+            }
         }
         if (gameState.enemyAttackCountdown == 0) {
             gameState.enemyAttackCountdown = ASSEMBLY_MONTHS;
         }
     }
 
-    private void executeFaction(
-        GameState gameState,
-        StrategicMapDefinition mapDefinition,
-        FactionState factionState,
-        TurnResolutionReport report
-    ) {
-        AttackPlan attackPlan = findAttackPlan(gameState, mapDefinition, factionState.factionId);
-        if (attackPlan == null) {
-            return;
+    private boolean tryMarch(GameState gameState, StrategicMapDefinition mapDefinition,
+        FactionState factionState, TurnResolutionReport report) {
+        if (gameState.enemyAttackCountdown != 0 || gameState.hasArmyForFaction(factionState.factionId)
+            || factionState.food < ExpeditionRules.FOOD_COST
+            || FactionActionPointRules.remaining(gameState, factionState.factionId) < ExpeditionRules.ACTION_POINT_COST) {
+            return false;
         }
-        CityState originCity = attackPlan.originCity();
-        int dispatchedTroops = calculateDispatchTroops(originCity);
-        if (dispatchedTroops < MINIMUM_EXPEDITION) {
-            recruit(factionState, originCity, report);
-            return;
+        AttackPlan plan = findAttackPlan(gameState, mapDefinition, factionState.factionId);
+        if (plan == null) {
+            return false;
         }
-        if (factionState.food < MARCH_FOOD_COST) {
-            return;
+        CityState originCity = plan.originCity();
+        int dispatchedTroops = ExpeditionRules.calculateDispatchTroops(originCity);
+        if (dispatchedTroops < ExpeditionRules.MINIMUM_EXPEDITION) {
+            return false;
         }
-        CityState targetCity = attackPlan.targetCity();
+        CityState targetCity = plan.targetCity();
         CityConnectionDefinition connection = mapDefinition.findConnection(originCity.cityId, targetCity.cityId);
-        originCity.troops -= dispatchedTroops;
-        factionState.food -= MARCH_FOOD_COST;
         ArmyState armyState = new ArmyState();
         armyState.armyId = gameState.allocateArmyId();
         armyState.factionId = factionState.factionId;
@@ -87,12 +90,60 @@ public final class EnemyTurnService {
         armyState.troops = dispatchedTroops;
         armyState.training = originCity.training;
         armyState.morale = originCity.morale;
+        armyState.trainingFraction = originCity.trainingFraction;
+        armyState.moraleFraction = originCity.moraleFraction;
         armyState.tactic = BattleTactic.BALANCED;
+        originCity.troops -= dispatchedTroops;
+        factionState.food -= ExpeditionRules.FOOD_COST;
+        FactionActionPointRules.spend(gameState, factionState.factionId, ExpeditionRules.ACTION_POINT_COST);
         gameState.addArmy(armyState);
-        report.add(new TurnEvent(
-            TurnEventType.ENEMY_MARCHING, factionState.factionId,
-            originCity.cityId, targetCity.cityId, dispatchedTroops, connection.travelMonths
-        ));
+        report.add(new TurnEvent(TurnEventType.ENEMY_MARCHING, factionState.factionId,
+            originCity.cityId, targetCity.cityId, dispatchedTroops, connection.travelMonths));
+        return true;
+    }
+
+    private boolean tryDomesticAction(GameState gameState, FactionState factionState, TurnResolutionReport report) {
+        for (CityState cityState : gameState.findCitiesOwnedBy(factionState.factionId)) {
+            int recruitmentAmount = Math.min(Math.max(0, TARGET_GARRISON - cityState.troops),
+                RecruitmentRules.maximumRecruitable(cityState, factionState, OfficerCommandProfile.DEFAULT));
+            if (recruitmentAmount > 0 && applyDomestic(gameState, factionState, cityState,
+                DomesticActionType.RECRUIT, recruitmentAmount)) {
+                report.add(new TurnEvent(TurnEventType.ENEMY_REINFORCING, factionState.factionId,
+                    cityState.cityId, null, recruitmentAmount, 0));
+                return true;
+            }
+            if ((cityState.training < 65 || cityState.morale < 65)
+                && applyDomestic(gameState, factionState, cityState, DomesticActionType.TRAIN, 0)) {
+                return true;
+            }
+            if (cityState.agriculture < 60 && applyDomestic(gameState, factionState, cityState,
+                DomesticActionType.DEVELOP_AGRICULTURE, 0)) {
+                return true;
+            }
+            if (cityState.waterControl < 55 && applyDomestic(gameState, factionState, cityState,
+                DomesticActionType.IMPROVE_WATER_CONTROL, 0)) {
+                return true;
+            }
+            if (cityState.commerce < 60 && applyDomestic(gameState, factionState, cityState,
+                DomesticActionType.DEVELOP_COMMERCE, 0)) {
+                return true;
+            }
+            if (cityState.defense < 50 && applyDomestic(gameState, factionState, cityState,
+                DomesticActionType.FORTIFY, 0)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean applyDomestic(GameState gameState, FactionState factionState, CityState cityState,
+        DomesticActionType actionType, int recruitmentAmount) {
+        if (DomesticActionRules.evaluateForFaction(gameState, factionState.factionId, cityState.cityId,
+            actionType, recruitmentAmount, OfficerCommandProfile.DEFAULT) != DomesticActionFailureReason.NONE) {
+            return false;
+        }
+        return domesticActionService.apply(gameState, factionState.factionId, cityState.cityId,
+            actionType, recruitmentAmount, OfficerCommandProfile.DEFAULT) == DomesticActionFailureReason.NONE;
     }
 
     private AttackPlan findAttackPlan(GameState gameState, StrategicMapDefinition mapDefinition, String factionId) {
@@ -112,10 +163,10 @@ public final class EnemyTurnService {
                 if (factionId.equals(targetCity.ownerFactionId)) {
                     continue;
                 }
-                int dispatchTroops = calculateDispatchTroops(originCity);
+                int dispatchTroops = ExpeditionRules.calculateDispatchTroops(originCity);
                 long score = (long) MilitaryRules.calculateDefenderStrength(targetCity) * 1_000
                     / Math.max(1, dispatchTroops);
-                if (dispatchTroops < MINIMUM_EXPEDITION) {
+                if (dispatchTroops < ExpeditionRules.MINIMUM_EXPEDITION) {
                     score += 1_000_000L;
                 }
                 if (score < bestScore) {
@@ -125,29 +176,6 @@ public final class EnemyTurnService {
             }
         }
         return bestPlan;
-    }
-
-    private void recruit(FactionState factionState, CityState originCity, TurnResolutionReport report) {
-        DomesticActionType recruitment = DomesticActionType.RECRUIT;
-        if (factionState.gold < recruitment.getGoldCost()
-            || factionState.food < recruitment.getFoodCost()
-            || originCity.population + recruitment.getPopulationDelta() < 1_000) {
-            return;
-        }
-        factionState.gold -= recruitment.getGoldCost();
-        factionState.food -= recruitment.getFoodCost();
-        originCity.population += recruitment.getPopulationDelta();
-        originCity.troops += recruitment.getTroopGain();
-        originCity.morale = Math.max(0, originCity.morale + recruitment.getMoraleDelta());
-        report.add(new TurnEvent(
-            TurnEventType.ENEMY_REINFORCING, factionState.factionId,
-            originCity.cityId, null, recruitment.getTroopGain(), 0
-        ));
-    }
-
-    private int calculateDispatchTroops(CityState originCityState) {
-        int availableTroops = originCityState.troops - MINIMUM_GARRISON;
-        return Math.max(0, Math.min(MAXIMUM_EXPEDITION, availableTroops) / 100 * 100);
     }
 
     private record AttackPlan(CityState originCity, CityState targetCity) {

@@ -11,7 +11,8 @@
       "initialTroops": 1000,
       "initialPublicOrder": 66,
       "initialTraining": 32,
-      "initialMorale": 66
+      "initialMorale": 66,
+      "populationCapacity": 90000
     },
     {
       "id": "ye",
@@ -24,7 +25,8 @@
       "initialTroops": 950,
       "initialPublicOrder": 55,
       "initialTraining": 30,
-      "initialMorale": 55
+      "initialMorale": 55,
+      "populationCapacity": 110000
     },
     {
       "id": "chenliu",
@@ -37,7 +39,8 @@
       "initialTroops": 1200,
       "initialPublicOrder": 58,
       "initialTraining": 35,
-      "initialMorale": 58
+      "initialMorale": 58,
+      "populationCapacity": 100000
     },
     {
       "id": "runan",
@@ -50,7 +53,8 @@
       "initialTroops": 950,
       "initialPublicOrder": 52,
       "initialTraining": 30,
-      "initialMorale": 52
+      "initialMorale": 52,
+      "populationCapacity": 90000
     },
     {
       "id": "guangling",
@@ -63,7 +67,8 @@
       "initialTroops": 950,
       "initialPublicOrder": 57,
       "initialTraining": 31,
-      "initialMorale": 57
+      "initialMorale": 57,
+      "populationCapacity": 90000
     },
     {
       "id": "wu_commandery",
@@ -76,7 +81,8 @@
       "initialTroops": 1100,
       "initialPublicOrder": 60,
       "initialTraining": 40,
-      "initialMorale": 60
+      "initialMorale": 60,
+      "populationCapacity": 110000
     },
     {
       "id": "wuwei",
@@ -89,7 +95,8 @@
       "initialTroops": 1100,
       "initialPublicOrder": 55,
       "initialTraining": 55,
-      "initialMorale": 80
+      "initialMorale": 80,
+      "populationCapacity": 60000
     },
     {
       "id": "tianshui",
@@ -102,7 +109,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 60,
       "initialTraining": 40,
-      "initialMorale": 60
+      "initialMorale": 60,
+      "populationCapacity": 70000
     },
     {
       "id": "anding",
@@ -115,7 +123,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 65,
       "initialTraining": 45,
-      "initialMorale": 65
+      "initialMorale": 65,
+      "populationCapacity": 70000
     },
     {
       "id": "changan",
@@ -128,7 +137,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 70,
       "initialTraining": 50,
-      "initialMorale": 70
+      "initialMorale": 70,
+      "populationCapacity": 80000
     },
     {
       "id": "luoyang",
@@ -141,7 +151,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 55,
       "initialTraining": 35,
-      "initialMorale": 55
+      "initialMorale": 55,
+      "populationCapacity": 90000
     },
     {
       "id": "xuchang",
@@ -154,7 +165,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 65,
       "initialTraining": 45,
-      "initialMorale": 65
+      "initialMorale": 65,
+      "populationCapacity": 100000
     },
     {
       "id": "wan",
@@ -167,7 +179,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 55,
       "initialTraining": 35,
-      "initialMorale": 55
+      "initialMorale": 55,
+      "populationCapacity": 60000
     },
     {
       "id": "hanzhong",
@@ -180,7 +193,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 60,
       "initialTraining": 40,
-      "initialMorale": 60
+      "initialMorale": 60,
+      "populationCapacity": 70000
     },
     {
       "id": "wudu",
@@ -193,7 +207,8 @@
       "initialTroops": 0,
       "initialPublicOrder": 65,
       "initialTraining": 45,
-      "initialMorale": 65
+      "initialMorale": 65,
+      "populationCapacity": 70000
     },
     {
       "id": "zitong",
@@ -206,7 +221,8 @@
       "initialTroops": 0,
       "initialPublicOrder": 70,
       "initialTraining": 50,
-      "initialMorale": 70
+      "initialMorale": 70,
+      "populationCapacity": 80000
     },
     {
       "id": "chengdu",
@@ -219,7 +235,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 55,
       "initialTraining": 35,
-      "initialMorale": 55
+      "initialMorale": 55,
+      "populationCapacity": 90000
     },
     {
       "id": "jiangzhou",
@@ -232,7 +249,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 60,
       "initialTraining": 40,
-      "initialMorale": 60
+      "initialMorale": 60,
+      "populationCapacity": 90000
     },
     {
       "id": "yongan",
@@ -245,7 +263,8 @@
       "initialTroops": 0,
       "initialPublicOrder": 65,
       "initialTraining": 45,
-      "initialMorale": 65
+      "initialMorale": 65,
+      "populationCapacity": 100000
     },
     {
       "id": "jianning",
@@ -258,7 +277,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 70,
       "initialTraining": 50,
-      "initialMorale": 70
+      "initialMorale": 70,
+      "populationCapacity": 100000
     },
     {
       "id": "yunnan",
@@ -271,7 +291,8 @@
       "initialTroops": 0,
       "initialPublicOrder": 55,
       "initialTraining": 35,
-      "initialMorale": 55
+      "initialMorale": 55,
+      "populationCapacity": 60000
     },
     {
       "id": "jinyang",
@@ -284,7 +305,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 60,
       "initialTraining": 40,
-      "initialMorale": 60
+      "initialMorale": 60,
+      "populationCapacity": 70000
     },
     {
       "id": "shangdang",
@@ -297,7 +319,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 65,
       "initialTraining": 45,
-      "initialMorale": 65
+      "initialMorale": 65,
+      "populationCapacity": 70000
     },
     {
       "id": "nanpi",
@@ -310,7 +333,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 60,
       "initialTraining": 40,
-      "initialMorale": 60
+      "initialMorale": 60,
+      "populationCapacity": 90000
     },
     {
       "id": "ji",
@@ -323,7 +347,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 65,
       "initialTraining": 45,
-      "initialMorale": 65
+      "initialMorale": 65,
+      "populationCapacity": 100000
     },
     {
       "id": "beiping",
@@ -336,7 +361,8 @@
       "initialTroops": 0,
       "initialPublicOrder": 70,
       "initialTraining": 50,
-      "initialMorale": 70
+      "initialMorale": 70,
+      "populationCapacity": 100000
     },
     {
       "id": "xiangping",
@@ -349,7 +375,8 @@
       "initialTroops": 0,
       "initialPublicOrder": 55,
       "initialTraining": 35,
-      "initialMorale": 55
+      "initialMorale": 55,
+      "populationCapacity": 60000
     },
     {
       "id": "beihai",
@@ -362,7 +389,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 60,
       "initialTraining": 40,
-      "initialMorale": 60
+      "initialMorale": 60,
+      "populationCapacity": 70000
     },
     {
       "id": "xiaopei",
@@ -375,7 +403,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 65,
       "initialTraining": 45,
-      "initialMorale": 65
+      "initialMorale": 65,
+      "populationCapacity": 70000
     },
     {
       "id": "xiapi",
@@ -388,7 +417,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 70,
       "initialTraining": 50,
-      "initialMorale": 70
+      "initialMorale": 70,
+      "populationCapacity": 80000
     },
     {
       "id": "shouchun",
@@ -401,7 +431,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 55,
       "initialTraining": 35,
-      "initialMorale": 55
+      "initialMorale": 55,
+      "populationCapacity": 90000
     },
     {
       "id": "jianye",
@@ -414,7 +445,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 65,
       "initialTraining": 45,
-      "initialMorale": 65
+      "initialMorale": 65,
+      "populationCapacity": 100000
     },
     {
       "id": "kuaiji",
@@ -427,7 +459,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 55,
       "initialTraining": 35,
-      "initialMorale": 55
+      "initialMorale": 55,
+      "populationCapacity": 60000
     },
     {
       "id": "poyang",
@@ -440,7 +473,8 @@
       "initialTroops": 0,
       "initialPublicOrder": 60,
       "initialTraining": 40,
-      "initialMorale": 60
+      "initialMorale": 60,
+      "populationCapacity": 70000
     },
     {
       "id": "yuzhang",
@@ -453,7 +487,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 65,
       "initialTraining": 45,
-      "initialMorale": 65
+      "initialMorale": 65,
+      "populationCapacity": 70000
     },
     {
       "id": "xiangyang",
@@ -466,7 +501,8 @@
       "initialTroops": 1100,
       "initialPublicOrder": 70,
       "initialTraining": 50,
-      "initialMorale": 70
+      "initialMorale": 70,
+      "populationCapacity": 80000
     },
     {
       "id": "jiangling",
@@ -479,7 +515,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 55,
       "initialTraining": 35,
-      "initialMorale": 55
+      "initialMorale": 55,
+      "populationCapacity": 90000
     },
     {
       "id": "jiangxia",
@@ -492,7 +529,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 60,
       "initialTraining": 40,
-      "initialMorale": 60
+      "initialMorale": 60,
+      "populationCapacity": 90000
     },
     {
       "id": "changsha",
@@ -505,7 +543,8 @@
       "initialTroops": 500,
       "initialPublicOrder": 65,
       "initialTraining": 45,
-      "initialMorale": 65
+      "initialMorale": 65,
+      "populationCapacity": 100000
     },
     {
       "id": "wuling",
@@ -518,7 +557,8 @@
       "initialTroops": 0,
       "initialPublicOrder": 70,
       "initialTraining": 50,
-      "initialMorale": 70
+      "initialMorale": 70,
+      "populationCapacity": 100000
     },
     {
       "id": "jiaozhi",
@@ -531,7 +571,8 @@
       "initialTroops": 0,
       "initialPublicOrder": 55,
       "initialTraining": 35,
-      "initialMorale": 55
+      "initialMorale": 55,
+      "populationCapacity": 60000
     },
     {
       "id": "nanhai",
@@ -544,7 +585,8 @@
       "initialTroops": 0,
       "initialPublicOrder": 60,
       "initialTraining": 40,
-      "initialMorale": 60
+      "initialMorale": 60,
+      "populationCapacity": 70000
     }
   ]
 }

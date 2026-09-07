@@ -23,7 +23,7 @@ import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
-import idv.kuan.studio.sango.domain.rule.NationalActionPointRules;
+import idv.kuan.studio.sango.domain.rule.FactionActionPointRules;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 import idv.kuan.studio.sango.repository.SaveGameRepository;
 
@@ -80,8 +80,7 @@ public final class NewGameCommand {
             opponentFactionDefinition,
             neutralFactionDefinition
         );
-        gameState.actionPointsPerTurn = NationalActionPointRules.calculateMonthlyActionPoints(gameState);
-        gameState.actionPointsRemaining = gameState.actionPointsPerTurn;
+        FactionActionPointRules.refreshAll(gameState, true);
         GameStateValidator.validate(gameState);
         saveGameRepository.save(slotNumber, gameState);
         return gameState;

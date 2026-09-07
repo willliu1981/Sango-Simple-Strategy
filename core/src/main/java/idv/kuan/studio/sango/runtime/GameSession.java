@@ -22,6 +22,7 @@ public final class GameSession {
     private ScreenId settingsReturnScreen = ScreenId.STRATEGIC_MAP;
     private ScreenId saveLoadReturnScreen = ScreenId.LOBBY;
     private SaveLoadMode saveLoadMode = SaveLoadMode.LOAD;
+    private ScreenId musicPlayerReturnScreen = ScreenId.LOBBY;
 
     public boolean hasCurrentState() {
         return currentState != null;
@@ -149,6 +150,17 @@ public final class GameSession {
         return saveLoadReturnScreen;
     }
 
+    public void openMusicPlayer(ScreenId returnScreen) {
+        if (returnScreen != ScreenId.LOBBY && returnScreen != ScreenId.SETTINGS) {
+            throw new IllegalArgumentException("音樂鑑賞只能由主選單或設定畫面開啟。");
+        }
+        musicPlayerReturnScreen = returnScreen;
+    }
+
+    public ScreenId getMusicPlayerReturnScreen() {
+        return musicPlayerReturnScreen;
+    }
+
     public void clear() {
         currentState = null;
         currentSaveSlot = 0;
@@ -161,6 +173,7 @@ public final class GameSession {
         settingsReturnScreen = ScreenId.STRATEGIC_MAP;
         saveLoadReturnScreen = ScreenId.LOBBY;
         saveLoadMode = SaveLoadMode.LOAD;
+        musicPlayerReturnScreen = ScreenId.LOBBY;
     }
 
     private String resolveDefaultSelectedCity(GameState gameState) {
