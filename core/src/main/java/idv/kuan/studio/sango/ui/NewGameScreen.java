@@ -351,6 +351,7 @@ public final class NewGameScreen extends SuiScreen {
             );
             SangoServices.session().clear();
             SangoServices.session().setCurrentState(selectedSaveSlot, gameState);
+            SangoServices.session().requestStrategicMapFocus();
             SangoPreferences.setLastUsedSaveSlot(selectedSaveSlot);
             SangoServices.audio().playSound(SoundEffect.CONFIRM);
             Sui.screens.set(ScreenId.STRATEGIC_MAP);

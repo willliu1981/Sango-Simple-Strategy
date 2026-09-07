@@ -104,6 +104,10 @@ public final class EnemyTurnService {
 
     private boolean tryDomesticAction(GameState gameState, FactionState factionState, TurnResolutionReport report) {
         for (CityState cityState : gameState.findCitiesOwnedBy(factionState.factionId)) {
+            if (cityState.publicOrder < 70 && applyDomestic(gameState, factionState, cityState,
+                DomesticActionType.PACIFY, 0)) {
+                return true;
+            }
             int recruitmentAmount = Math.min(Math.max(0, TARGET_GARRISON - cityState.troops),
                 RecruitmentRules.maximumRecruitable(cityState, factionState, OfficerCommandProfile.DEFAULT));
             if (recruitmentAmount > 0 && applyDomestic(gameState, factionState, cityState,

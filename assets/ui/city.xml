@@ -88,14 +88,16 @@
                         color="0.70,0.65,0.56,1">${text:city_actions_note}</label>
                     <row />
                     <table width="1020" height="390" padTop="8">
-                        <textButton id="agriculture_button" fontSize="31" width="485" height="104">${text:button_agriculture}</textButton>
-                        <textButton id="commerce_button" fontSize="31" width="485" height="104" padLeft="24">${text:button_commerce}</textButton>
+                        <textButton id="agriculture_button" fontSize="29" width="485" height="82">${text:button_agriculture}</textButton>
+                        <textButton id="commerce_button" fontSize="29" width="485" height="82" padLeft="24">${text:button_commerce}</textButton>
                         <row />
-                        <textButton id="water_control_button" fontSize="31" width="485" height="104" padTop="18">${text:button_water_control}</textButton>
-                        <textButton id="fortify_button" fontSize="31" width="485" height="104" padLeft="24" padTop="18">${text:button_fortify}</textButton>
+                        <textButton id="water_control_button" fontSize="29" width="485" height="82" padTop="12">${text:button_water_control}</textButton>
+                        <textButton id="fortify_button" fontSize="29" width="485" height="82" padLeft="24" padTop="12">${text:button_fortify}</textButton>
                         <row />
-                        <textButton id="recruit_button" fontSize="31" width="485" height="104" padTop="18">${text:button_recruit}</textButton>
-                        <textButton id="train_button" fontSize="31" width="485" height="104" padLeft="24" padTop="18">${text:button_train}</textButton>
+                        <textButton id="recruit_button" fontSize="29" width="485" height="82" padTop="12">${text:button_recruit}</textButton>
+                        <textButton id="train_button" fontSize="29" width="485" height="82" padLeft="24" padTop="12">${text:button_train}</textButton>
+                        <row />
+                        <textButton id="pacify_button" fontSize="29" width="485" height="82" padTop="12">${text:button_pacify_short}</textButton>
                     </table>
                     <row />
                     <label fontSize="24" width="1020" height="112" align="left" textAlign="left"

@@ -45,7 +45,7 @@
         <entry name="new_game_scenario_heading" value="劇本" description="new_game_scenario_heading" />
         <entry name="new_game_faction_heading" value="選擇勢力" description="new_game_faction_heading" />
         <entry name="new_game_scenario_date" value="起始：初平元年 · 西元 190 年" description="new_game_scenario_date" />
-        <entry name="new_game_scenario_actions" value="每月依全城民心獲得 3–9 行動力；每 15 民心多 1 點。目標成功或失敗皆可繼續。" description="new_game_scenario_actions" />
+        <entry name="new_game_scenario_actions" value="每月依全城民心總和的分段門檻獲得 3–9 行動力。目標成功或失敗皆可繼續。" description="new_game_scenario_actions" />
         <entry name="scenario_prototype_name" value="群雄割據（流程原型）" description="scenario_prototype_name" />
         <entry name="scenario_prototype_description" value="選擇一個勢力，在六城區域地圖經營主城。農業於九月秋收、商業於季末收稅；敵軍會集結進攻。請在十二個月內攻下指定敵城。" description="scenario_prototype_description" />
         <entry name="new_game_selected_faction_placeholder" value="勢力：尚未選擇" description="new_game_selected_faction_placeholder" />
@@ -110,6 +110,10 @@
         <entry name="stat_agriculture" value="農業" description="stat_agriculture" />
         <entry name="stat_commerce" value="商業" description="stat_commerce" />
         <entry name="stat_public_order" value="民心" description="stat_public_order" />
+        <entry name="button_pacify_short" value="安民" description="button_pacify_short" />
+        <entry name="button_pacify" value="安民｜100 金、50 糧\n民心最高 95" description="button_pacify" />
+        <entry name="city_status_pacify_success" value="完成安民，民心已提升。" description="city_status_pacify_success" />
+        <entry name="city_status_pacify_result_format" value="完成安民：民心 {0} → {1}。金 -100、糧 -50。" description="city_status_pacify_result_format" />
         <entry name="stat_training" value="訓練" description="stat_training" />
         <entry name="stat_water_control" value="治水" description="stat_water_control" />
         <entry name="stat_defense" value="城防" description="stat_defense" />
@@ -175,9 +179,10 @@
         <entry name="map_intel_estimate_format" value="兵力：約 {0}～{1}｜情報不足；偵察可取得三回合精確情報。" description="map_intel_estimate_format" />
         <entry name="map_stats_unknown" value="城防、訓練、士氣與內政狀態尚未掌握。" description="map_stats_unknown" />
         <entry name="map_stats_format" value="城防 {0}｜訓練 {1}｜士氣 {5}　農業 {2}｜商業 {3}｜治水 {4}" description="map_stats_format" />
-        <entry name="map_route_owned" value="此城屬於我方；可進入內政畫面投資或整備。" description="map_route_owned" />
+        <entry name="map_route_owned" value="此城屬於我方；目前沒有相鄰我方城池可運兵。" description="map_route_owned" />
+        <entry name="map_route_owned_transfer_format" value="可由 {0} 運兵至此，行程 {1} 個月。派兵消耗 1 行動力與 100 糧。" description="map_route_owned_transfer_format" />
         <entry name="map_route_not_adjacent" value="目前沒有與此城直接相鄰的我方城池，無法偵察或出征。" description="map_route_not_adjacent" />
-        <entry name="map_route_format" value="可由 {0} 沿道路進軍，行程 1 個月。出征消耗 1 行動力與 100 糧。" description="map_route_format" />
+        <entry name="map_route_format" value="可由 {0} 沿道路進軍，行程 {1} 個月。出征消耗 1 行動力與 100 糧。" description="map_route_format" />
         <entry name="map_army_none_format" value="目前沒有行軍中的部隊。敵軍預估 {0} 個月後完成下一次集結。" description="map_army_none_format" />
         <entry name="map_army_player_prefix" value="我軍" description="map_army_player_prefix" />
         <entry name="map_army_enemy_prefix" value="敵軍" description="map_army_enemy_prefix" />
@@ -193,6 +198,7 @@
         <entry name="map_status_origin_not_owned" value="出發城不屬於我方。" description="map_status_origin_not_owned" />
         <entry name="map_status_target_owned" value="目標已屬於我方。" description="map_status_target_owned" />
         <entry name="map_status_insufficient_troops" value="至少需保留 400 守軍並派出 400 兵。" description="map_status_insufficient_troops" />
+        <entry name="map_status_invalid_expedition_amount" value="派兵數量須至少 400，且為 100 的倍數。" description="map_status_invalid_expedition_amount" />
         <entry name="map_status_army_active" value="我方已有一支部隊行軍中，需等待其抵達。" description="map_status_army_active" />
         <entry name="map_status_month_ended" value="月份結算完成並已自動存檔。" description="map_status_month_ended" />
         <entry name="report_heading" value="本月結算報告" description="report_heading" />
@@ -242,6 +248,21 @@
         <entry name="map_marker_battle_format" value="戰事 {0}" description="map_marker_battle_format" />
         <entry name="button_city_battles_placeholder" value="查看此城戰報" description="button_city_battles_placeholder" />
         <entry name="button_city_battles_format" value="查看此城戰報（{0}）" description="button_city_battles_format" />
+        <entry name="button_transfer_troops" value="運兵" description="button_transfer_troops" />
+        <entry name="dispatch_title_placeholder" value="派兵" description="dispatch_title_placeholder" />
+        <entry name="dispatch_transfer_title" value="運兵" description="dispatch_transfer_title" />
+        <entry name="dispatch_expedition_title" value="出征派兵" description="dispatch_expedition_title" />
+        <entry name="dispatch_route_placeholder" value="來源、目的與路程尚未載入。" description="dispatch_route_placeholder" />
+        <entry name="dispatch_route_format" value="來源：{0}\n目的：{1}\n路程：{2} 個月" description="dispatch_route_format" />
+        <entry name="dispatch_amount_placeholder" value="派兵數量：400" description="dispatch_amount_placeholder" />
+        <entry name="dispatch_amount_format" value="派兵數量：{0}" description="dispatch_amount_format" />
+        <entry name="dispatch_amount_hint" value="每次增減 100；至少派出 400，且出發城須保留 400 守軍，單次上限 10,000。" description="dispatch_amount_hint" />
+        <entry name="button_dispatch_decrease" value="－100" description="button_dispatch_decrease" />
+        <entry name="button_dispatch_increase" value="＋100" description="button_dispatch_increase" />
+        <entry name="button_dispatch_minimum" value="最小" description="button_dispatch_minimum" />
+        <entry name="button_dispatch_maximum" value="最大" description="button_dispatch_maximum" />
+        <entry name="button_confirm_transfer" value="確認運兵" description="button_confirm_transfer" />
+        <entry name="button_confirm_expedition" value="確認出征" description="button_confirm_expedition" />
         <entry name="button_unread_battles_placeholder" value="未讀戰報" description="button_unread_battles_placeholder" />
         <entry name="button_unread_battles_format" value="未讀戰報（{0}）" description="button_unread_battles_format" />
         <entry name="map_status_player_eliminated" value="我方已失去全部城池，不能再下達命令。" description="map_status_player_eliminated" />

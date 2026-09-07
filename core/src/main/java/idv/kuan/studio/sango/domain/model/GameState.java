@@ -244,12 +244,40 @@ public final class GameState {
         return unreadReports;
     }
 
+    public List<BattleReport> findBattleReportsForCity(String cityId) {
+        List<BattleReport> reports = new ArrayList<>();
+        if (battleReports != null) {
+            for (BattleReport battleReport : battleReports) {
+                if (battleReport != null && cityId.equals(battleReport.targetCityId)) {
+                    reports.add(battleReport);
+                }
+            }
+        }
+        return reports;
+    }
+
+    public BattleReport findLatestBattleReportForCity(String cityId) {
+        if (battleReports != null) {
+            for (int index = battleReports.length - 1; index >= 0; index--) {
+                BattleReport battleReport = battleReports[index];
+                if (battleReport != null && cityId.equals(battleReport.targetCityId)) {
+                    return battleReport;
+                }
+            }
+        }
+        return null;
+    }
+
     public int countUnreadBattleReports() {
         return findUnreadBattleReports().size();
     }
 
     public int countUnreadBattleReportsForCity(String cityId) {
         return findUnreadBattleReportsForCity(cityId).size();
+    }
+
+    public int countBattleReportsForCity(String cityId) {
+        return findBattleReportsForCity(cityId).size();
     }
 
     private FactionState[] copyFactionStates(FactionState[] sourceStates) {

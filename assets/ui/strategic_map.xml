@@ -116,6 +116,39 @@
         </table>
     </table>
 
+    <table id="expedition_dispatch_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0,0,0,0.88" flags="fillParent">
+        <table width="1080" pad="52" backgroundColor="0.055,0.043,0.035,0.995">
+            <label id="dispatch_title_label" fontKey="title" fontSize="60" width="940" height="82"
+                color="0.94,0.76,0.43,1">${text:dispatch_title_placeholder}</label>
+            <row />
+            <label id="dispatch_route_label" fontSize="31" width="930" height="150"
+                align="left" textAlign="left" wrap="true" color="0.84,0.80,0.72,1">${text:dispatch_route_placeholder}</label>
+            <row />
+            <label id="dispatch_amount_label" fontKey="title" fontSize="42" width="930" height="64"
+                color="0.96,0.78,0.40,1">${text:dispatch_amount_placeholder}</label>
+            <row />
+            <table width="930" height="76" padTop="12">
+                <textButton id="dispatch_decrease_button" fontSize="34" width="190" height="70">${text:button_dispatch_decrease}</textButton>
+                <textButton id="dispatch_increase_button" fontSize="34" width="190" height="70"
+                    padLeft="14">${text:button_dispatch_increase}</textButton>
+                <textButton id="dispatch_minimum_button" fontSize="30" width="240" height="70"
+                    padLeft="14">${text:button_dispatch_minimum}</textButton>
+                <textButton id="dispatch_maximum_button" fontSize="30" width="240" height="70"
+                    padLeft="14">${text:button_dispatch_maximum}</textButton>
+            </table>
+            <row />
+            <label fontSize="25" width="930" height="58" wrap="true"
+                color="0.70,0.65,0.56,1">${text:dispatch_amount_hint}</label>
+            <row />
+            <table width="930" height="86" padTop="20">
+                <textButton id="dispatch_cancel_button" fontSize="36" width="420" height="82">${text:button_cancel}</textButton>
+                <textButton id="dispatch_confirm_button" fontSize="36" width="480" height="82"
+                    padLeft="30">${text:button_confirm_expedition}</textButton>
+            </table>
+        </table>
+    </table>
+
     <table id="end_month_confirm_mask" i18n="literal" visible="false" touchable="enabled"
         backgroundColor="0,0,0,0.88" flags="fillParent">
         <table width="1040" pad="52" backgroundColor="0.055,0.043,0.035,0.995">

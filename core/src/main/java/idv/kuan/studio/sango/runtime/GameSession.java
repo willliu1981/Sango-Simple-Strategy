@@ -23,6 +23,7 @@ public final class GameSession {
     private ScreenId saveLoadReturnScreen = ScreenId.LOBBY;
     private SaveLoadMode saveLoadMode = SaveLoadMode.LOAD;
     private ScreenId musicPlayerReturnScreen = ScreenId.LOBBY;
+    private boolean strategicMapFocusRequested;
 
     public boolean hasCurrentState() {
         return currentState != null;
@@ -161,6 +162,16 @@ public final class GameSession {
         return musicPlayerReturnScreen;
     }
 
+    public void requestStrategicMapFocus() {
+        strategicMapFocusRequested = true;
+    }
+
+    public boolean consumeStrategicMapFocusRequest() {
+        boolean requested = strategicMapFocusRequested;
+        strategicMapFocusRequested = false;
+        return requested;
+    }
+
     public void clear() {
         currentState = null;
         currentSaveSlot = 0;
@@ -174,6 +185,7 @@ public final class GameSession {
         saveLoadReturnScreen = ScreenId.LOBBY;
         saveLoadMode = SaveLoadMode.LOAD;
         musicPlayerReturnScreen = ScreenId.LOBBY;
+        strategicMapFocusRequested = false;
     }
 
     private String resolveDefaultSelectedCity(GameState gameState) {

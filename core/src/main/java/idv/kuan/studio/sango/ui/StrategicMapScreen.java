@@ -30,6 +30,7 @@ import idv.kuan.studio.sango.application.result.TurnResolutionResult;
 import idv.kuan.studio.sango.ui.support.ScreenMusic;
 import idv.kuan.studio.sango.audio.SoundEffect;
 import idv.kuan.studio.sango.data.SangoPreferences;
+import idv.kuan.studio.sango.domain.definition.CityConnectionDefinition;
 import idv.kuan.studio.sango.domain.definition.CityDefinition;
 import idv.kuan.studio.sango.domain.definition.FactionDefinition;
 import idv.kuan.studio.sango.domain.definition.MapCityNodeDefinition;
@@ -71,10 +72,14 @@ public final class StrategicMapScreen extends SuiScreen {
 
     private Actor endMonthConfirmMask;
     private Actor battlePromptMask;
+    private Actor expeditionDispatchMask;
     private Group mapHost;
     private StrategicMapWidget strategicMapWidget;
     private String currentStatusMessage;
     private Color currentStatusColor = STATUS_NORMAL_COLOR;
+    private String pendingOriginCityId;
+    private String pendingTargetCityId;
+    private int pendingDispatchAmount;
 
     @Override
     protected BuiltUI buildUI(UIFactory uiFactory) {
@@ -91,6 +96,7 @@ public final class StrategicMapScreen extends SuiScreen {
         screenBackground.attach(stage, BACKGROUND_PATH);
         endMonthConfirmMask = attachModalMask("end_month_confirm_mask");
         battlePromptMask = attachModalMask("battle_prompt_mask");
+        expeditionDispatchMask = attachModalMask("expedition_dispatch_mask");
         mapHost = ui.getActor("map_host", Group.class);
         strategicMapWidget = new StrategicMapWidget(
             label("map_font_probe").getStyle().font,
@@ -113,6 +119,9 @@ public final class StrategicMapScreen extends SuiScreen {
         ensureCurrentGameState();
         ScreenMusic.play(ScreenId.STRATEGIC_MAP);
         refreshView();
+        if (SangoServices.session().consumeStrategicMapFocusRequest()) {
+            strategicMapWidget.focusSelectedCity();
+        }
     }
 
     @Override
@@ -192,6 +201,12 @@ public final class StrategicMapScreen extends SuiScreen {
         SangoUiStyles.applyPrimaryButton(button("end_month_confirm_button"));
         SangoUiStyles.applySecondaryButton(button("battle_prompt_later_button"));
         SangoUiStyles.applyDangerButton(button("battle_prompt_view_button"));
+        SangoUiStyles.applySecondaryButton(button("dispatch_decrease_button"));
+        SangoUiStyles.applySecondaryButton(button("dispatch_increase_button"));
+        SangoUiStyles.applySecondaryButton(button("dispatch_minimum_button"));
+        SangoUiStyles.applySecondaryButton(button("dispatch_maximum_button"));
+        SangoUiStyles.applySecondaryButton(button("dispatch_cancel_button"));
+        SangoUiStyles.applyPrimaryButton(button("dispatch_confirm_button"));
         refreshTacticStyles();
     }
 
@@ -202,7 +217,7 @@ public final class StrategicMapScreen extends SuiScreen {
         ui.onClick("map_focus_button", strategicMapWidget::focusSelectedCity);
         ui.onClick("manage_city_button", this::openSelectedCity);
         ui.onClick("scout_city_button", this::scoutSelectedCity);
-        ui.onClick("launch_expedition_button", this::launchExpedition);
+        ui.onClick("launch_expedition_button", this::requestDispatch);
         ui.onClick("view_city_battle_button", this::viewSelectedCityBattle);
         ui.onClick("tactic_balanced_button", () -> selectTactic(BattleTactic.BALANCED));
         ui.onClick("tactic_assault_button", () -> selectTactic(BattleTactic.ASSAULT));
@@ -215,6 +230,12 @@ public final class StrategicMapScreen extends SuiScreen {
         ui.onClick("end_month_confirm_button", this::confirmEndMonth);
         ui.onClick("battle_prompt_later_button", this::openMonthReportAfterBattlePrompt);
         ui.onClick("battle_prompt_view_button", this::openPromptedBattleReport);
+        ui.onClick("dispatch_decrease_button", () -> adjustDispatchAmount(-100));
+        ui.onClick("dispatch_increase_button", () -> adjustDispatchAmount(100));
+        ui.onClick("dispatch_minimum_button", () -> setDispatchAmount(LaunchExpeditionCommand.MINIMUM_EXPEDITION));
+        ui.onClick("dispatch_maximum_button", this::setMaximumDispatchAmount);
+        ui.onClick("dispatch_cancel_button", this::closeModals);
+        ui.onClick("dispatch_confirm_button", this::confirmDispatch);
     }
 
     private void animateEntrance() {
@@ -464,11 +485,11 @@ public final class StrategicMapScreen extends SuiScreen {
             buildRouteText(gameState, selectedCityState, originCityState)
         );
 
-        int cityUnreadCount = gameState.countUnreadBattleReportsForCity(selectedCityState.cityId);
+        int cityBattleCount = gameState.countBattleReportsForCity(selectedCityState.cityId);
         button("view_city_battle_button").setText(
-            text("button_city_battles_format", "查看此城戰報（{0}）", cityUnreadCount)
+            text("button_city_battles_format", "查看此城戰報（{0}）", cityBattleCount)
         );
-        setButtonEnabled(button("view_city_battle_button"), cityUnreadCount > 0);
+        setButtonEnabled(button("view_city_battle_button"), cityBattleCount > 0);
 
         boolean playerOwned = gameState.playerFactionId.equals(selectedCityState.ownerFactionId);
         boolean gameplayActive = gameState.gameplayStatus == GameplayStatus.ACTIVE;
@@ -483,12 +504,11 @@ public final class StrategicMapScreen extends SuiScreen {
             ? 0
             : SangoServices.launchExpeditionCommand().calculateDispatchTroops(originCityState);
         button("launch_expedition_button").setText(
-            dispatchTroops > 0
-                ? text("button_launch_expedition_format", "出征（{0} 兵）", dispatchTroops)
+            playerOwned
+                ? text("button_transfer_troops", "運兵")
                 : text("button_launch_expedition", "出征")
         );
         boolean expeditionEnabled = gameplayActive
-            && !playerOwned
             && originCityState != null
             && dispatchTroops >= LaunchExpeditionCommand.MINIMUM_EXPEDITION
             && gameState.actionPointsRemaining >= 1
@@ -542,16 +562,31 @@ public final class StrategicMapScreen extends SuiScreen {
         CityState originCityState
     ) {
         if (gameState.playerFactionId.equals(selectedCityState.ownerFactionId)) {
-            return text("map_route_owned", "此城屬於我方；可進入內政畫面投資或整備。");
+            if (originCityState == null) {
+                return text("map_route_owned", "此城屬於我方；目前沒有相鄰我方城池可運兵。");
+            }
+            return text(
+                "map_route_owned_transfer_format",
+                "可由 {0} 運兵至此，行程 {1} 個月。派兵消耗 1 行動力與 100 糧。",
+                cityName(originCityState.cityId),
+                travelMonths(gameState, originCityState.cityId, selectedCityState.cityId)
+            );
         }
         if (originCityState == null) {
             return text("map_route_not_adjacent", "目前沒有與此城直接相鄰的我方城池。");
         }
         return text(
             "map_route_format",
-            "可由 {0} 沿道路進軍，行程 1 個月。出征消耗 1 行動力與 100 糧。",
-            cityName(originCityState.cityId)
+            "可由 {0} 沿道路進軍，行程 {1} 個月。出征消耗 1 行動力與 100 糧。",
+            cityName(originCityState.cityId),
+            travelMonths(gameState, originCityState.cityId, selectedCityState.cityId)
         );
+    }
+
+    private int travelMonths(GameState gameState, String originCityId, String targetCityId) {
+        CityConnectionDefinition connection = SangoServices.definitions().requireMap(gameState.mapId)
+            .findConnection(originCityId, targetCityId);
+        return connection == null ? 0 : connection.travelMonths;
     }
 
     private boolean hasExactIntel(GameState gameState, CityState cityState) {
@@ -644,7 +679,7 @@ public final class StrategicMapScreen extends SuiScreen {
         refreshView();
     }
 
-    private void launchExpedition() {
+    private void requestDispatch() {
         GameState currentState = requireCurrentState();
         if (currentState == null) {
             return;
@@ -652,15 +687,98 @@ public final class StrategicMapScreen extends SuiScreen {
         String targetCityId = SangoServices.session().getSelectedCityId();
         CityState originCityState = findAdjacentPlayerCity(currentState, targetCityId);
         if (originCityState == null) {
-            setStatus(text("map_status_not_adjacent", "沒有可出征的相鄰我方城池。"), STATUS_ERROR_COLOR);
+            setStatus(text("map_status_not_adjacent", "沒有可派兵的相鄰我方城池。"), STATUS_ERROR_COLOR);
             return;
         }
+        int maximumAmount = SangoServices.launchExpeditionCommand().calculateDispatchTroops(originCityState);
+        if (maximumAmount < LaunchExpeditionCommand.MINIMUM_EXPEDITION) {
+            setStatus(
+                text("map_status_insufficient_troops", "至少需保留 400 守軍並派出 400 兵。"),
+                STATUS_ERROR_COLOR
+            );
+            return;
+        }
+        pendingOriginCityId = originCityState.cityId;
+        pendingTargetCityId = targetCityId;
+        pendingDispatchAmount = maximumAmount;
+        boolean transfer = currentState.playerFactionId.equals(
+            currentState.requireCityState(targetCityId).ownerFactionId
+        );
+        label("dispatch_title_label").setText(
+            transfer
+                ? text("dispatch_transfer_title", "運兵")
+                : text("dispatch_expedition_title", "出征派兵")
+        );
+        label("dispatch_route_label").setText(
+            text(
+                "dispatch_route_format",
+                "來源：{0}\n目的：{1}\n路程：{2} 個月",
+                cityName(pendingOriginCityId),
+                cityName(pendingTargetCityId),
+                travelMonths(currentState, pendingOriginCityId, pendingTargetCityId)
+            )
+        );
+        button("dispatch_confirm_button").setText(
+            transfer
+                ? text("button_confirm_transfer", "確認運兵")
+                : text("button_confirm_expedition", "確認出征")
+        );
+        refreshDispatchAmount();
+        openModal(expeditionDispatchMask);
+    }
+
+    private void adjustDispatchAmount(int delta) {
+        setDispatchAmount(pendingDispatchAmount + delta);
+    }
+
+    private void setDispatchAmount(int amount) {
+        GameState currentState = requireCurrentState();
+        if (currentState == null || pendingOriginCityId == null) {
+            return;
+        }
+        int maximumAmount = SangoServices.launchExpeditionCommand().calculateDispatchTroops(
+            currentState.requireCityState(pendingOriginCityId)
+        );
+        pendingDispatchAmount = Math.max(
+            LaunchExpeditionCommand.MINIMUM_EXPEDITION,
+            Math.min(maximumAmount, amount)
+        );
+        refreshDispatchAmount();
+    }
+
+    private void setMaximumDispatchAmount() {
+        GameState currentState = requireCurrentState();
+        if (currentState == null || pendingOriginCityId == null) {
+            return;
+        }
+        setDispatchAmount(SangoServices.launchExpeditionCommand().calculateDispatchTroops(
+            currentState.requireCityState(pendingOriginCityId)
+        ));
+    }
+
+    private void refreshDispatchAmount() {
+        label("dispatch_amount_label").setText(
+            text("dispatch_amount_format", "派兵數量：{0}", numberFormat.format(pendingDispatchAmount))
+        );
+    }
+
+    private void confirmDispatch() {
+        GameState currentState = requireCurrentState();
+        if (currentState == null || pendingOriginCityId == null || pendingTargetCityId == null) {
+            closeModals();
+            return;
+        }
+        String originCityId = pendingOriginCityId;
+        String targetCityId = pendingTargetCityId;
+        int amount = pendingDispatchAmount;
+        closeModals();
         try {
             StrategicActionResult result = SangoServices.launchExpeditionCommand().execute(
                 SangoServices.session().getCurrentSaveSlot(),
                 currentState,
-                originCityState.cityId,
+                originCityId,
                 targetCityId,
+                amount,
                 SangoServices.session().getSelectedBattleTactic()
             );
             applyStrategicActionResult(result, false);
@@ -710,6 +828,7 @@ public final class StrategicMapScreen extends SuiScreen {
             case TARGET_NOT_CONNECTED -> text("map_status_not_adjacent", "目標與我方城池不相鄰。");
             case INSUFFICIENT_GOLD -> text("city_status_insufficient_gold", "金不足，無法執行此命令。");
             case INSUFFICIENT_FOOD -> text("city_status_insufficient_food", "糧不足，無法執行此命令。");
+            case INVALID_EXPEDITION_AMOUNT -> text("map_status_invalid_expedition_amount", "派兵數量須至少 400，且為 100 的倍數。");
             case INSUFFICIENT_TROOPS -> text("map_status_insufficient_troops", "至少需保留 400 守軍並派出 400 兵。");
             case ARMY_ALREADY_ACTIVE -> text("map_status_army_active", "我方已有一支部隊行軍中，需等待其抵達。");
             case NONE -> text("map_status_action_failed", "命令未完成。");
@@ -814,13 +933,13 @@ public final class StrategicMapScreen extends SuiScreen {
         if (gameState == null) {
             return;
         }
-        List<BattleReport> reports = gameState.findUnreadBattleReportsForCity(
+        BattleReport latestReport = gameState.findLatestBattleReportForCity(
             SangoServices.session().getSelectedCityId()
         );
-        if (reports.isEmpty()) {
+        if (latestReport == null) {
             return;
         }
-        SangoServices.session().openBattleReport(reports.get(0).battleId, ScreenId.STRATEGIC_MAP);
+        SangoServices.session().openBattleReport(latestReport.battleId, ScreenId.STRATEGIC_MAP);
         Sui.screens.set(ScreenId.BATTLE_REPORT);
     }
 
@@ -878,10 +997,13 @@ public final class StrategicMapScreen extends SuiScreen {
     private void closeModals() {
         setVisible(endMonthConfirmMask, false);
         setVisible(battlePromptMask, false);
+        setVisible(expeditionDispatchMask, false);
     }
 
     private boolean isAnyModalVisible() {
-        return isVisible(endMonthConfirmMask) || isVisible(battlePromptMask);
+        return isVisible(endMonthConfirmMask)
+            || isVisible(battlePromptMask)
+            || isVisible(expeditionDispatchMask);
     }
 
     private boolean isVisible(Actor actor) {

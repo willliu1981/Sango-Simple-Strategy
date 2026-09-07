@@ -16,9 +16,7 @@ import idv.kuan.studio.sango.domain.rule.StrategicActionFailureReason;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 import idv.kuan.studio.sango.repository.SaveGameRepository;
 
-/**
- * 由相鄰己方城池派出一支軍隊。第一版每個勢力同時只保留一支野戰軍。
- */
+/** 由相鄰己方城池派出一支軍隊；抵達後依目的地當下所有權運兵或攻城。 */
 public final class LaunchExpeditionCommand {
     public static final int ACTION_POINT_COST = ExpeditionRules.ACTION_POINT_COST;
     public static final int FOOD_COST = ExpeditionRules.FOOD_COST;
@@ -44,10 +42,29 @@ public final class LaunchExpeditionCommand {
         String targetCityId,
         BattleTactic battleTactic
     ) {
+        return execute(
+            slotNumber,
+            currentState,
+            originCityId,
+            targetCityId,
+            calculateDispatchTroops(currentState.requireCityState(originCityId)),
+            battleTactic
+        );
+    }
+
+    public StrategicActionResult execute(
+        int slotNumber,
+        GameState currentState,
+        String originCityId,
+        String targetCityId,
+        int amount,
+        BattleTactic battleTactic
+    ) {
         StrategicActionFailureReason failureReason = evaluate(
             currentState,
             originCityId,
             targetCityId,
+            amount,
             battleTactic
         );
         if (failureReason != StrategicActionFailureReason.NONE) {
@@ -62,7 +79,7 @@ public final class LaunchExpeditionCommand {
             originCityId,
             targetCityId
         );
-        int dispatchedTroops = calculateDispatchTroops(originCityState);
+        int dispatchedTroops = amount;
 
         originCityState.troops -= dispatchedTroops;
         playerFactionState.food -= FOOD_COST;
@@ -96,6 +113,7 @@ public final class LaunchExpeditionCommand {
         GameState gameState,
         String originCityId,
         String targetCityId,
+        int amount,
         BattleTactic battleTactic
     ) {
         GameStateValidator.validate(gameState);
@@ -103,15 +121,12 @@ public final class LaunchExpeditionCommand {
             throw new IllegalArgumentException("battleTactic 不可為 null。");
         }
         CityState originCityState = gameState.requireCityState(originCityId);
-        CityState targetCityState = gameState.requireCityState(targetCityId);
+        gameState.requireCityState(targetCityId);
         if (gameState.gameplayStatus != GameplayStatus.ACTIVE) {
             return StrategicActionFailureReason.PLAYER_ELIMINATED;
         }
         if (!gameState.playerFactionId.equals(originCityState.ownerFactionId)) {
             return StrategicActionFailureReason.ORIGIN_NOT_OWNED;
-        }
-        if (gameState.playerFactionId.equals(targetCityState.ownerFactionId)) {
-            return StrategicActionFailureReason.TARGET_ALREADY_OWNED;
         }
         StrategicMapDefinition mapDefinition = definitionRepository.requireMap(gameState.mapId);
         if (mapDefinition.findConnection(originCityId, targetCityId) == null) {
@@ -126,7 +141,10 @@ public final class LaunchExpeditionCommand {
         if (gameState.hasArmyForFaction(gameState.playerFactionId)) {
             return StrategicActionFailureReason.ARMY_ALREADY_ACTIVE;
         }
-        if (calculateDispatchTroops(originCityState) < MINIMUM_EXPEDITION) {
+        if (amount < MINIMUM_EXPEDITION || amount % 100 != 0) {
+            return StrategicActionFailureReason.INVALID_EXPEDITION_AMOUNT;
+        }
+        if (amount > calculateDispatchTroops(originCityState)) {
             return StrategicActionFailureReason.INSUFFICIENT_TROOPS;
         }
         return StrategicActionFailureReason.NONE;

@@ -327,7 +327,8 @@ public final class StrategicMapWidget extends WidgetGroup {
             @Override
             public boolean scrolled(InputEvent event, float localX, float localY, float amountX, float amountY) {
                 Actor hoveredActor = getStage().hit(event.getStageX(), event.getStageY(), true);
-                if (hoveredActor == null || !hoveredActor.isDescendantOf(StrategicMapWidget.this)) {
+                if (hoveredActor == null || (hoveredActor != StrategicMapWidget.this
+                    && !hoveredActor.isDescendantOf(StrategicMapWidget.this))) {
                     return false;
                 }
                 validate();

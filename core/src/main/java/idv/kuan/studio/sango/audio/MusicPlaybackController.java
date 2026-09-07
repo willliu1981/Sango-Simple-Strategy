@@ -74,7 +74,8 @@ public final class MusicPlaybackController {
                 continue;
             }
             try {
-                voice.music.setVolume(Math.max(0f, Math.min(1f, voice.gain * volume)));
+                voice.music.setVolume(Math.max(0f, Math.min(1f,
+                    voice.gain * volume * entry.getKey().getOutputGain())));
                 if (!voice.music.isPlaying()) {
                     voice.music.play();
                 }

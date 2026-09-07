@@ -180,6 +180,7 @@ public final class CityScreen extends SuiScreen {
         SangoUiStyles.applySecondaryButton(button("agriculture_button"));
         SangoUiStyles.applySecondaryButton(button("commerce_button"));
         SangoUiStyles.applySecondaryButton(button("water_control_button"));
+        SangoUiStyles.applySecondaryButton(button("pacify_button"));
         SangoUiStyles.applySecondaryButton(button("fortify_button"));
         SangoUiStyles.applySecondaryButton(button("recruit_button"));
         SangoUiStyles.applySecondaryButton(button("train_button"));
@@ -193,6 +194,8 @@ public final class CityScreen extends SuiScreen {
     }
 
     private void applyDomesticActionButtonTexts() {
+        button("pacify_button").setText(multilineText(
+            "button_pacify", "安民｜100 金、50 糧\\n民心最高 95"));
         button("recruit_button").setText(multilineText("button_recruit", "徵兵｜選擇人數\\n按實際人數計算金糧"));
         button("train_button").setText(text("button_train_format", "訓練｜{0} 金\\n最多覆蓋 {1} 兵",
             DomesticActionType.TRAIN.getGoldCost(), numberFormat.format(OfficerCommandProfile.DEFAULT.trainingCoverage())));
@@ -215,6 +218,7 @@ public final class CityScreen extends SuiScreen {
             "water_control_button",
             () -> executeDomesticAction(DomesticActionType.IMPROVE_WATER_CONTROL)
         );
+        ui.onClick("pacify_button", () -> executeDomesticAction(DomesticActionType.PACIFY));
         ui.onClick("fortify_button", () -> executeDomesticAction(DomesticActionType.FORTIFY));
         ui.onClick("recruit_button", this::openRecruitment);
         ui.onClick("recruitment_cancel_button", this::closeModals);
@@ -335,6 +339,14 @@ public final class CityScreen extends SuiScreen {
                 numberFormat.format(Math.min(before.troops, OfficerCommandProfile.DEFAULT.trainingCoverage())),
                 numberFormat.format(before.troops), quality(TroopQualityRules.training(before)), quality(TroopQualityRules.training(after)),
                 quality(TroopQualityRules.morale(before)), quality(TroopQualityRules.morale(after)), DomesticActionType.TRAIN.getGoldCost());
+        }
+        if (actionType == DomesticActionType.PACIFY) {
+            return text(
+                "city_status_pacify_result_format",
+                "完成安民：民心 {0} → {1}。金 -100、糧 -50。",
+                before.publicOrder,
+                after.publicOrder
+            );
         }
         return successMessage(actionType);
     }
@@ -711,6 +723,12 @@ public final class CityScreen extends SuiScreen {
             DomesticActionType.IMPROVE_WATER_CONTROL
         );
         setActionButtonEnabled(
+            "pacify_button",
+            gameState,
+            cityId,
+            DomesticActionType.PACIFY
+        );
+        setActionButtonEnabled(
             "fortify_button",
             gameState,
             cityId,
@@ -747,6 +765,7 @@ public final class CityScreen extends SuiScreen {
         setButtonEnabled(button("agriculture_button"), enabled);
         setButtonEnabled(button("commerce_button"), enabled);
         setButtonEnabled(button("water_control_button"), enabled);
+        setButtonEnabled(button("pacify_button"), enabled);
         setButtonEnabled(button("fortify_button"), enabled);
         setButtonEnabled(button("recruit_button"), enabled);
         setButtonEnabled(button("train_button"), enabled);
@@ -765,6 +784,10 @@ public final class CityScreen extends SuiScreen {
             case IMPROVE_WATER_CONTROL -> text(
                 "city_status_water_control_success",
                 "完成治水：治水 +5，洪災風險與損失下降。"
+            );
+            case PACIFY -> text(
+                "city_status_pacify_success",
+                "完成安民，民心已提升。"
             );
             case FORTIFY -> text(
                 "city_status_fortify_success",

@@ -29,7 +29,9 @@ public final class MusicPlaybackSmokeTest {
         for (MusicTrack track : MusicTrack.seasonalTracks()) {
             check(Files.size(Path.of(arguments[0]).resolve(track.getAssetPath())) > 100000, "四首來源資產存在且非空");
             check(track.getDurationSeconds() > 200f && track.getDurationSeconds() < 220f, "曲長中繼資料");
+            check(close(track.getOutputGain(), 0.70f), "四季曲目輸出 gain 為 0.70");
         }
+        check(close(MusicTrack.LOBBY.getOutputGain(), 1f), "大廳曲目輸出 gain 為 1.0");
         testCrossfade();
         testRapidSwitchAndPause();
         testFailures();
@@ -43,23 +45,23 @@ public final class MusicPlaybackSmokeTest {
         controller.update(0f, true, 0.8f);
         check(controller.activeStreamCount() == 1 && close(controller.gain(MusicTrack.SPRING), 0f), "初次播放由零音量開始");
         controller.update(1f, true, 0.8f);
-        check(close(loader.latest(MusicTrack.SPRING).volume, 0.4f), "初次一秒淡入到主音量一半");
+        check(close(loader.latest(MusicTrack.SPRING).volume, 0.28f), "初次一秒淡入到季節音量一半");
         controller.update(1f, true, 0.8f);
         FakeMusic spring = loader.latest(MusicTrack.SPRING);
         spring.position = 30f;
-        check(close(spring.volume, 0.8f) && spring.looping, "兩秒達主音量且循環");
+        check(close(spring.volume, 0.56f) && spring.looping, "兩秒達季節曲目音量且循環");
         controller.request(MusicTrack.SPRING);
         controller.update(1f, true, 0.8f);
         check(loader.count(MusicTrack.SPRING) == 1 && spring.playCalls == 1 && spring.position == 30f,
             "同季切畫面不重建或從頭播放");
         controller.request(MusicTrack.SUMMER);
         controller.update(0f, true, 0.8f);
-        check(controller.activeStreamCount() == 2 && close(spring.volume, 0.8f), "換季不硬切舊曲");
+        check(controller.activeStreamCount() == 2 && close(spring.volume, 0.56f), "換季不硬切舊曲");
         controller.update(1f, true, 0.8f);
-        check(close(spring.volume, 0.4f) && close(loader.latest(MusicTrack.SUMMER).volume, 0.4f), "中點兩曲各半");
+        check(close(spring.volume, 0.28f) && close(loader.latest(MusicTrack.SUMMER).volume, 0.28f), "中點兩曲各半");
         controller.update(1f, true, 0.8f);
         check(spring.disposed && spring.stopCalls == 1 && controller.activeStreamCount() == 1, "轉場後釋放舊串流");
-        check(close(loader.latest(MusicTrack.SUMMER).volume, 0.8f), "新季音量到位");
+        check(close(loader.latest(MusicTrack.SUMMER).volume, 0.56f), "新季音量到位");
         controller.dispose();
         controller.dispose();
         check(loader.allDisposedExactlyOnce(), "重複 dispose 不重複釋放");
@@ -114,7 +116,7 @@ public final class MusicPlaybackSmokeTest {
         controller.update(2f, true, 0.5f);
         check(controller.requestedTrack() == MusicTrack.WINTER && controller.activeStreamCount() == 1,
             "重新開啟直接前往最新季節");
-        check(close(loader.latest(MusicTrack.WINTER).volume, 0.5f), "重新開啟沿用音量設定");
+        check(close(loader.latest(MusicTrack.WINTER).volume, 0.35f), "重新開啟沿用音量與曲目 gain");
         controller.update(Float.NaN, true, Float.NaN);
         check(close(loader.latest(MusicTrack.WINTER).volume, 0f), "非法浮點音量不傳入後端");
         for (int i = 0; i < 1000; i++) {
@@ -137,7 +139,7 @@ public final class MusicPlaybackSmokeTest {
         controller.request(MusicTrack.SUMMER);
         controller.update(2f, true, 1f);
         check(controller.hasRequestedTrackFailure() && controller.activeStreamCount() == 1, "載入失敗保留舊曲不崩潰");
-        check(close(loader.latest(MusicTrack.SPRING).volume, 1f), "失敗回退不使現有曲目消失");
+        check(close(loader.latest(MusicTrack.SPRING).volume, 0.70f), "失敗回退保留季節曲目 gain");
         int attempts = loader.attempts;
         for (int i = 0; i < 10; i++) {
             controller.update(1f, true, 1f);

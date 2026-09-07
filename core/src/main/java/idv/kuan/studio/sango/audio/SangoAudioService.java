@@ -63,7 +63,8 @@ public final class SangoAudioService {
 
     public void update(float deltaSeconds) {
         if (!disposed) {
-            playback.update(deltaSeconds, SangoPreferences.isMusicEnabled(), SangoPreferences.getMusicVolume());
+            playback.update(deltaSeconds, SangoPreferences.isMusicEnabled(),
+                SangoPreferences.getMusicVolume());
         }
     }
 

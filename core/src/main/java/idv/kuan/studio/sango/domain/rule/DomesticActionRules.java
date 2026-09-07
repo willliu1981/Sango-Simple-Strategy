@@ -71,6 +71,22 @@ public final class DomesticActionRules {
         return DomesticActionFailureReason.NONE;
     }
 
+    public static int pacifyGain(int publicOrder) {
+        if (publicOrder < 50) {
+            return 6;
+        }
+        if (publicOrder < 70) {
+            return 4;
+        }
+        if (publicOrder < 85) {
+            return 2;
+        }
+        if (publicOrder < 95) {
+            return 1;
+        }
+        return 0;
+    }
+
     private static boolean wouldExceedMaximum(CityState cityState, DomesticActionType actionType, OfficerCommandProfile officer) {
         if (actionType.getAgricultureGain() > 0 && cityState.agriculture >= 100) {
             return true;
@@ -82,6 +98,9 @@ public final class DomesticActionRules {
             return true;
         }
         if (actionType.getDefenseGain() > 0 && cityState.defense >= 100) {
+            return true;
+        }
+        if (actionType == DomesticActionType.PACIFY && cityState.publicOrder >= 95) {
             return true;
         }
         if (actionType == DomesticActionType.TRAIN) {

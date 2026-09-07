@@ -8,7 +8,7 @@ public final class ExpeditionRules {
     public static final int FOOD_COST = 100;
     public static final int MINIMUM_GARRISON = 400;
     public static final int MINIMUM_EXPEDITION = 400;
-    public static final int MAXIMUM_EXPEDITION = 1_000;
+    public static final int MAXIMUM_EXPEDITION = 10_000;
 
     private ExpeditionRules() {
     }
