@@ -28,6 +28,7 @@ import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.ui.id.ScreenId;
 import idv.kuan.studio.sango.ui.support.ScreenBackground;
 import idv.kuan.studio.sango.ui.support.TurnReportTextFormatter;
+import idv.kuan.studio.sango.ui.support.BattleReportCatalog;
 import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
 
 /**
@@ -105,7 +106,8 @@ public final class MonthReportScreen extends SuiScreen {
         resizeReportScrollPane();
         reportScrollPane.setScrollY(0f);
         reportScrollPane.updateVisualScroll();
-        int battleCount = report.getBattleReportIds().size();
+        int battleCount = BattleReportCatalog.playerMonth(
+            SangoServices.session().requireCurrentState(), report).size();
         button("month_report_battle_button").setText(
             text("button_view_battles_format", "查看戰報（{0}）", battleCount)
         );
@@ -170,18 +172,8 @@ public final class MonthReportScreen extends SuiScreen {
 
     private String findFirstExistingBattleReport(TurnResolutionReport report) {
         GameState gameState = SangoServices.session().requireCurrentState();
-        for (String battleReportId : report.getBattleReportIds()) {
-            BattleReport battleReport = gameState.findBattleReport(battleReportId);
-            if (battleReport != null && !battleReport.read) {
-                return battleReportId;
-            }
-        }
-        for (String battleReportId : report.getBattleReportIds()) {
-            if (gameState.findBattleReport(battleReportId) != null) {
-                return battleReportId;
-            }
-        }
-        return null;
+        var reports = BattleReportCatalog.playerMonth(gameState, report);
+        return reports.isEmpty() ? null : reports.get(0).battleId;
     }
 
     private void closeReport() {

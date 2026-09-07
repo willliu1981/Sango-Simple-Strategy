@@ -55,6 +55,7 @@ import idv.kuan.studio.sango.repository.save.SaveGameException;
 import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.ui.flow.MonthEndFlowController;
 import idv.kuan.studio.sango.ui.id.ScreenId;
+import idv.kuan.studio.sango.ui.support.ContextHelpOverlay;
 import idv.kuan.studio.sango.ui.support.ScreenBackground;
 import idv.kuan.studio.sango.ui.support.NationalOrderTextFormatter;
 import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
@@ -75,6 +76,7 @@ public final class CityScreen extends SuiScreen {
     private Actor endMonthConfirmMask;
     private Actor battlePromptMask;
     private Actor recruitmentMask;
+    private ContextHelpOverlay contextHelpOverlay;
     private Slider recruitmentSlider;
     private TextField recruitmentInput;
     private String recruitmentCityId;
@@ -100,6 +102,15 @@ public final class CityScreen extends SuiScreen {
         recruitmentMask = attachModalMask("recruitment_mask");
         initializeRecruitmentControls();
         applyStyles();
+        button("city_context_help_button").setText(text("context_help_button", "操作說明"));
+        button("recruitment_help_button").setText(text("help_recruit_title", "徵兵說明"));
+        contextHelpOverlay = new ContextHelpOverlay(
+            stage,
+            label("city_name_heading_label").getStyle(),
+            label("season_forecast_label").getStyle(),
+            button("city_context_help_button").getStyle(),
+            text("context_help_close", "關閉")
+        );
         applyDomesticActionButtonTexts();
         bindActions();
         currentStatusMessage = text(
@@ -115,6 +126,7 @@ public final class CityScreen extends SuiScreen {
             return;
         }
         closeModals();
+        contextHelpOverlay.hide();
         currentStatusMessage = text(
             "city_status_ready",
             "內政投資不會立即產生金糧；收益會在季末或秋收結算。"
@@ -132,7 +144,9 @@ public final class CityScreen extends SuiScreen {
             @Override
             public boolean keyDown(int keycode) {
                 if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                    if (isAnyModalVisible()) {
+                    if (contextHelpOverlay != null && contextHelpOverlay.isVisible()) {
+                        contextHelpOverlay.hide();
+                    } else if (isAnyModalVisible()) {
                         closeModals();
                     } else {
                         returnToMap();
@@ -159,6 +173,9 @@ public final class CityScreen extends SuiScreen {
     protected void beforeDispose() {
         saveSilently();
         screenBackground.remove();
+        if (contextHelpOverlay != null) {
+            contextHelpOverlay.remove();
+        }
         super.beforeDispose();
     }
 
@@ -187,11 +204,13 @@ public final class CityScreen extends SuiScreen {
         SangoUiStyles.applySecondaryButton(button("train_button"));
         SangoUiStyles.applySecondaryButton(button("return_map_button"));
         SangoUiStyles.applySecondaryButton(button("city_settings_button"));
+        SangoUiStyles.applySecondaryButton(button("city_context_help_button"));
         SangoUiStyles.applyPrimaryButton(button("city_end_month_button"));
         SangoUiStyles.applySecondaryButton(button("city_end_month_cancel_button"));
         SangoUiStyles.applyPrimaryButton(button("city_end_month_confirm_button"));
         SangoUiStyles.applySecondaryButton(button("city_battle_prompt_later_button"));
         SangoUiStyles.applyDangerButton(button("city_battle_prompt_view_button"));
+        SangoUiStyles.applySecondaryButton(button("recruitment_help_button"));
     }
 
     private void applyDomesticActionButtonTexts() {
@@ -223,6 +242,7 @@ public final class CityScreen extends SuiScreen {
         ui.onClick("fortify_button", () -> executeDomesticAction(DomesticActionType.FORTIFY));
         ui.onClick("recruit_button", this::openRecruitment);
         ui.onClick("recruitment_cancel_button", this::closeModals);
+        ui.onClick("recruitment_help_button", this::showRecruitmentHelp);
         ui.onClick("recruitment_confirm_button", this::confirmRecruitment);
         ui.onClick("recruitment_min_button", () -> setRecruitmentAmount(recruitmentMaximum() > 0 ? 1 : 0));
         ui.onClick("recruitment_max_button", () -> setRecruitmentAmount(recruitmentMaximum()));
@@ -231,6 +251,7 @@ public final class CityScreen extends SuiScreen {
         ui.onClick("train_button", () -> executeDomesticAction(DomesticActionType.TRAIN));
         ui.onClick("return_map_button", this::returnToMap);
         ui.onClick("city_settings_button", this::openSettings);
+        ui.onClick("city_context_help_button", this::showCityHelp);
         ui.onClick("city_end_month_button", this::requestEndMonth);
         ui.onClick("city_end_month_cancel_button", this::closeModals);
         ui.onClick("city_end_month_confirm_button", this::confirmEndMonth);
@@ -583,6 +604,28 @@ public final class CityScreen extends SuiScreen {
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);
         SangoServices.session().openSettings(ScreenId.CITY);
         Sui.screens.set(ScreenId.SETTINGS);
+    }
+
+    private void showCityHelp() {
+        contextHelpOverlay.show(
+            text("help_city_title", "內政操作說明"),
+            text(
+                "help_city_body",
+                "金、糧是全勢力共用資源；人口屬於本城，會限制徵兵並受人口容量影響。農業提高秋收，商業提高季末商稅，治水降低夏季洪災風險與損失，城防影響守城。訓練與士氣會影響部隊作戰表現。\n\n民心會影響治理與新兵素質；安民可提升民心但最高只到 95。民心至少 95，且沒有缺糧、洪災或易主時，每次月底累計一個合格月；連續第 3 次月底起回復 1 點，之後每個合格月底再回復 1 點，最高 100。\n\n例：1 月安民到 95，若 1、2、3 月月底都符合條件，3 月月底升到 96；期間跌破 95 或發生不合格事件，累計會歸零。"
+            )
+        );
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
+    }
+
+    private void showRecruitmentHelp() {
+        contextHelpOverlay.show(
+            text("help_recruit_title", "徵兵說明"),
+            text(
+                "help_recruit_body",
+                "徵兵會立即減少本城人口，並消耗 1 AP；金與糧依實際徵兵人數計算，預覽會顯示確認後的完整費用。\n\n本次上限同時受人口保留量、單次徵兵上限、可用金糧與武將統率限制；輸入超過上限時不能確認。\n\n新兵的訓練與士氣依有效民心決定，加入現有部隊後會按新舊兵力重新加權，因此大量徵兵可能拉低全軍平均素質。"
+            )
+        );
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
     }
 
     private void saveSilently() {

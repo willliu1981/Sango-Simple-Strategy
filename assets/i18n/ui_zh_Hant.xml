@@ -1,6 +1,52 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <i18n>
     <scope id="literal">
+        <entry name="world_battle_heading" value="天下戰報" />
+        <entry name="world_battle_description" value="只列戰鬥事件；我方相關優先，同類依月份由新到舊排列。已讀戰報仍可點開。" />
+        <entry name="world_battle_player" value="我方戰事" />
+        <entry name="world_battle_other" value="其他勢力" />
+        <entry name="world_battle_read" value="已讀" />
+        <entry name="world_battle_unread" value="未讀" />
+        <entry name="world_battle_winner" value="勝方：{0}" />
+        <entry name="world_battle_empty" value="目前沒有戰事紀錄。" />
+        <entry name="report_player_battle_summary" value="{0}：{1}；我方戰損 {2}，戰後兵力 {3}。可由下方查看詳細戰報。" />
+        <entry name="report_player_battle_win" value="我方獲勝" />
+        <entry name="report_player_battle_loss" value="我方戰敗" />
+        <entry name="report_shortage_city_morale" value="{0} 駐軍缺糧，士氣 -{1}；目前士氣 {2}。" />
+        <entry name="report_shortage_army_morale" value="{0} 前往 {3} 的部隊缺糧，士氣 -{1}；目前士氣 {2}。" />
+        <entry name="battle_contributions_title" value="各城參戰明細" />
+        <entry name="battle_contribution_row" value="{0}｜{1}\n開戰 {2} 兵，戰損 {3}，生還 {4}\n訓練 {5}｜士氣 {6}" />
+        <entry name="button_next_scoped_battle_format" value="下一份戰報（{0}）" />
+        <entry name="button_no_next_scoped_battle" value="已到最後一份戰報" />
+        <entry name="context_help_button" value="操作說明" />
+        <entry name="context_help_close" value="關閉" />
+        <entry name="button_world_battle_reports_format" value="天下戰報（未讀 {0}）" />
+        <entry name="map_status_no_transfer_origin" value="沒有可沿道路運兵至此的我方城池。" />
+        <entry name="dispatch_transfer_single_origin" value="運兵使用目前來源" />
+        <entry name="dispatch_remove_origin" value="移除此城" />
+        <entry name="dispatch_add_origin" value="加入此城" />
+        <entry name="dispatch_transfer_help_button" value="運兵說明" />
+        <entry name="dispatch_expedition_help_button" value="出征說明" />
+        <entry name="dispatch_selected_origin_line_format" value="{0}：{1} 兵｜{2} 個月" />
+        <entry name="dispatch_selected_origins_empty" value="已選來源：尚未加入任何城池。" />
+        <entry name="dispatch_selected_origins_format" value="已選來源：&#10;{0}" />
+        <entry name="dispatch_summary_format" value="合計 {0} 城／{1} 兵｜費用 {2} AP、{3} 糧｜集結 {4} 個月（最慢路程）" />
+        <entry name="dispatch_status_ready" value="資源足夠；確認後所有來源將編入同一批行動。" />
+        <entry name="dispatch_status_select_origin" value="請至少加入一座來源城。" />
+        <entry name="dispatch_status_invalid_origin_amount_format" value="{0} 的派兵數需至少 400、以 100 遞增，並保留 400 守軍。" />
+        <entry name="dispatch_status_insufficient_ap_format" value="行動力不足：本次需 {0} AP，目前剩餘 {1}。" />
+        <entry name="dispatch_status_insufficient_food_format" value="糧不足：本次需 {0} 糧，目前只有 {1}。" />
+        <entry name="dispatch_status_army_active" value="我方已有部隊行軍中，需等待其抵達。" />
+        <entry name="help_map_title" value="戰略圖操作說明" />
+        <entry name="help_map_body" value="共用金與共用糧屬於整個勢力；行動力（AP）限制本月可下達的命令。&#10;&#10;偵察與出征的目標必須和至少一座我方城有直接道路連接；運兵則可沿道路前往我方城池。偵察非我方城消耗 1 AP 與 20 金，提供三回合精確情報，不消耗軍糧。&#10;&#10;使用＋、－縮放，「全圖」重設視野，「定位」回到選取城。快速點兩下地圖進入全螢幕；全螢幕點一下即可返回。&#10;&#10;勢力月報記錄我方收支、缺糧、災害與戰事；天下戰報只列各地戰鬥，我方戰事優先。" />
+        <entry name="help_city_title" value="內政操作說明" />
+        <entry name="help_city_body" value="金、糧是全勢力共用資源；人口屬於本城。農業提高秋收，商業提高季末商稅，治水降低夏季洪災風險與損失，城防影響守城；訓練與士氣影響作戰表現。&#10;&#10;安民可提高民心，最高到 95。民心至少 95，且沒有缺糧、洪災或易主時，月底累計一個穩定月；連續第 3 個合格月底起，每月自然提高 1 點，最高 100。不合格時累計歸零，不代表直接扣除民心。&#10;&#10;缺軍糧會造成逃兵，並依缺口比例降低駐軍與行軍部隊士氣。缺一半軍糧扣 10 點，完全缺糧扣 20 點；士氣最低 0。補足軍糧不會立即回復已失去的士氣。" />
+        <entry name="help_recruit_title" value="徵兵說明" />
+        <entry name="help_recruit_body" value="徵兵立即減少本城人口，消耗 1 AP，並依實際人數扣除金與糧；確認前請查看費用預覽。&#10;&#10;可徵人數受人口保留量、單次上限、可用金糧及武將統率限制。&#10;&#10;新兵訓練與士氣依有效民心決定，加入後按新舊兵力加權；大量徵兵可能降低整體訓練與士氣。增加兵力也會提高後續每月軍糧需求。" />
+        <entry name="help_transfer_title" value="運兵說明" />
+        <entry name="help_transfer_body" value="運兵只在我方城池間進行。使用上一城／下一城切換沿道路可達的来源，再調整兵數。&#10;&#10;每次至少派 400 兵，來源城保留 400 守軍，以 100 人增減，單次最多 10,000 兵。派遣消耗 1 AP 與 100 糧。&#10;&#10;行程依道路最短時間計算，抵達後才加入目標城；行軍期間仍受軍糧不足影響。" />
+        <entry name="help_expedition_title" value="聯合出征說明" />
+        <entry name="help_expedition_body" value="選擇敵方或中立目標城，再用上一城／下一城切換直接相鄰的我方來源城。逐城加入出征並設定兵數，各城數量分別保留。&#10;&#10;每城至少派 400 兵、保留 400 守軍，以 100 人增減，每城最多 10,000 兵。每個來源消耗 1 AP 與 100 糧；確認時整批檢查資源，不能只扣除部分來源。&#10;&#10;先到部隊等待同批其他部隊集結，再共同進入一場戰鬥。戰報可查看各城出兵、戰損與生還兵力。本功能限同一勢力，不包含盟軍。" />
         <entry name="lobby_sango" value="SANGO" description="lobby_sango" />
         <entry name="lobby_title" value="簡易三國志" description="lobby_title" />
         <entry name="lobby_tagline" value="漢末群雄 · 天下待定" description="lobby_tagline" />
@@ -23,7 +69,7 @@
         <entry name="button_return_lobby" value="返回 Lobby" description="button_return_lobby" />
         <entry name="button_return_map" value="返回戰略地圖" description="button_return_map" />
         <entry name="button_end_month" value="結束本月" description="button_end_month" />
-        <entry name="button_show_last_report" value="查看最近月報" description="button_show_last_report" />
+        <entry name="button_show_last_report" value="勢力月報" description="button_show_last_report" />
         <entry name="button_report_close" value="關閉月報" description="button_report_close" />
         <entry name="status_no_campaign" value="尚無戰局存檔；請先開始新局。" description="status_no_campaign" />
         <entry name="status_campaign_available" value="已有戰局，可選擇「繼續遊戲」。" description="status_campaign_available" />
@@ -201,7 +247,7 @@
         <entry name="map_status_invalid_expedition_amount" value="派兵數量須至少 400，且為 100 的倍數。" description="map_status_invalid_expedition_amount" />
         <entry name="map_status_army_active" value="我方已有一支部隊行軍中，需等待其抵達。" description="map_status_army_active" />
         <entry name="map_status_month_ended" value="月份結算完成並已自動存檔。" description="map_status_month_ended" />
-        <entry name="report_heading" value="本月結算報告" description="report_heading" />
+        <entry name="report_heading" value="勢力月報" description="report_heading" />
         <entry name="report_period_placeholder" value="結算月份尚未載入。" description="report_period_placeholder" />
         <entry name="report_period_format" value="{0} 年 {1} 月結算" description="report_period_format" />
         <entry name="report_empty" value="本月沒有特殊事件。" description="report_empty" />
@@ -269,8 +315,8 @@
         <entry name="button_dispatch_maximum" value="最大" description="button_dispatch_maximum" />
         <entry name="button_confirm_transfer" value="確認運兵" description="button_confirm_transfer" />
         <entry name="button_confirm_expedition" value="確認出征" description="button_confirm_expedition" />
-        <entry name="button_unread_battles_placeholder" value="未讀戰報" description="button_unread_battles_placeholder" />
-        <entry name="button_unread_battles_format" value="未讀戰報（{0}）" description="button_unread_battles_format" />
+        <entry name="button_unread_battles_placeholder" value="天下戰報" description="button_unread_battles_placeholder" />
+        <entry name="button_unread_battles_format" value="天下戰報（未讀 {0}）" description="button_unread_battles_format" />
         <entry name="map_status_player_eliminated" value="我方已失去全部城池，不能再下達命令。" description="map_status_player_eliminated" />
         <entry name="end_month_confirm_title_placeholder" value="結束本月？" description="end_month_confirm_title_placeholder" />
         <entry name="end_month_confirm_title_format" value="確定結束 {0} 年 {1} 月？" description="end_month_confirm_title_format" />
@@ -315,8 +361,8 @@
         <entry name="button_no_unread_battle" value="沒有其他未讀戰報" description="button_no_unread_battle" />
         <entry name="button_next_month_battle_format" value="下一份本月戰報（{0}）" description="button_next_month_battle_format" />
         <entry name="button_no_next_month_battle" value="沒有其他本月戰報" description="button_no_next_month_battle" />
-        <entry name="button_view_battles" value="查看戰報" description="button_view_battles" />
-        <entry name="button_view_battles_format" value="查看戰報（{0}）" description="button_view_battles_format" />
+        <entry name="button_view_battles" value="查看我方戰事" description="button_view_battles" />
+        <entry name="button_view_battles_format" value="查看我方戰事（{0}）" description="button_view_battles_format" />
         <entry name="report_event_capital_relocated" value="首都已由 {1} 遷往 {0}；遊戲可繼續。" description="report_event_capital_relocated" />
         <entry name="report_event_player_eliminated" value="我方已失去全部城池，無法再下達命令；仍可查看局勢或讀取其他存檔。" description="report_event_player_eliminated" />
         <entry name="save_load_title_load" value="讀取存檔" description="save_load_title_load" />
@@ -379,7 +425,7 @@
         <entry name="settings_save_before_exit_failed" value="保存失敗，已取消返回或退出。" description="settings_save_before_exit_failed" />
         <entry name="gameplay_guide_title" value="玩法說明" description="gameplay_guide_title" />
         <entry name="gameplay_guide_description" value="主要內政、軍事與資源規則；所有消耗均以畫面當下顯示為準。" description="gameplay_guide_description" />
-        <entry name="gameplay_guide_content" value="【內政與季節】\n治水：提高治水可降低六月洪災風險；洪災會降低農業、民心與人口，並減少當年九月收成。\n農業：開墾提高農業，糧食集中於九月秋收加入勢力共用糧。\n商業：發展商業提高季末稅金；每年三、六、九、十二月結算並加入勢力共用金。\n安民與民心：民心至少 95，且月底沒有缺糧、洪災或城池易主，穩定累計三個月後，每個合格月底自然恢復 1 點，最多 100。\n\n【軍隊與資源】\n訓練與士氣：訓練、士氣會共同影響部隊戰力；徵兵會消耗人口、金與糧，並依新舊兵力重新計算全軍訓練與士氣。\n金、糧與 AP：金與糧由勢力共用；內政與戰略命令會消耗資源及 AP。當月未使用的 AP 不保留，下月額度依全勢力民心重新計算。\n缺糧：月底先扣軍糧。每缺 1 糧最多造成 4 名逃兵，先由行軍部隊承擔，再由城池駐軍承擔；每支部隊或城池單次最多損失 20%。\n\n【戰略命令】\n偵察：只能偵察直接相鄰的敵方城池，消耗 1 AP 與 20 金，情報維持三個回合。\n出征：只能攻擊直接相鄰的敵方城池，消耗 1 AP 與 100 糧。\n運兵：可在我方城池間依道路距離移動，消耗 1 AP 與 100 糧；出發城至少留下 400 兵，且至少派出 400 兵。" description="gameplay_guide_content" />
+        <entry name="gameplay_guide_content" value="【經營勢力】\n金糧由全勢力共用。每月分配行動力，在內政、徵兵與軍事之間取捨；未使用的行動力不保留。商業帶來季末稅金，農業帶來九月秋收，治水降低六月災害風險。\n\n【維持軍隊】\n駐軍與行軍部隊都需要軍糧，訓練與士氣共同影響戰力。缺糧會造成逃兵與士氣下降，也會中斷民心自然恢復的穩定月份。軍糧完全不足時，當月士氣最多下降 20 點。\n\n【民心與成長】\n安民最高提升至 95。之後連續三個合格月底，可從 95 自然提升到 96，再逐月升至 100；缺糧、洪災、易主或民心低於 95 都會使穩定月份歸零。缺糧本身不直接扣民心。\n\n【戰略與協同】\n偵察與出征依城市間直接道路判定。可以選擇多座我方城市共同攻打一城，各城分別出兵與支付費用，等待全員抵達後一起作戰；我方城池之間也可運兵增援。\n\n【閱讀報告】\n勢力月報整理我方收支、缺糧損失、民心、災害與參戰結果。天下戰報只列各勢力的戰鬥，我方相關優先；兩個入口查看的是同一份戰報。\n\n【操作提示】\n戰略圖、內政與派兵視窗的操作說明，只解釋當前畫面的內容。徵兵、運兵與出征的數量、成本及限制，請在各自操作處查看。" description="gameplay_guide_content" />
         <entry name="button_back_to_settings" value="返回設定" description="button_back_to_settings" />
         <entry name="city_status_player_eliminated" value="我方已失去全部城池，不能再下達命令或推進月份。" description="city_status_player_eliminated" />
         <entry name="scenario_china_name" value="漢末群雄・全國征戰" description="scenario_china_name" />

@@ -119,10 +119,26 @@ public final class GameStateValidator {
         }
 
         Set<String> armyIds = new HashSet<>();
+        Map<String, ArmyGroupValidation> armyGroups = new HashMap<>();
         for (ArmyState armyState : gameState.armyStates) {
             validateArmyState(armyState, factionIds, cityStatesById);
             if (!armyIds.add(armyState.armyId)) {
                 throw new IllegalArgumentException("ArmyState ID 重複：" + armyState.armyId);
+            }
+            String groupId = effectiveGroupId(armyState);
+            ArmyGroupValidation group = armyGroups.get(groupId);
+            if (group == null) {
+                group = new ArmyGroupValidation(armyState.factionId, armyState.targetCityId);
+                armyGroups.put(groupId, group);
+            } else if (!group.factionId.equals(armyState.factionId)
+                || !group.targetCityId.equals(armyState.targetCityId)) {
+                throw new IllegalArgumentException("同一出征群組必須屬於同勢力且前往同一目標：" + groupId);
+            }
+            group.hasTravellingArmy |= armyState.remainingTravelMonths > 0;
+        }
+        for (Map.Entry<String, ArmyGroupValidation> entry : armyGroups.entrySet()) {
+            if (!entry.getValue().hasTravellingArmy) {
+                throw new IllegalArgumentException("出征群組不可整組以 0 月停留而未結算：" + entry.getKey());
             }
         }
 
@@ -213,6 +229,9 @@ public final class GameStateValidator {
             throw new IllegalArgumentException("ArmyState 不可為 null。");
         }
         requireText(armyState.armyId, "armyState.armyId");
+        if (armyState.expeditionGroupId != null) {
+            requireText(armyState.expeditionGroupId, "armyState.expeditionGroupId");
+        }
         requireText(armyState.factionId, "armyState.factionId");
         requireText(armyState.originCityId, "armyState.originCityId");
         requireText(armyState.targetCityId, "armyState.targetCityId");
@@ -222,8 +241,8 @@ public final class GameStateValidator {
         if (armyState.originCityId.equals(armyState.targetCityId)) {
             throw new IllegalArgumentException("軍隊起點與目標不可相同。");
         }
-        if (armyState.remainingTravelMonths < 1) {
-            throw new IllegalArgumentException("remainingTravelMonths 必須大於或等於 1。");
+        if (armyState.remainingTravelMonths < 0) {
+            throw new IllegalArgumentException("remainingTravelMonths 不可小於 0。");
         }
         if (armyState.troops < 1) {
             throw new IllegalArgumentException("armyState.troops 必須大於或等於 1。");
@@ -291,6 +310,9 @@ public final class GameStateValidator {
         if (battleReport.outcome == null) {
             throw new IllegalArgumentException("battleReport.outcome 不可為 null。");
         }
+        if (battleReport.attackerContributions == null) {
+            throw new IllegalArgumentException("battleReport.attackerContributions 不可為 null。");
+        }
         requireNonNegative(battleReport.attackerTroopsBefore, "battleReport.attackerTroopsBefore");
         requireNonNegative(battleReport.defenderTroopsBefore, "battleReport.defenderTroopsBefore");
         requireRange(battleReport.attackerTraining, 0, 100, "battleReport.attackerTraining");
@@ -317,6 +339,69 @@ public final class GameStateValidator {
         if ((long) battleReport.defenderLosses + battleReport.defenderSurvivors
             != battleReport.defenderTroopsBefore) {
             throw new IllegalArgumentException("戰報守方損失與生還數不等於開戰兵力。");
+        }
+        validateBattleContributions(battleReport, factionIds, cityStatesById);
+    }
+
+    private static void validateBattleContributions(
+        BattleReport battleReport,
+        Set<String> factionIds,
+        Map<String, CityState> cityStatesById
+    ) {
+        if (battleReport.attackerContributions.length == 0) {
+            return;
+        }
+        Set<String> armyIds = new HashSet<>();
+        long troopsBefore = 0;
+        long losses = 0;
+        long survivors = 0;
+        for (BattleContribution contribution : battleReport.attackerContributions) {
+            if (contribution == null) {
+                throw new IllegalArgumentException("BattleContribution 不可為 null。");
+            }
+            requireText(contribution.armyId, "battleContribution.armyId");
+            requireText(contribution.factionId, "battleContribution.factionId");
+            requireText(contribution.originCityId, "battleContribution.originCityId");
+            if (!armyIds.add(contribution.armyId)) {
+                throw new IllegalArgumentException("BattleContribution armyId 重複：" + contribution.armyId);
+            }
+            requireFactionReference(factionIds, contribution.factionId, "battleContribution.factionId");
+            requireCityReference(cityStatesById, contribution.originCityId, "battleContribution.originCityId");
+            if (!battleReport.attackerFactionId.equals(contribution.factionId)) {
+                throw new IllegalArgumentException("BattleContribution 勢力與戰報攻方不一致。");
+            }
+            requireNonNegative(contribution.troopsBefore, "battleContribution.troopsBefore");
+            requireNonNegative(contribution.losses, "battleContribution.losses");
+            requireNonNegative(contribution.survivors, "battleContribution.survivors");
+            requireRange(contribution.training, 0, 100, "battleContribution.training");
+            requireRange(contribution.morale, 0, 100, "battleContribution.morale");
+            requireNonNegative(contribution.strength, "battleContribution.strength");
+            if ((long) contribution.losses + contribution.survivors != contribution.troopsBefore) {
+                throw new IllegalArgumentException("BattleContribution 傷亡不守恆。");
+            }
+            troopsBefore += contribution.troopsBefore;
+            losses += contribution.losses;
+            survivors += contribution.survivors;
+        }
+        if (troopsBefore != battleReport.attackerTroopsBefore
+            || losses != battleReport.attackerLosses
+            || survivors != battleReport.attackerSurvivors) {
+            throw new IllegalArgumentException("BattleContribution 合計與戰報攻方總數不一致。");
+        }
+    }
+
+    private static String effectiveGroupId(ArmyState armyState) {
+        return armyState.expeditionGroupId == null ? armyState.armyId : armyState.expeditionGroupId;
+    }
+
+    private static final class ArmyGroupValidation {
+        private final String factionId;
+        private final String targetCityId;
+        private boolean hasTravellingArmy;
+
+        private ArmyGroupValidation(String factionId, String targetCityId) {
+            this.factionId = factionId;
+            this.targetCityId = targetCityId;
         }
     }
 

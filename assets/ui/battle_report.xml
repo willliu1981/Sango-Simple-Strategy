@@ -17,8 +17,11 @@
             <label id="battle_report_route_label" fontSize="30" width="1390" height="48"
                 color="0.75,0.68,0.58,1">${text:battle_report_route_placeholder}</label>
             <row />
-            <label id="battle_report_tactic_label" fontSize="28" width="1390" height="48"
-                color="0.70,0.66,0.58,1">${text:battle_report_tactic_placeholder}</label>
+            <table width="1390" height="48">
+                <label id="battle_report_tactic_label" fontSize="28" width="1040" height="48"
+                    color="0.70,0.66,0.58,1">${text:battle_report_tactic_placeholder}</label>
+                <textButton id="battle_report_contributions_button" fontSize="26" width="330" height="44">${text:battle_contributions_title}</textButton>
+            </table>
             <row />
             <table width="1390" height="486" padTop="12">
                 <table width="640" height="476" pad="30" backgroundColor="0.095,0.040,0.030,0.98">

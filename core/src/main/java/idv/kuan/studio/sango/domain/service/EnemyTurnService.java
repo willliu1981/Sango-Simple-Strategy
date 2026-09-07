@@ -83,6 +83,7 @@ public final class EnemyTurnService {
         CityConnectionDefinition connection = mapDefinition.findConnection(originCity.cityId, targetCity.cityId);
         ArmyState armyState = new ArmyState();
         armyState.armyId = gameState.allocateArmyId();
+        armyState.expeditionGroupId = armyState.armyId;
         armyState.factionId = factionState.factionId;
         armyState.originCityId = originCity.cityId;
         armyState.targetCityId = targetCity.cityId;

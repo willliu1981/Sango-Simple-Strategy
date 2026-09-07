@@ -32,6 +32,8 @@ public final class BattleReport {
     public boolean cityCaptured;
     public String winnerFactionId;
     public boolean read;
+    /** schema 8 起保存各來源貢獻；舊戰報遷移為空陣列，不偽造歷史資料。 */
+    public BattleContribution[] attackerContributions;
 
     public BattleReport() {
     }
@@ -63,7 +65,20 @@ public final class BattleReport {
         copiedReport.cityCaptured = cityCaptured;
         copiedReport.winnerFactionId = winnerFactionId;
         copiedReport.read = read;
+        copiedReport.attackerContributions = copyContributions(attackerContributions);
         return copiedReport;
+    }
+
+    private BattleContribution[] copyContributions(BattleContribution[] sourceContributions) {
+        if (sourceContributions == null) {
+            return null;
+        }
+        BattleContribution[] copiedContributions = new BattleContribution[sourceContributions.length];
+        for (int i = 0; i < sourceContributions.length; i++) {
+            copiedContributions[i] = sourceContributions[i] == null
+                ? null : sourceContributions[i].copy();
+        }
+        return copiedContributions;
     }
 
     public boolean involvesFaction(String factionId) {

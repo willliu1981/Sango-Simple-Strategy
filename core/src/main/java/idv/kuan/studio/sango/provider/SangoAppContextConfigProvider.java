@@ -21,6 +21,7 @@ import idv.kuan.studio.sango.ui.NewGameScreen;
 import idv.kuan.studio.sango.ui.SaveLoadScreen;
 import idv.kuan.studio.sango.ui.SettingsScreen;
 import idv.kuan.studio.sango.ui.StrategicMapScreen;
+import idv.kuan.studio.sango.ui.WorldBattleReportScreen;
 import idv.kuan.studio.sango.ui.id.ScreenId;
 
 /**
@@ -64,6 +65,7 @@ public final class SangoAppContextConfigProvider implements ApplicationContextCo
             .registerScreen(ScreenId.CITY, CityScreen::new)
             .registerScreen(ScreenId.MONTH_REPORT, MonthReportScreen::new)
             .registerScreen(ScreenId.BATTLE_REPORT, BattleReportScreen::new)
+            .registerScreen(ScreenId.WORLD_BATTLE_REPORT, WorldBattleReportScreen::new)
             .registerScreen(ScreenId.SAVE_LOAD, SaveLoadScreen::new)
             .registerScreen(ScreenId.SETTINGS, SettingsScreen::new)
             .registerScreen(ScreenId.GAMEPLAY_GUIDE, GameplayGuideScreen::new)

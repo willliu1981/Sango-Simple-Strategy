@@ -8,6 +8,8 @@ import idv.kuan.studio.sango.application.result.TurnEvent;
 import idv.kuan.studio.sango.application.result.TurnEventType;
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
 import idv.kuan.studio.sango.domain.definition.CityDefinition;
+import idv.kuan.studio.sango.domain.model.BattleReport;
+import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.runtime.SangoServices;
 
 /**
@@ -21,13 +23,35 @@ public final class TurnReportTextFormatter {
             return text("report_empty", "本月沒有特殊事件。");
         }
         StringBuilder reportBuilder = new StringBuilder();
+        GameState state = SangoServices.session().requireCurrentState();
         for (TurnEvent turnEvent : report.getEvents()) {
+            if (!isPlayerEvent(turnEvent, state.playerFactionId)) continue;
             if (reportBuilder.length() > 0) {
                 reportBuilder.append('\n');
             }
             reportBuilder.append("• ").append(formatEvent(turnEvent));
         }
-        return reportBuilder.toString();
+        for (BattleReport battle : BattleReportCatalog.playerMonth(state, report)) {
+            if (reportBuilder.length() > 0) reportBuilder.append('\n');
+            boolean attacking = state.playerFactionId.equals(battle.attackerFactionId);
+            reportBuilder.append("• ").append(text("report_player_battle_summary",
+                "{0}：{1}；我方戰損 {2}，戰後兵力 {3}。可由下方查看詳細戰報。",
+                optionalCityName(battle.targetCityId),
+                text(state.playerFactionId.equals(battle.winnerFactionId)
+                    ? "report_player_battle_win" : "report_player_battle_loss",
+                    state.playerFactionId.equals(battle.winnerFactionId) ? "我方獲勝" : "我方戰敗"),
+                numberFormat.format(attacking ? battle.attackerLosses : battle.defenderLosses),
+                numberFormat.format(attacking ? battle.attackerSurvivors : battle.defenderSurvivors)));
+        }
+        return reportBuilder.length() == 0 ? text("report_empty", "本月沒有特殊事件。") : reportBuilder.toString();
+    }
+
+    private boolean isPlayerEvent(TurnEvent event, String playerFactionId) {
+        return switch (event.getType()) {
+            case BATTLE_ATTACKER_WON, BATTLE_DEFENDER_WON, CITY_OCCUPIED_UNOPPOSED,
+                CITY_CAPTURED, AI_ACTIONS_USED, ENEMY_PREPARING, ENEMY_REINFORCING, ENEMY_MARCHING -> false;
+            default -> event.getFactionId() == null || playerFactionId.equals(event.getFactionId());
+        };
     }
 
     private String formatEvent(TurnEvent turnEvent) {
@@ -56,6 +80,13 @@ public final class TurnReportTextFormatter {
                 numberFormat.format(turnEvent.getPrimaryValue()),
                 numberFormat.format(turnEvent.getSecondaryValue())
             );
+            case FOOD_SHORTAGE_MORALE -> text(
+                turnEvent.getOtherCityId() == null ? "report_shortage_city_morale" : "report_shortage_army_morale",
+                turnEvent.getOtherCityId() == null
+                    ? "{0} 駐軍缺糧，士氣 -{1}；目前士氣 {2}。"
+                    : "{0} 前往 {3} 的部隊缺糧，士氣 -{1}；目前士氣 {2}。",
+                optionalCityName(turnEvent.getCityId()), turnEvent.getPrimaryValue(),
+                turnEvent.getSecondaryValue(), optionalCityName(turnEvent.getOtherCityId()));
             case PUBLIC_ORDER_NATURALLY_RECOVERED -> text(
                 "report_event_public_order_recovered",
                 "{0} 民心自然恢復 +{1}；目前民心 {2}。",

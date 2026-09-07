@@ -17,6 +17,10 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.utils.Align;
 
 import idv.kuan.studio.libgdx.simpleui.Sui;
 import idv.kuan.studio.libgdx.simpleui.SuiScreen;
@@ -26,12 +30,14 @@ import idv.kuan.studio.sango.audio.SoundEffect;
 import idv.kuan.studio.sango.domain.definition.CityDefinition;
 import idv.kuan.studio.sango.domain.definition.FactionDefinition;
 import idv.kuan.studio.sango.domain.model.BattleReport;
+import idv.kuan.studio.sango.domain.model.BattleContribution;
 import idv.kuan.studio.sango.domain.model.BattleOutcome;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.ui.id.ScreenId;
 import idv.kuan.studio.sango.ui.support.ScreenBackground;
+import idv.kuan.studio.sango.ui.support.BattleReportCatalog;
 import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
 
 /**
@@ -44,6 +50,7 @@ public final class BattleReportScreen extends SuiScreen {
 
     private final ScreenBackground screenBackground = new ScreenBackground();
     private final NumberFormat numberFormat = NumberFormat.getIntegerInstance(Locale.TAIWAN);
+    private Dialog contributionDialog;
 
     @Override
     protected BuiltUI buildUI(UIFactory uiFactory) {
@@ -62,6 +69,8 @@ public final class BattleReportScreen extends SuiScreen {
         SangoUiStyles.applyPrimaryButton(button("battle_report_next_button"));
         ui.onClick("battle_report_return_button", this::returnFromReport);
         ui.onClick("battle_report_next_button", this::openNextReport);
+        SangoUiStyles.applySecondaryButton(button("battle_report_contributions_button"));
+        ui.onClick("battle_report_contributions_button", this::showContributions);
         Actor main = ui.getActor("main");
         main.getColor().a = 0f;
         main.addAction(Actions.fadeIn(0.22f));
@@ -87,6 +96,10 @@ public final class BattleReportScreen extends SuiScreen {
             @Override
             public boolean keyDown(int keycode) {
                 if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
+                    if (contributionDialog != null && contributionDialog.getStage() != null) {
+                        contributionDialog.hide();
+                        return true;
+                    }
                     returnFromReport();
                     return true;
                 }
@@ -108,6 +121,8 @@ public final class BattleReportScreen extends SuiScreen {
     }
 
     private void refreshReport(BattleReport battleReport) {
+        setButtonEnabled(button("battle_report_contributions_button"),
+            battleReport.attackerContributions != null && battleReport.attackerContributions.length > 0);
         GameState gameState = SangoServices.session().requireCurrentState();
         String targetCityName = cityName(battleReport.targetCityId);
         String attackerName = factionName(battleReport.attackerFactionId);
@@ -223,7 +238,7 @@ public final class BattleReportScreen extends SuiScreen {
 
     private void refreshSequenceLabel(GameState gameState, BattleReport currentReport) {
         int currentIndex = 0;
-        List<BattleReport> monthReports = findCurrentMonthReports(gameState);
+        List<BattleReport> monthReports = findScopedReports(gameState);
         int reportCount = monthReports.isEmpty()
             ? (gameState.battleReports == null ? 0 : gameState.battleReports.length)
             : monthReports.size();
@@ -297,7 +312,7 @@ public final class BattleReportScreen extends SuiScreen {
 
     private void refreshNextButton(BattleReport currentReport) {
         GameState gameState = SangoServices.session().requireCurrentState();
-        List<BattleReport> monthReports = findCurrentMonthReports(gameState);
+        List<BattleReport> monthReports = findScopedReports(gameState);
         BattleReport nextReport = findNextReport(gameState, currentReport);
         if (!monthReports.isEmpty()) {
             int currentIndex = indexOfBattleReport(monthReports, currentReport.battleId);
@@ -306,8 +321,8 @@ public final class BattleReportScreen extends SuiScreen {
                 : Math.max(0, monthReports.size() - currentIndex - 1);
             button("battle_report_next_button").setText(
                 nextReport != null
-                    ? text("button_next_month_battle_format", "下一份本月戰報（{0}）", remainingCount)
-                    : text("button_no_next_month_battle", "沒有其他本月戰報")
+                    ? text("button_next_scoped_battle_format", "下一份戰報（{0}）", remainingCount)
+                    : text("button_no_next_scoped_battle", "已到最後一份戰報")
             );
         } else {
             int unreadCount = gameState.countUnreadBattleReports();
@@ -321,7 +336,7 @@ public final class BattleReportScreen extends SuiScreen {
     }
 
     private BattleReport findNextReport(GameState gameState, BattleReport currentReport) {
-        List<BattleReport> monthReports = findCurrentMonthReports(gameState);
+        List<BattleReport> monthReports = findScopedReports(gameState);
         if (!monthReports.isEmpty()) {
             int currentIndex = indexOfBattleReport(monthReports, currentReport.battleId);
             return currentIndex >= 0 && currentIndex + 1 < monthReports.size()
@@ -340,19 +355,49 @@ public final class BattleReportScreen extends SuiScreen {
         return -1;
     }
 
-    private List<BattleReport> findCurrentMonthReports(GameState gameState) {
+    private List<BattleReport> findScopedReports(GameState gameState) {
+        if (SangoServices.session().getBattleReportReturnScreen() == ScreenId.WORLD_BATTLE_REPORT) {
+            return BattleReportCatalog.world(gameState);
+        }
         if (SangoServices.session().getBattleReportReturnScreen() != ScreenId.MONTH_REPORT
             || SangoServices.session().getLastTurnReport() == null) {
             return List.of();
         }
-        List<BattleReport> reports = new ArrayList<>();
-        for (String battleReportId : SangoServices.session().getLastTurnReport().getBattleReportIds()) {
-            BattleReport battleReport = gameState.findBattleReport(battleReportId);
-            if (battleReport != null) {
-                reports.add(battleReport);
-            }
+        return BattleReportCatalog.playerMonth(gameState, SangoServices.session().getLastTurnReport());
+    }
+
+    private void showContributions() {
+        BattleReport report = requireSelectedReport();
+        if (report.attackerContributions == null || report.attackerContributions.length == 0) return;
+        StringBuilder content = new StringBuilder();
+        for (BattleContribution contribution : report.attackerContributions) {
+            if (content.length() > 0) content.append("\n\n");
+            content.append(text("battle_contribution_row",
+                "{0}｜{1}\n開戰 {2} 兵，戰損 {3}，生還 {4}\n訓練 {5}｜士氣 {6}",
+                cityName(contribution.originCityId), factionName(contribution.factionId),
+                numberFormat.format(contribution.troopsBefore), numberFormat.format(contribution.losses),
+                numberFormat.format(contribution.survivors), contribution.training, contribution.morale)
+                .replace("\\n", "\n"));
         }
-        return reports;
+        Label body = new Label(content, label("battle_report_training_label").getStyle());
+        body.setWrap(true);
+        body.setAlignment(Align.topLeft);
+        Window.WindowStyle style = new Window.WindowStyle();
+        style.titleFont = body.getStyle().font;
+        style.titleFontColor = PLAYER_WIN_COLOR;
+        style.background = Sui.resources.manager().getSkin().newDrawable("white", new Color(0.06f, 0.045f, 0.03f, 1f));
+        contributionDialog = new Dialog(text("battle_contributions_title", "各城參戰明細"), style);
+        contributionDialog.setModal(true);
+        contributionDialog.setMovable(false);
+        ScrollPane pane = new ScrollPane(body);
+        pane.setScrollingDisabled(true, false);
+        pane.setOverscroll(false, false);
+        contributionDialog.getContentTable().add(pane).width(1000f).height(570f).pad(24f);
+        TextButton close = new TextButton(text("context_help_close", "返回"), button("battle_report_return_button").getStyle());
+        contributionDialog.button(close);
+        contributionDialog.getButtonTable().getCell(close).width(360f).height(64f).pad(12f);
+        contributionDialog.show(stage);
+        stage.setScrollFocus(pane);
     }
 
     private BattleReport requireSelectedReport() {

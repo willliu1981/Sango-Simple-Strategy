@@ -53,6 +53,8 @@ public final class GameSession {
             ? gameState.strategicMapFocusedCityId : resolveDefaultSelectedCity(gameState);
         gameState.strategicMapFocusedCityId = selectedCityId;
         if (changedSaveSlot) {
+            lastTurnReport = null;
+            selectedBattleReportId = null;
             requestStrategicMapFocus();
         }
     }

@@ -7,6 +7,8 @@ import idv.kuan.studio.sango.domain.rule.BattleTactic;
  */
 public final class ArmyState {
     public String armyId;
+    /** 同一次聯合出征共用的群組 ID；舊式外部單軍可為 null。 */
+    public String expeditionGroupId;
     public String factionId;
     public String originCityId;
     public String targetCityId;
@@ -25,6 +27,7 @@ public final class ArmyState {
     public ArmyState copy() {
         ArmyState copiedState = new ArmyState();
         copiedState.armyId = armyId;
+        copiedState.expeditionGroupId = expeditionGroupId;
         copiedState.factionId = factionId;
         copiedState.originCityId = originCityId;
         copiedState.targetCityId = targetCityId;

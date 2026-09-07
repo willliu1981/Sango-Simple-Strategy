@@ -2,6 +2,7 @@ package idv.kuan.studio.sango.domain.service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -122,7 +123,9 @@ public final class TurnResolutionService {
                 int deserters = applyFoodShortage(
                     gameState,
                     factionState.factionId,
-                    shortage
+                    shortage,
+                    foodCost,
+                    report
                 );
                 if (gameState.playerFactionId.equals(factionState.factionId)) {
                     report.add(new TurnEvent(
@@ -157,9 +160,43 @@ public final class TurnResolutionService {
     private int applyFoodShortage(
         GameState gameState,
         String factionId,
-        int shortage
+        int shortage,
+        int requiredFood,
+        TurnResolutionReport report
     ) {
-        int remainingDeserters = shortage * 4;
+        if (shortage <= 0 || requiredFood <= 0) {
+            return 0;
+        }
+        int moraleLoss = (int) (((long) 20 * shortage + requiredFood - 1L) / requiredFood);
+        boolean playerFaction = gameState.playerFactionId.equals(factionId);
+        for (CityState cityState : gameState.cityStates) {
+            if (!factionId.equals(cityState.ownerFactionId)) {
+                continue;
+            }
+            int actualLoss = Math.min(cityState.morale, moraleLoss);
+            cityState.morale -= actualLoss;
+            cityState.moraleFraction = 0;
+            cityState.publicOrder = 0;
+            if (playerFaction && actualLoss > 0) {
+                report.add(new TurnEvent(TurnEventType.FOOD_SHORTAGE_MORALE,
+                    factionId, cityState.cityId, null, actualLoss, cityState.morale));
+            }
+        }
+        for (ArmyState armyState : gameState.armyStates) {
+            if (!factionId.equals(armyState.factionId)) {
+                continue;
+            }
+            int actualLoss = Math.min(armyState.morale, moraleLoss);
+            armyState.morale -= actualLoss;
+            armyState.moraleFraction = 0;
+            if (playerFaction && actualLoss > 0) {
+                report.add(new TurnEvent(TurnEventType.FOOD_SHORTAGE_MORALE,
+                    factionId, armyState.originCityId, armyState.targetCityId,
+                    actualLoss, armyState.morale));
+            }
+        }
+
+        int remainingDeserters = Math.multiplyExact(shortage, 4);
         int originalDeserters = remainingDeserters;
 
         for (ArmyState armyState : gameState.armyStates) {
@@ -314,7 +351,9 @@ public final class TurnResolutionService {
             if (!containsArmy(gameState, armyState.armyId)) {
                 continue;
             }
-            armyState.remainingTravelMonths -= 1;
+            if (armyState.remainingTravelMonths > 0) {
+                armyState.remainingTravelMonths -= 1;
+            }
             if (armyState.remainingTravelMonths > 0) {
                 if (gameState.playerFactionId.equals(armyState.factionId)) {
                     report.add(new TurnEvent(
@@ -326,14 +365,53 @@ public final class TurnResolutionService {
                         armyState.remainingTravelMonths
                     ));
                 }
+            }
+        }
+
+        Set<String> groupIds = new LinkedHashSet<>();
+        for (ArmyState armyState : movementSnapshot) {
+            if (containsArmy(gameState, armyState.armyId)) {
+                groupIds.add(effectiveGroupId(armyState));
+            }
+        }
+        for (String groupId : groupIds) {
+            List<ArmyState> groupArmies = findGroupArmies(gameState, groupId);
+            if (groupArmies.isEmpty() || !allArrived(groupArmies)) {
                 continue;
             }
-            if (battleResolutionService.resolveArrival(gameState, armyState, report)) {
-                changedOwnerCityIds.add(armyState.targetCityId);
+            String targetCityId = groupArmies.get(0).targetCityId;
+            if (battleResolutionService.resolveArrival(gameState, groupArmies, report)) {
+                changedOwnerCityIds.add(targetCityId);
             }
-            gameState.removeArmy(armyState.armyId);
+            for (ArmyState armyState : groupArmies) {
+                gameState.removeArmy(armyState.armyId);
+            }
         }
         return changedOwnerCityIds;
+    }
+
+    private List<ArmyState> findGroupArmies(GameState gameState, String groupId) {
+        List<ArmyState> groupArmies = new ArrayList<>();
+        for (ArmyState armyState : gameState.armyStates) {
+            if (groupId.equals(effectiveGroupId(armyState))) {
+                groupArmies.add(armyState);
+            }
+        }
+        return groupArmies;
+    }
+
+    private boolean allArrived(List<ArmyState> armyStates) {
+        for (ArmyState armyState : armyStates) {
+            if (armyState.remainingTravelMonths > 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String effectiveGroupId(ArmyState armyState) {
+        return armyState.expeditionGroupId == null
+            ? armyState.armyId : armyState.expeditionGroupId;
     }
 
     private void resolvePublicOrderNaturalRecovery(

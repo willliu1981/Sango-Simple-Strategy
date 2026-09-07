@@ -12,7 +12,7 @@ import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 
 /**
- * 逐版遷移 2 -> 3 -> 4 -> 5 -> 6 -> 7。僅遷移狀態結構，不替換舊劇本或憑空增加領地。
+ * 逐版遷移 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8。僅遷移狀態結構，不替換舊劇本或憑空增加領地。
  */
 @SuppressWarnings("deprecation")
 public final class GameStateMigrator {
@@ -35,6 +35,9 @@ public final class GameStateMigrator {
         }
         if (migratedState.schemaVersion == 6) {
             migrateSchemaSixToSeven(migratedState);
+        }
+        if (migratedState.schemaVersion == 7) {
+            migrateSchemaSevenToEight(migratedState);
         }
         if (migratedState.schemaVersion != SangoVersion.GAME_STATE_SCHEMA_VERSION) {
             throw new IllegalArgumentException(
@@ -127,6 +130,24 @@ public final class GameStateMigrator {
             cityState.publicOrderRecoveryStreakMonths = 0;
         }
         gameState.schemaVersion = 7;
+    }
+
+    private void migrateSchemaSevenToEight(GameState gameState) {
+        if (gameState.armyStates != null) {
+            for (ArmyState armyState : gameState.armyStates) {
+                if (armyState != null) {
+                    armyState.expeditionGroupId = armyState.armyId;
+                }
+            }
+        }
+        if (gameState.battleReports != null) {
+            for (BattleReport battleReport : gameState.battleReports) {
+                if (battleReport != null) {
+                    battleReport.attackerContributions = new idv.kuan.studio.sango.domain.model.BattleContribution[0];
+                }
+            }
+        }
+        gameState.schemaVersion = 8;
     }
 
     private void normalizeCurrentState(GameState gameState) {

@@ -12,6 +12,7 @@ public enum ScreenId implements ScreenIdentifier {
     CITY("city"),
     MONTH_REPORT("month_report"),
     BATTLE_REPORT("battle_report"),
+    WORLD_BATTLE_REPORT("world_battle_report"),
     SAVE_LOAD("save_load"),
     SETTINGS("settings"),
     GAMEPLAY_GUIDE("gameplay_guide"),

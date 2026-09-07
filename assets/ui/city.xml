@@ -114,8 +114,9 @@
             <row />
             <table width="1780" height="88" padTop="8">
                 <textButton id="city_settings_button" fontSize="34" width="300" height="80">${text:button_settings}</textButton>
+                <textButton id="city_context_help_button" fontSize="32" width="280" height="80" padLeft="20">操作說明</textButton>
                 <textButton id="return_map_button" fontSize="34" width="430" height="80" padLeft="20">${text:button_return_map}</textButton>
-                <table width="490"></table>
+                <table width="190"></table>
                 <textButton id="city_end_month_button" fontSize="36" width="520" height="80">${text:button_end_month}</textButton>
             </table>
         </table>
@@ -185,8 +186,9 @@
                 color="0.85,0.73,0.64,1">${text:recruitment_ready}</label>
             <row />
             <table width="1190" height="94" padTop="12">
-                <textButton id="recruitment_cancel_button" fontSize="36" width="560" height="80">${text:button_cancel}</textButton>
-                <textButton id="recruitment_confirm_button" fontSize="36" width="590" height="80" padLeft="30">${text:recruitment_confirm}</textButton>
+                <textButton id="recruitment_help_button" fontSize="31" width="250" height="80">徵兵說明</textButton>
+                <textButton id="recruitment_cancel_button" fontSize="34" width="400" height="80" padLeft="20">${text:button_cancel}</textButton>
+                <textButton id="recruitment_confirm_button" fontSize="34" width="480" height="80" padLeft="20">${text:recruitment_confirm}</textButton>
             </table>
         </table>
     </table>

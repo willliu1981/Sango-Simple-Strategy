@@ -25,6 +25,7 @@ import com.badlogic.gdx.utils.TimeUtils;
 import idv.kuan.studio.libgdx.simpleui.Sui;
 import idv.kuan.studio.libgdx.simpleui.SuiScreen;
 import idv.kuan.studio.libgdx.simpleui.builder.BuiltUI;
+import idv.kuan.studio.sango.application.command.ExpeditionOrder;
 import idv.kuan.studio.sango.application.command.LaunchExpeditionCommand;
 import idv.kuan.studio.sango.application.result.StrategicActionResult;
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
@@ -51,6 +52,7 @@ import idv.kuan.studio.sango.domain.rule.StrategicActionFailureReason;
 import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.ui.flow.MonthEndFlowController;
 import idv.kuan.studio.sango.ui.id.ScreenId;
+import idv.kuan.studio.sango.ui.support.ContextHelpOverlay;
 import idv.kuan.studio.sango.ui.support.ScreenBackground;
 import idv.kuan.studio.sango.ui.support.MapTerrainBackground;
 import idv.kuan.studio.sango.ui.support.NationalOrderTextFormatter;
@@ -82,13 +84,15 @@ public final class StrategicMapScreen extends SuiScreen {
     private Group mapHost;
     private Group mapFullscreenHost;
     private StrategicMapWidget strategicMapWidget;
+    private ContextHelpOverlay contextHelpOverlay;
     private boolean mapFullscreen;
     private long lastMapTapMillis;
     private String currentStatusMessage;
     private Color currentStatusColor = STATUS_NORMAL_COLOR;
     private String pendingOriginCityId;
     private String pendingTargetCityId;
-    private int pendingDispatchAmount;
+    private final Map<String, Integer> pendingDispatchAmounts = new LinkedHashMap<>();
+    private final List<String> pendingSelectedOriginCityIds = new ArrayList<>();
 
     @Override
     protected BuiltUI buildUI(UIFactory uiFactory) {
@@ -117,6 +121,14 @@ public final class StrategicMapScreen extends SuiScreen {
         mapHost.addActor(strategicMapWidget);
         resizeMapWidget();
         applyStyles();
+        button("context_help_button").setText(text("context_help_button", "操作說明"));
+        contextHelpOverlay = new ContextHelpOverlay(
+            stage,
+            label("selected_city_name_label").getStyle(),
+            label("selected_city_route_label").getStyle(),
+            button("context_help_button").getStyle(),
+            text("context_help_close", "關閉")
+        );
         bindActions();
         currentStatusMessage = text("map_status_ready", "選擇城池以管理、偵察或出征。");
         animateEntrance();
@@ -128,6 +140,7 @@ public final class StrategicMapScreen extends SuiScreen {
             return;
         }
         closeModals();
+        contextHelpOverlay.hide();
         ensureCurrentGameState();
         ScreenMusic.play(ScreenId.STRATEGIC_MAP);
         refreshView();
@@ -142,7 +155,9 @@ public final class StrategicMapScreen extends SuiScreen {
             @Override
             public boolean keyDown(int keycode) {
                 if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
-                    if (isAnyModalVisible()) {
+                    if (contextHelpOverlay != null && contextHelpOverlay.isVisible()) {
+                        contextHelpOverlay.hide();
+                    } else if (isAnyModalVisible()) {
                         closeModals();
                     } else if (mapFullscreen) {
                         setMapFullscreen(false);
@@ -176,6 +191,9 @@ public final class StrategicMapScreen extends SuiScreen {
             strategicMapWidget.setTerrainDrawable(null);
         }
         mapTerrainBackground.dispose();
+        if (contextHelpOverlay != null) {
+            contextHelpOverlay.remove();
+        }
         super.beforeDispose();
     }
 
@@ -238,6 +256,7 @@ public final class StrategicMapScreen extends SuiScreen {
         SangoUiStyles.applyPrimaryButton(button("launch_expedition_button"));
         SangoUiStyles.applySecondaryButton(button("view_city_battle_button"));
         SangoUiStyles.applySecondaryButton(button("map_settings_button"));
+        SangoUiStyles.applySecondaryButton(button("context_help_button"));
         SangoUiStyles.applySecondaryButton(button("show_last_report_button"));
         SangoUiStyles.applyDangerButton(button("show_unread_battle_button"));
         SangoUiStyles.applyPrimaryButton(button("end_month_button"));
@@ -251,6 +270,8 @@ public final class StrategicMapScreen extends SuiScreen {
         SangoUiStyles.applySecondaryButton(button("dispatch_maximum_button"));
         SangoUiStyles.applySecondaryButton(button("dispatch_origin_previous_button"));
         SangoUiStyles.applySecondaryButton(button("dispatch_origin_next_button"));
+        SangoUiStyles.applySecondaryButton(button("dispatch_origin_toggle_button"));
+        SangoUiStyles.applySecondaryButton(button("dispatch_help_button"));
         SangoUiStyles.applySecondaryButton(button("dispatch_cancel_button"));
         SangoUiStyles.applyPrimaryButton(button("dispatch_confirm_button"));
         refreshTacticStyles();
@@ -269,8 +290,9 @@ public final class StrategicMapScreen extends SuiScreen {
         ui.onClick("tactic_assault_button", () -> selectTactic(BattleTactic.ASSAULT));
         ui.onClick("tactic_cautious_button", () -> selectTactic(BattleTactic.CAUTIOUS));
         ui.onClick("map_settings_button", this::openSettings);
+        ui.onClick("context_help_button", this::showMapHelp);
         ui.onClick("show_last_report_button", this::showLastTurnReport);
-        ui.onClick("show_unread_battle_button", this::viewFirstUnreadBattle);
+        ui.onClick("show_unread_battle_button", this::viewWorldBattleReports);
         ui.onClick("end_month_button", this::requestEndMonth);
         ui.onClick("end_month_cancel_button", this::closeModals);
         ui.onClick("end_month_confirm_button", this::confirmEndMonth);
@@ -280,8 +302,10 @@ public final class StrategicMapScreen extends SuiScreen {
         ui.onClick("dispatch_increase_button", () -> adjustDispatchAmount(100));
         ui.onClick("dispatch_minimum_button", () -> setDispatchAmount(LaunchExpeditionCommand.MINIMUM_EXPEDITION));
         ui.onClick("dispatch_maximum_button", this::setMaximumDispatchAmount);
-        ui.onClick("dispatch_origin_previous_button", () -> cycleTransferOrigin(-1));
-        ui.onClick("dispatch_origin_next_button", () -> cycleTransferOrigin(1));
+        ui.onClick("dispatch_origin_previous_button", () -> cycleDispatchOrigin(-1));
+        ui.onClick("dispatch_origin_next_button", () -> cycleDispatchOrigin(1));
+        ui.onClick("dispatch_origin_toggle_button", this::toggleDispatchOrigin);
+        ui.onClick("dispatch_help_button", this::showDispatchHelp);
         ui.onClick("dispatch_cancel_button", this::closeModals);
         ui.onClick("dispatch_confirm_button", this::confirmDispatch);
     }
@@ -391,9 +415,9 @@ public final class StrategicMapScreen extends SuiScreen {
         );
         int unreadBattleCount = gameState.countUnreadBattleReports();
         button("show_unread_battle_button").setText(
-            text("button_unread_battles_format", "未讀戰報（{0}）", unreadBattleCount)
+            text("button_world_battle_reports_format", "天下戰報（未讀{0}）", unreadBattleCount)
         );
-        setButtonEnabled(button("show_unread_battle_button"), unreadBattleCount > 0);
+        setButtonEnabled(button("show_unread_battle_button"), true);
         setButtonEnabled(
             button("end_month_button"),
             gameState.gameplayStatus == GameplayStatus.ACTIVE
@@ -555,7 +579,11 @@ public final class StrategicMapScreen extends SuiScreen {
             selectedCityState.ownerFactionId
         );
         boolean exactIntel = hasExactIntel(gameState, selectedCityState);
-        CityState originCityState = findAdjacentPlayerCity(gameState, selectedCityState.cityId);
+        boolean playerOwned = gameState.playerFactionId.equals(selectedCityState.ownerFactionId);
+        List<CityState> dispatchOrigins = playerOwned
+            ? findTransferPlayerCities(gameState, selectedCityState.cityId)
+            : findAdjacentPlayerCities(gameState, selectedCityState.cityId);
+        CityState originCityState = findBestDispatchOrigin(dispatchOrigins);
 
         label("selected_city_name_label").setText(cityName(selectedCityState.cityId));
         label("selected_city_owner_label").setText(
@@ -578,7 +606,6 @@ public final class StrategicMapScreen extends SuiScreen {
         );
         setButtonEnabled(button("view_city_battle_button"), cityBattleCount > 0);
 
-        boolean playerOwned = gameState.playerFactionId.equals(selectedCityState.ownerFactionId);
         boolean gameplayActive = gameState.gameplayStatus == GameplayStatus.ACTIVE;
         setButtonEnabled(button("manage_city_button"), gameplayActive && playerOwned);
         setButtonEnabled(
@@ -681,9 +708,13 @@ public final class StrategicMapScreen extends SuiScreen {
     }
 
     private CityState findAdjacentPlayerCity(GameState gameState, String targetCityId) {
+        return findBestDispatchOrigin(findAdjacentPlayerCities(gameState, targetCityId));
+    }
+
+    private CityState findBestDispatchOrigin(List<CityState> candidates) {
         CityState bestOrigin = null;
         int largestDispatch = -1;
-        for (CityState playerCity : findAdjacentPlayerCities(gameState, targetCityId)) {
+        for (CityState playerCity : candidates) {
             int dispatch = SangoServices.launchExpeditionCommand().calculateDispatchTroops(playerCity);
             if (dispatch > largestDispatch) {
                 bestOrigin = playerCity;
@@ -801,34 +832,44 @@ public final class StrategicMapScreen extends SuiScreen {
             return;
         }
         String targetCityId = SangoServices.session().getSelectedCityId();
-        CityState originCityState = findAdjacentPlayerCity(currentState, targetCityId);
+        boolean transfer = currentState.playerFactionId.equals(
+            currentState.requireCityState(targetCityId).ownerFactionId
+        );
+        List<CityState> candidates = transfer
+            ? findTransferPlayerCities(currentState, targetCityId)
+            : findAdjacentPlayerCities(currentState, targetCityId);
+        CityState originCityState = findBestDispatchOrigin(candidates);
         if (originCityState == null) {
-            setStatus(text("map_status_not_adjacent", "沒有可派兵的相鄰我方城池。"), STATUS_ERROR_COLOR);
-            return;
-        }
-        int maximumAmount = SangoServices.launchExpeditionCommand().calculateDispatchTroops(originCityState);
-        if (maximumAmount < LaunchExpeditionCommand.MINIMUM_EXPEDITION) {
             setStatus(
-                text("map_status_insufficient_troops", "至少需保留 400 守軍並派出 400 兵。"),
+                transfer
+                    ? text("map_status_no_transfer_origin", "沒有可沿道路運兵至此的我方城池。")
+                    : text("map_status_not_adjacent", "沒有可派兵的相鄰我方城池。"),
                 STATUS_ERROR_COLOR
             );
             return;
         }
+        pendingDispatchAmounts.clear();
+        pendingSelectedOriginCityIds.clear();
+        for (CityState candidate : candidates) {
+            pendingDispatchAmounts.put(
+                candidate.cityId,
+                SangoServices.launchExpeditionCommand().calculateDispatchTroops(candidate)
+            );
+        }
         pendingOriginCityId = originCityState.cityId;
         pendingTargetCityId = targetCityId;
-        pendingDispatchAmount = maximumAmount;
+        pendingSelectedOriginCityIds.add(originCityState.cityId);
         refreshDispatchDetails();
-        refreshDispatchAmount();
         openModal(expeditionDispatchMask);
     }
 
-    private void cycleTransferOrigin(int direction) {
+    private void cycleDispatchOrigin(int direction) {
         GameState currentState = requireCurrentState();
-        if (currentState == null || pendingOriginCityId == null || pendingTargetCityId == null
-            || !currentState.playerFactionId.equals(currentState.requireCityState(pendingTargetCityId).ownerFactionId)) {
+        if (currentState == null || pendingOriginCityId == null || pendingTargetCityId == null) {
             return;
         }
-        List<CityState> candidates = findTransferPlayerCities(currentState, pendingTargetCityId);
+        boolean transfer = isPendingTransfer(currentState);
+        List<CityState> candidates = pendingOriginCandidates(currentState);
         if (candidates.size() < 2) {
             return;
         }
@@ -841,9 +882,25 @@ public final class StrategicMapScreen extends SuiScreen {
         }
         int nextIndex = Math.floorMod(currentIndex + direction, candidates.size());
         pendingOriginCityId = candidates.get(nextIndex).cityId;
-        pendingDispatchAmount = SangoServices.launchExpeditionCommand().calculateDispatchTroops(candidates.get(nextIndex));
+        if (transfer) {
+            pendingSelectedOriginCityIds.clear();
+            pendingSelectedOriginCityIds.add(pendingOriginCityId);
+        }
         refreshDispatchDetails();
-        refreshDispatchAmount();
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
+    }
+
+    private void toggleDispatchOrigin() {
+        GameState currentState = requireCurrentState();
+        if (currentState == null || pendingOriginCityId == null || isPendingTransfer(currentState)) {
+            return;
+        }
+        if (pendingSelectedOriginCityIds.contains(pendingOriginCityId)) {
+            pendingSelectedOriginCityIds.remove(pendingOriginCityId);
+        } else {
+            pendingSelectedOriginCityIds.add(pendingOriginCityId);
+        }
+        refreshDispatchDetails();
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);
     }
 
@@ -852,33 +909,51 @@ public final class StrategicMapScreen extends SuiScreen {
         if (currentState == null || pendingOriginCityId == null || pendingTargetCityId == null) {
             return;
         }
-        boolean transfer = currentState.playerFactionId.equals(
-            currentState.requireCityState(pendingTargetCityId).ownerFactionId
-        );
+        boolean transfer = isPendingTransfer(currentState);
+        List<CityState> origins = pendingOriginCandidates(currentState);
+        int originIndex = indexOfCity(origins, pendingOriginCityId);
         label("dispatch_title_label").setText(transfer
             ? text("dispatch_transfer_title", "運兵")
-            : text("dispatch_expedition_title", "出征派兵"));
+            : text("dispatch_expedition_title", "聯合出征"));
         label("dispatch_route_label").setText(text(
-            "dispatch_route_format", "來源：{0}\n目的：{1}\n路程：{2} 個月",
+            "dispatch_route_format", "目前來源：{0}｜目標：{1}｜路程：{2} 個月",
             cityName(pendingOriginCityId), cityName(pendingTargetCityId),
             travelMonths(currentState, pendingOriginCityId, pendingTargetCityId)
         ));
-        List<CityState> origins = transfer ? findTransferPlayerCities(currentState, pendingTargetCityId)
-            : new ArrayList<>();
-        label("dispatch_origin_label").setText(transfer
-            ? text("dispatch_origin_selection_format", "運兵來源：{0}（{1}/{2}）",
-                cityName(pendingOriginCityId), origins.indexOf(currentState.requireCityState(pendingOriginCityId)) + 1,
-                origins.size())
-            : text("dispatch_origin_selection_hidden", ""));
-        button("dispatch_origin_previous_button").setDisabled(!transfer || origins.size() < 2);
-        button("dispatch_origin_next_button").setDisabled(!transfer || origins.size() < 2);
+        label("dispatch_origin_label").setText(text(
+            "dispatch_origin_selection_format", "來源：{0}（{1}/{2}）",
+            cityName(pendingOriginCityId), originIndex + 1, origins.size()
+        ));
+        setButtonEnabled(button("dispatch_origin_previous_button"), origins.size() >= 2);
+        setButtonEnabled(button("dispatch_origin_next_button"), origins.size() >= 2);
+        TextButton toggleButton = button("dispatch_origin_toggle_button");
+        if (transfer) {
+            toggleButton.setText(text("dispatch_transfer_single_origin", "運兵使用目前來源"));
+            SangoUiStyles.applySecondaryButton(toggleButton);
+            setButtonEnabled(toggleButton, false);
+        } else {
+            boolean selected = pendingSelectedOriginCityIds.contains(pendingOriginCityId);
+            toggleButton.setText(selected
+                ? text("dispatch_remove_origin", "移除此城")
+                : text("dispatch_add_origin", "加入此城"));
+            if (selected) {
+                SangoUiStyles.applySelectedButton(toggleButton);
+            } else {
+                SangoUiStyles.applySecondaryButton(toggleButton);
+            }
+            setButtonEnabled(toggleButton, true);
+        }
         button("dispatch_confirm_button").setText(transfer
             ? text("button_confirm_transfer", "確認運兵")
             : text("button_confirm_expedition", "確認出征"));
+        button("dispatch_help_button").setText(transfer
+            ? text("dispatch_transfer_help_button", "運兵說明")
+            : text("dispatch_expedition_help_button", "出征說明"));
+        refreshDispatchAmount();
     }
 
     private void adjustDispatchAmount(int delta) {
-        setDispatchAmount(pendingDispatchAmount + delta);
+        setDispatchAmount(currentDispatchAmount() + delta);
     }
 
     private void setDispatchAmount(int amount) {
@@ -889,10 +964,10 @@ public final class StrategicMapScreen extends SuiScreen {
         int maximumAmount = SangoServices.launchExpeditionCommand().calculateDispatchTroops(
             currentState.requireCityState(pendingOriginCityId)
         );
-        pendingDispatchAmount = Math.max(
+        pendingDispatchAmounts.put(pendingOriginCityId, Math.max(
             LaunchExpeditionCommand.MINIMUM_EXPEDITION,
             Math.min(maximumAmount, amount)
-        );
+        ));
         refreshDispatchAmount();
     }
 
@@ -908,8 +983,134 @@ public final class StrategicMapScreen extends SuiScreen {
 
     private void refreshDispatchAmount() {
         label("dispatch_amount_label").setText(
-            text("dispatch_amount_format", "派兵數量：{0}", numberFormat.format(pendingDispatchAmount))
+            text("dispatch_amount_format", "目前來源派兵：{0}", numberFormat.format(currentDispatchAmount()))
         );
+        refreshDispatchSummary();
+    }
+
+    private void refreshDispatchSummary() {
+        GameState currentState = requireCurrentState();
+        if (currentState == null || pendingTargetCityId == null) {
+            return;
+        }
+        List<String> selectedOrigins = effectiveSelectedOrigins(currentState);
+        int totalTroops = 0;
+        int slowestTravelMonths = 0;
+        StringBuilder selectedLines = new StringBuilder();
+        for (String originCityId : selectedOrigins) {
+            int amount = pendingDispatchAmounts.getOrDefault(originCityId, 0);
+            int months = travelMonths(currentState, originCityId, pendingTargetCityId);
+            totalTroops += amount;
+            slowestTravelMonths = Math.max(slowestTravelMonths, months);
+            if (selectedLines.length() > 0) {
+                selectedLines.append('\n');
+            }
+            selectedLines.append(text(
+                "dispatch_selected_origin_line_format",
+                "{0}：{1} 兵｜{2} 個月",
+                cityName(originCityId), numberFormat.format(amount), months
+            ));
+        }
+        label("dispatch_selected_origins_label").setText(selectedOrigins.isEmpty()
+            ? text("dispatch_selected_origins_empty", "已選來源：尚未加入任何城池。")
+            : text("dispatch_selected_origins_format", "已選來源：\n{0}", selectedLines));
+        int orderCount = selectedOrigins.size();
+        label("dispatch_summary_label").setText(text(
+            "dispatch_summary_format",
+            "合計 {0} 城／{1} 兵｜費用 {2} AP、{3} 糧｜集結 {4} 個月（最慢路程）",
+            orderCount,
+            numberFormat.format(totalTroops),
+            orderCount,
+            numberFormat.format(orderCount * LaunchExpeditionCommand.FOOD_COST),
+            slowestTravelMonths
+        ));
+        String validationMessage = dispatchValidationMessage(currentState, selectedOrigins);
+        label("dispatch_status_label").setText(validationMessage == null
+            ? text("dispatch_status_ready", "資源足夠；確認後所有來源將編入同一批行動。")
+            : validationMessage);
+        label("dispatch_status_label").setColor(
+            validationMessage == null ? STATUS_SUCCESS_COLOR : STATUS_ERROR_COLOR
+        );
+        setButtonEnabled(button("dispatch_confirm_button"), validationMessage == null);
+    }
+
+    private String dispatchValidationMessage(GameState gameState, List<String> selectedOrigins) {
+        if (selectedOrigins.isEmpty()) {
+            return text("dispatch_status_select_origin", "請至少加入一座來源城。 ");
+        }
+        for (String originCityId : selectedOrigins) {
+            int amount = pendingDispatchAmounts.getOrDefault(originCityId, 0);
+            int maximum = SangoServices.launchExpeditionCommand().calculateDispatchTroops(
+                gameState.requireCityState(originCityId)
+            );
+            if (amount < LaunchExpeditionCommand.MINIMUM_EXPEDITION
+                || amount % 100 != 0 || amount > maximum) {
+                return text(
+                    "dispatch_status_invalid_origin_amount_format",
+                    "{0} 的派兵數需至少 400、以 100 遞增，並保留 400 守軍。",
+                    cityName(originCityId)
+                );
+            }
+        }
+        int orderCount = selectedOrigins.size();
+        if (gameState.actionPointsRemaining < orderCount) {
+            return text(
+                "dispatch_status_insufficient_ap_format",
+                "行動力不足：本次需 {0} AP，目前剩餘 {1}。",
+                orderCount, gameState.actionPointsRemaining
+            );
+        }
+        int foodCost = orderCount * LaunchExpeditionCommand.FOOD_COST;
+        if (gameState.requirePlayerFactionState().food < foodCost) {
+            return text(
+                "dispatch_status_insufficient_food_format",
+                "糧不足：本次需 {0} 糧，目前只有 {1}。",
+                numberFormat.format(foodCost),
+                numberFormat.format(gameState.requirePlayerFactionState().food)
+            );
+        }
+        if (gameState.hasArmyForFaction(gameState.playerFactionId)) {
+            return text("dispatch_status_army_active", "我方已有部隊行軍中，需等待其抵達。 ");
+        }
+        return null;
+    }
+
+    private int currentDispatchAmount() {
+        return pendingOriginCityId == null
+            ? 0 : pendingDispatchAmounts.getOrDefault(pendingOriginCityId, 0);
+    }
+
+    private boolean isPendingTransfer(GameState gameState) {
+        return pendingTargetCityId != null && gameState.playerFactionId.equals(
+            gameState.requireCityState(pendingTargetCityId).ownerFactionId
+        );
+    }
+
+    private List<CityState> pendingOriginCandidates(GameState gameState) {
+        return isPendingTransfer(gameState)
+            ? findTransferPlayerCities(gameState, pendingTargetCityId)
+            : findAdjacentPlayerCities(gameState, pendingTargetCityId);
+    }
+
+    private List<String> effectiveSelectedOrigins(GameState gameState) {
+        List<String> selected = new ArrayList<>();
+        if (isPendingTransfer(gameState)) {
+            if (pendingOriginCityId != null) {
+                selected.add(pendingOriginCityId);
+            }
+            return selected;
+        }
+        selected.addAll(pendingSelectedOriginCityIds);
+        return selected;
+    }
+
+    private int indexOfCity(List<CityState> cities, String cityId) {
+        for (int index = 0; index < cities.size(); index++) {
+            if (cities.get(index).cityId.equals(cityId)) {
+                return index;
+            }
+        }
+        return 0;
     }
 
     private void confirmDispatch() {
@@ -920,17 +1121,42 @@ public final class StrategicMapScreen extends SuiScreen {
         }
         String originCityId = pendingOriginCityId;
         String targetCityId = pendingTargetCityId;
-        int amount = pendingDispatchAmount;
-        closeModals();
+        boolean transfer = isPendingTransfer(currentState);
+        List<String> selectedOrigins = effectiveSelectedOrigins(currentState);
+        String validationMessage = dispatchValidationMessage(currentState, selectedOrigins);
+        if (validationMessage != null) {
+            label("dispatch_status_label").setText(validationMessage);
+            label("dispatch_status_label").setColor(STATUS_ERROR_COLOR);
+            return;
+        }
         try {
-            StrategicActionResult result = SangoServices.launchExpeditionCommand().execute(
-                SangoServices.session().getCurrentSaveSlot(),
-                currentState,
-                originCityId,
-                targetCityId,
-                amount,
-                SangoServices.session().getSelectedBattleTactic()
-            );
+            StrategicActionResult result;
+            if (transfer) {
+                result = SangoServices.launchExpeditionCommand().execute(
+                    SangoServices.session().getCurrentSaveSlot(),
+                    currentState,
+                    originCityId,
+                    targetCityId,
+                    pendingDispatchAmounts.get(originCityId),
+                    SangoServices.session().getSelectedBattleTactic()
+                );
+            } else {
+                List<ExpeditionOrder> orders = new ArrayList<>();
+                for (String selectedOriginCityId : selectedOrigins) {
+                    orders.add(new ExpeditionOrder(
+                        selectedOriginCityId,
+                        pendingDispatchAmounts.get(selectedOriginCityId)
+                    ));
+                }
+                result = SangoServices.launchExpeditionCommand().execute(
+                    SangoServices.session().getCurrentSaveSlot(),
+                    currentState,
+                    targetCityId,
+                    orders,
+                    SangoServices.session().getSelectedBattleTactic()
+                );
+            }
+            closeModals();
             applyStrategicActionResult(result, false);
         } catch (RuntimeException exception) {
             Gdx.app.error("StrategicMap", "出征命令失敗。", exception);
@@ -1036,7 +1262,9 @@ public final class StrategicMapScreen extends SuiScreen {
         GameState gameState = SangoServices.session().requireCurrentState();
         for (String battleReportId : report.getBattleReportIds()) {
             BattleReport battleReport = gameState.findBattleReport(battleReportId);
-            if (battleReport != null && cityId.equals(battleReport.targetCityId)) {
+            if (battleReport != null
+                && battleReport.involvesFaction(gameState.playerFactionId)
+                && cityId.equals(battleReport.targetCityId)) {
                 return battleReportId;
             }
         }
@@ -1093,17 +1321,44 @@ public final class StrategicMapScreen extends SuiScreen {
         Sui.screens.set(ScreenId.BATTLE_REPORT);
     }
 
-    private void viewFirstUnreadBattle() {
-        GameState gameState = requireCurrentState();
-        if (gameState == null) {
+    private void viewWorldBattleReports() {
+        Sui.screens.set(ScreenId.WORLD_BATTLE_REPORT);
+    }
+
+    private void showMapHelp() {
+        contextHelpOverlay.show(
+            text("help_map_title", "戰略圖操作說明"),
+            text(
+                "help_map_body",
+                "共用金與共用糧屬於整個勢力；行動力（AP）則限制本月可下達的命令。\n\n城池之間必須有道路才能偵察、出征或運兵；出征只能選與目標相鄰的我方城，運兵可選任何沿道路可達的我方城。\n\n使用＋、－縮放地圖，「全圖」重設視野，「定位」回到目前選取城；連按地圖可切換全螢幕。\n\n敵方與中立城的兵力起初是估算值。由相鄰我方城偵察會消耗 1 AP，完成後可查看三回合精確情報。"
+            )
+        );
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
+    }
+
+    private void showDispatchHelp() {
+        GameState currentState = requireCurrentState();
+        if (currentState == null || pendingTargetCityId == null) {
             return;
         }
-        List<BattleReport> reports = gameState.findUnreadBattleReports();
-        if (reports.isEmpty()) {
-            return;
+        if (isPendingTransfer(currentState)) {
+            contextHelpOverlay.show(
+                text("help_transfer_title", "運兵說明"),
+                text(
+                    "help_transfer_body",
+                    "運兵只在我方城池之間進行；任何沿道路可到達目標的我方城都能作為來源。\n\n使用前一座／後一座切換來源，再以 100 人調整兵數。每次至少派 400 兵，來源城必須保留 400 守軍。\n\n運兵消耗 1 AP 與 100 糧；路程依道路最短時間計算，部隊抵達後才加入目標城。"
+                )
+            );
+        } else {
+            contextHelpOverlay.show(
+                text("help_expedition_title", "聯合出征說明"),
+                text(
+                    "help_expedition_body",
+                    "對敵方或中立城出征時，可用前一座／後一座查看每座相鄰我方城，並逐城加入或移除本次出征。各城兵數會分別保留，可切回繼續調整。\n\n每座參戰城至少派 400 兵、保留 400 守軍，兵數以 100 遞增；每加入一城就消耗 1 AP 與 100 糧。\n\n清單會顯示總兵力與最慢路程；同一批部隊等到全部來源集結完成後，才會進入同一場戰鬥。"
+                )
+            );
         }
-        SangoServices.session().openBattleReport(reports.get(0).battleId, ScreenId.STRATEGIC_MAP);
-        Sui.screens.set(ScreenId.BATTLE_REPORT);
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
     }
 
     private void openSettings() {
@@ -1173,6 +1428,7 @@ public final class StrategicMapScreen extends SuiScreen {
         setButtonEnabled(button("scout_city_button"), enabled);
         setButtonEnabled(button("launch_expedition_button"), enabled);
         setButtonEnabled(button("view_city_battle_button"), enabled);
+        setButtonEnabled(button("show_unread_battle_button"), enabled);
         setButtonEnabled(button("end_month_button"), enabled);
     }
 
