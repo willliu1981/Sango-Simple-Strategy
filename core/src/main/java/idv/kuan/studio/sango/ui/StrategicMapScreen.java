@@ -41,10 +41,12 @@ import idv.kuan.studio.sango.domain.definition.StrategicMapDefinition;
 import idv.kuan.studio.sango.domain.model.ArmyState;
 import idv.kuan.studio.sango.domain.model.BattleReport;
 import idv.kuan.studio.sango.domain.model.CityState;
+import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
+import idv.kuan.studio.sango.domain.rule.SeasonalEconomyRules;
 import idv.kuan.studio.sango.domain.rule.StrategicActionFailureReason;
 import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.ui.flow.MonthEndFlowController;
@@ -373,6 +375,7 @@ public final class StrategicMapScreen extends SuiScreen {
                 + gameState.actionPointsRemaining + " / " + gameState.actionPointsPerTurn
         );
         label("map_national_order_label").setText(NationalOrderTextFormatter.formatPreview(gameState));
+        refreshResourceLabel(gameState);
         label("map_name_label").setText(localized(mapDefinition.nameKey, mapDefinition.id));
         refreshObjectiveLabel(gameState);
         refreshUnreadBattleLabel(gameState);
@@ -395,6 +398,44 @@ public final class StrategicMapScreen extends SuiScreen {
             button("end_month_button"),
             gameState.gameplayStatus == GameplayStatus.ACTIVE
         );
+    }
+
+    private void refreshResourceLabel(GameState gameState) {
+        FactionState factionState = gameState.requirePlayerFactionState();
+        int troopCount = 0;
+        for (CityState cityState : gameState.cityStates) {
+            if (gameState.playerFactionId.equals(cityState.ownerFactionId)) {
+                troopCount += cityState.troops;
+            }
+        }
+        for (ArmyState armyState : gameState.armyStates) {
+            if (gameState.playerFactionId.equals(armyState.factionId)) {
+                troopCount += armyState.troops;
+            }
+        }
+        int foodDemand = SeasonalEconomyRules.calculateMilitaryFoodUpkeep(troopCount);
+        int shortage = Math.max(0, foodDemand - factionState.food);
+        Label resourceLabel = label("map_resources_label");
+        if (shortage > 0) {
+            resourceLabel.setText(text(
+                "map_resources_shortage_format",
+                "共用金 {0}｜共用糧 {1}｜本月軍糧 {2}｜缺糧警示：尚缺 {3}",
+                numberFormat.format(factionState.gold),
+                numberFormat.format(factionState.food),
+                numberFormat.format(foodDemand),
+                numberFormat.format(shortage)
+            ));
+            resourceLabel.setColor(STATUS_ERROR_COLOR);
+            return;
+        }
+        resourceLabel.setText(text(
+            "map_resources_format",
+            "共用金 {0}｜共用糧 {1}｜本月軍糧需求 {2}",
+            numberFormat.format(factionState.gold),
+            numberFormat.format(factionState.food),
+            numberFormat.format(foodDemand)
+        ));
+        resourceLabel.setColor(STATUS_SUCCESS_COLOR);
     }
 
     private String ensureSelectedCity(GameState gameState) {

@@ -185,6 +185,12 @@ public final class GameStateValidator {
         requireRange(cityState.defense, 0, 100, "cityState.defense");
         requireNonNegative(cityState.troops, "cityState.troops");
         requireRange(cityState.publicOrder, 0, 100, "cityState.publicOrder");
+        requireRange(
+            cityState.publicOrderRecoveryStreakMonths,
+            0,
+            3,
+            "cityState.publicOrderRecoveryStreakMonths"
+        );
         requireRange(cityState.training, 0, 100, "cityState.training");
         requireRange(cityState.morale, 0, 100, "cityState.morale");
         validateQualityFraction(cityState.training, cityState.trainingFraction, "cityState.trainingFraction");

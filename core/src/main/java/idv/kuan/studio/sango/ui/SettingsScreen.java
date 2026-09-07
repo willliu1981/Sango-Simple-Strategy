@@ -111,6 +111,7 @@ public final class SettingsScreen extends SuiScreen {
         SangoUiStyles.applySecondaryButton(button("settings_sound_up_button"));
         SangoUiStyles.applySecondaryButton(button("settings_save_game_button"));
         SangoUiStyles.applySecondaryButton(button("settings_load_game_button"));
+        SangoUiStyles.applySecondaryButton(button("settings_gameplay_guide_button"));
         SangoUiStyles.applyDangerButton(button("settings_return_lobby_button"));
         SangoUiStyles.applyDangerButton(button("settings_exit_game_button"));
         SangoUiStyles.applyPrimaryButton(button("settings_back_button"));
@@ -129,6 +130,7 @@ public final class SettingsScreen extends SuiScreen {
         ui.onClick("settings_sound_up_button", () -> changeSoundVolume(VOLUME_STEP));
         ui.onClick("settings_save_game_button", this::openSaveScreen);
         ui.onClick("settings_load_game_button", this::openLoadScreen);
+        ui.onClick("settings_gameplay_guide_button", this::openGameplayGuide);
         ui.onClick("settings_return_lobby_button", () -> openModal(returnLobbyMask));
         ui.onClick("settings_exit_game_button", () -> openModal(exitMask));
         ui.onClick("settings_back_button", this::returnToPreviousScreen);
@@ -221,6 +223,11 @@ public final class SettingsScreen extends SuiScreen {
         SangoServices.audio().playSound(SoundEffect.CONFIRM);
         SangoServices.session().openSaveLoad(SaveLoadMode.LOAD, ScreenId.SETTINGS);
         Sui.screens.set(ScreenId.SAVE_LOAD);
+    }
+
+    private void openGameplayGuide() {
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
+        Sui.screens.set(ScreenId.GAMEPLAY_GUIDE);
     }
 
     private void saveAndReturnToLobby() {

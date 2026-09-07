@@ -247,6 +247,7 @@ public final class NewGameCommand {
         cityState.defense = cityDefinition.initialDefense;
         cityState.troops = cityDefinition.initialTroops;
         cityState.publicOrder = cityDefinition.initialPublicOrder;
+        cityState.publicOrderRecoveryStreakMonths = 0;
         cityState.training = cityDefinition.initialTraining;
         cityState.morale = cityDefinition.initialMorale;
         cityState.harvestModifierPercent = 100;

@@ -207,6 +207,7 @@
         <entry name="report_empty" value="本月沒有特殊事件。" description="report_empty" />
         <entry name="report_event_upkeep" value="軍糧支出：-{0} 糧，用於維持 {1} 兵。" description="report_event_upkeep" />
         <entry name="report_event_shortage" value="軍糧不足 {0}，共有 {1} 兵逃散。" description="report_event_shortage" />
+        <entry name="report_event_public_order_recovered" value="{0} 民心自然恢復 +{1}；目前民心 {2}。" description="report_event_public_order_recovered" />
         <entry name="report_event_tax" value="季末商稅：+{0} 金（{1} 座城池）。" description="report_event_tax" />
         <entry name="report_event_flood" value="{0} 發生洪災；秋收預估減少 {1}%（事前風險 {2}%）。" description="report_event_flood" />
         <entry name="report_event_flood_avoided" value="{0} 平安度過汛期（洪災風險 {1}%）。" description="report_event_flood_avoided" />
@@ -312,6 +313,8 @@
         <entry name="button_next_battle" value="下一份未讀戰報" description="button_next_battle" />
         <entry name="button_next_battle_format" value="下一份未讀戰報（{0}）" description="button_next_battle_format" />
         <entry name="button_no_unread_battle" value="沒有其他未讀戰報" description="button_no_unread_battle" />
+        <entry name="button_next_month_battle_format" value="下一份本月戰報（{0}）" description="button_next_month_battle_format" />
+        <entry name="button_no_next_month_battle" value="沒有其他本月戰報" description="button_no_next_month_battle" />
         <entry name="button_view_battles" value="查看戰報" description="button_view_battles" />
         <entry name="button_view_battles_format" value="查看戰報（{0}）" description="button_view_battles_format" />
         <entry name="report_event_capital_relocated" value="首都已由 {1} 遷往 {0}；遊戲可繼續。" description="report_event_capital_relocated" />
@@ -364,6 +367,7 @@
         <entry name="settings_music_volume_format" value="音樂音量：{0}%" description="settings_music_volume_format" />
         <entry name="settings_sound_volume_placeholder" value="音效音量：80%" description="settings_sound_volume_placeholder" />
         <entry name="settings_sound_volume_format" value="音效音量：{0}%" description="settings_sound_volume_format" />
+        <entry name="button_gameplay_guide" value="玩法說明" description="button_gameplay_guide" />
         <entry name="button_volume_down" value="－10%" description="button_volume_down" />
         <entry name="button_volume_up" value="＋10%" description="button_volume_up" />
         <entry name="button_open_save_screen" value="儲存遊戲" description="button_open_save_screen" />
@@ -373,6 +377,10 @@
         <entry name="return_lobby_confirm_title" value="返回 Lobby？" description="return_lobby_confirm_title" />
         <entry name="return_lobby_confirm_description" value="目前進度將先保存。確定離開戰略／內政畫面並返回 Lobby？" description="return_lobby_confirm_description" />
         <entry name="settings_save_before_exit_failed" value="保存失敗，已取消返回或退出。" description="settings_save_before_exit_failed" />
+        <entry name="gameplay_guide_title" value="玩法說明" description="gameplay_guide_title" />
+        <entry name="gameplay_guide_description" value="主要內政、軍事與資源規則；所有消耗均以畫面當下顯示為準。" description="gameplay_guide_description" />
+        <entry name="gameplay_guide_content" value="【內政與季節】\n治水：提高治水可降低六月洪災風險；洪災會降低農業、民心與人口，並減少當年九月收成。\n農業：開墾提高農業，糧食集中於九月秋收加入勢力共用糧。\n商業：發展商業提高季末稅金；每年三、六、九、十二月結算並加入勢力共用金。\n安民與民心：民心至少 95，且月底沒有缺糧、洪災或城池易主，穩定累計三個月後，每個合格月底自然恢復 1 點，最多 100。\n\n【軍隊與資源】\n訓練與士氣：訓練、士氣會共同影響部隊戰力；徵兵會消耗人口、金與糧，並依新舊兵力重新計算全軍訓練與士氣。\n金、糧與 AP：金與糧由勢力共用；內政與戰略命令會消耗資源及 AP。當月未使用的 AP 不保留，下月額度依全勢力民心重新計算。\n缺糧：月底先扣軍糧。每缺 1 糧最多造成 4 名逃兵，先由行軍部隊承擔，再由城池駐軍承擔；每支部隊或城池單次最多損失 20%。\n\n【戰略命令】\n偵察：只能偵察直接相鄰的敵方城池，消耗 1 AP 與 20 金，情報維持三個回合。\n出征：只能攻擊直接相鄰的敵方城池，消耗 1 AP 與 100 糧。\n運兵：可在我方城池間依道路距離移動，消耗 1 AP 與 100 糧；出發城至少留下 400 兵，且至少派出 400 兵。" description="gameplay_guide_content" />
+        <entry name="button_back_to_settings" value="返回設定" description="button_back_to_settings" />
         <entry name="city_status_player_eliminated" value="我方已失去全部城池，不能再下達命令或推進月份。" description="city_status_player_eliminated" />
         <entry name="scenario_china_name" value="漢末群雄・全國征戰" description="scenario_china_name" />
         <entry name="scenario_china_description" value="六個可選勢力同時存在於 42 城示意地圖，另有黃巾與中立城。12 個月內爭取首要目標，之後可自由征戰。城池配置為遊戲化設定，非精確史圖。" description="scenario_china_description" />
@@ -392,6 +400,9 @@
         <entry name="map_fit_all" value="全圖" description="map_fit_all" />
         <entry name="map_focus_selected" value="定位選取城" description="map_focus_selected" />
         <entry name="map_navigation_hint" value="拖曳移動｜滾輪／雙指縮放" description="map_navigation_hint" />
+        <entry name="map_resources_placeholder" value="共用金 --｜共用糧 --｜本月軍糧需求 --" description="map_resources_placeholder" />
+        <entry name="map_resources_format" value="共用金 {0}｜共用糧 {1}｜本月軍糧需求 {2}" description="map_resources_format" />
+        <entry name="map_resources_shortage_format" value="共用金 {0}｜共用糧 {1}｜本月軍糧 {2}｜缺糧警示：尚缺 {3}" description="map_resources_shortage_format" />
         <entry name="map_player_suffix" value="・我" description="map_player_suffix" />
         <entry name="map_army_none_multi" value="目前沒有部隊行軍。各敵對勢力共用集結週期，下一次行動約 {0} 個月後。" description="map_army_none_multi" />
         <entry name="map_army_summary_multi" value="{0} {1} 兵・士氣 {2}｜{3} → {4}（{5} 月抵達）" description="map_army_summary_multi" />
@@ -453,6 +464,11 @@
         <entry name="city_train_result_format" value="訓練覆蓋 {0}/{1} 人；全軍訓練 {2} → {3}、士氣 {4} → {5}。金 -{6}。" description="city_train_result_format" />
         <entry name="population_projection_format" value="人口容量 {0}｜年底預估 {1} 人（{2}%）\n依當時民心與人口重新結算；本次僅為預估。" description="population_projection_format" />
         <entry name="population_projection_placeholder" value="人口容量與年底變化預估" description="population_projection_placeholder" />
+        <entry name="city_public_order_recovery_placeholder" value="民心穩定：狀態載入中" description="city_public_order_recovery_placeholder" />
+        <entry name="city_public_order_recovery_not_owned" value="民心穩定：僅適用我方城池" description="city_public_order_recovery_not_owned" />
+        <entry name="city_public_order_recovery_maximum" value="民心穩定：已達上限，無需自然恢復" description="city_public_order_recovery_maximum" />
+        <entry name="city_public_order_recovery_below_threshold" value="民心穩定：民心達 {0} 後開始累計" description="city_public_order_recovery_below_threshold" />
+        <entry name="city_public_order_recovery_progress" value="民心穩定：{0}/{1} 月" description="city_public_order_recovery_progress" />
         <entry name="report_event_population" value="{0} 年底人口變化 {1}；目前人口 {2}。" description="report_event_population" />
         <entry name="report_event_ai_actions" value="{0} 本月使用 {1}/{2} AP。" description="report_event_ai_actions" />
         <entry name="recruitment_title" value="徵兵" description="recruitment_title" />

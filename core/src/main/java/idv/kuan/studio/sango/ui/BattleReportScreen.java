@@ -1,6 +1,7 @@
 package idv.kuan.studio.sango.ui;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -60,7 +61,7 @@ public final class BattleReportScreen extends SuiScreen {
         SangoUiStyles.applySecondaryButton(button("battle_report_return_button"));
         SangoUiStyles.applyPrimaryButton(button("battle_report_next_button"));
         ui.onClick("battle_report_return_button", this::returnFromReport);
-        ui.onClick("battle_report_next_button", this::openNextUnreadReport);
+        ui.onClick("battle_report_next_button", this::openNextReport);
         Actor main = ui.getActor("main");
         main.getColor().a = 0f;
         main.addAction(Actions.fadeIn(0.22f));
@@ -77,7 +78,7 @@ public final class BattleReportScreen extends SuiScreen {
         refreshReport(battleReport);
         playReportSound(battleReport);
         markCurrentReportRead(battleReport);
-        refreshNextButton();
+        refreshNextButton(battleReport);
     }
 
     @Override
@@ -222,8 +223,18 @@ public final class BattleReportScreen extends SuiScreen {
 
     private void refreshSequenceLabel(GameState gameState, BattleReport currentReport) {
         int currentIndex = 0;
-        int reportCount = gameState.battleReports == null ? 0 : gameState.battleReports.length;
-        if (gameState.battleReports != null) {
+        List<BattleReport> monthReports = findCurrentMonthReports(gameState);
+        int reportCount = monthReports.isEmpty()
+            ? (gameState.battleReports == null ? 0 : gameState.battleReports.length)
+            : monthReports.size();
+        if (!monthReports.isEmpty()) {
+            for (int i = 0; i < monthReports.size(); i++) {
+                if (currentReport.battleId.equals(monthReports.get(i).battleId)) {
+                    currentIndex = i + 1;
+                    break;
+                }
+            }
+        } else if (gameState.battleReports != null) {
             for (int i = 0; i < gameState.battleReports.length; i++) {
                 if (currentReport.battleId.equals(gameState.battleReports[i].battleId)) {
                     currentIndex = i + 1;
@@ -258,22 +269,21 @@ public final class BattleReportScreen extends SuiScreen {
         }
     }
 
-    private void openNextUnreadReport() {
-        List<BattleReport> unreadReports = SangoServices.session().requireCurrentState()
-            .findUnreadBattleReports();
-        if (unreadReports.isEmpty()) {
-            returnFromReport();
+    private void openNextReport() {
+        GameState gameState = SangoServices.session().requireCurrentState();
+        BattleReport nextReport = findNextReport(gameState, requireSelectedReport());
+        if (nextReport == null) {
             return;
         }
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);
         SangoServices.session().openBattleReport(
-            unreadReports.get(0).battleId,
+            nextReport.battleId,
             SangoServices.session().getBattleReportReturnScreen()
         );
-        refreshReport(unreadReports.get(0));
-        playReportSound(unreadReports.get(0));
-        markCurrentReportRead(unreadReports.get(0));
-        refreshNextButton();
+        refreshReport(nextReport);
+        playReportSound(nextReport);
+        markCurrentReportRead(nextReport);
+        refreshNextButton(nextReport);
     }
 
     private void playReportSound(BattleReport battleReport) {
@@ -285,15 +295,64 @@ public final class BattleReportScreen extends SuiScreen {
         }
     }
 
-    private void refreshNextButton() {
-        int unreadCount = SangoServices.session().requireCurrentState()
-            .countUnreadBattleReports();
-        button("battle_report_next_button").setText(
-            unreadCount > 0
-                ? text("button_next_battle_format", "下一份未讀戰報（{0}）", unreadCount)
-                : text("button_no_unread_battle", "沒有其他未讀戰報")
-        );
-        setButtonEnabled(button("battle_report_next_button"), unreadCount > 0);
+    private void refreshNextButton(BattleReport currentReport) {
+        GameState gameState = SangoServices.session().requireCurrentState();
+        List<BattleReport> monthReports = findCurrentMonthReports(gameState);
+        BattleReport nextReport = findNextReport(gameState, currentReport);
+        if (!monthReports.isEmpty()) {
+            int currentIndex = indexOfBattleReport(monthReports, currentReport.battleId);
+            int remainingCount = currentIndex < 0
+                ? 0
+                : Math.max(0, monthReports.size() - currentIndex - 1);
+            button("battle_report_next_button").setText(
+                nextReport != null
+                    ? text("button_next_month_battle_format", "下一份本月戰報（{0}）", remainingCount)
+                    : text("button_no_next_month_battle", "沒有其他本月戰報")
+            );
+        } else {
+            int unreadCount = gameState.countUnreadBattleReports();
+            button("battle_report_next_button").setText(
+                nextReport != null
+                    ? text("button_next_battle_format", "下一份未讀戰報（{0}）", unreadCount)
+                    : text("button_no_unread_battle", "沒有其他未讀戰報")
+            );
+        }
+        setButtonEnabled(button("battle_report_next_button"), nextReport != null);
+    }
+
+    private BattleReport findNextReport(GameState gameState, BattleReport currentReport) {
+        List<BattleReport> monthReports = findCurrentMonthReports(gameState);
+        if (!monthReports.isEmpty()) {
+            int currentIndex = indexOfBattleReport(monthReports, currentReport.battleId);
+            return currentIndex >= 0 && currentIndex + 1 < monthReports.size()
+                ? monthReports.get(currentIndex + 1) : null;
+        }
+        List<BattleReport> unreadReports = gameState.findUnreadBattleReports();
+        return unreadReports.isEmpty() ? null : unreadReports.get(0);
+    }
+
+    private int indexOfBattleReport(List<BattleReport> reports, String battleId) {
+        for (int i = 0; i < reports.size(); i++) {
+            if (battleId.equals(reports.get(i).battleId)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private List<BattleReport> findCurrentMonthReports(GameState gameState) {
+        if (SangoServices.session().getBattleReportReturnScreen() != ScreenId.MONTH_REPORT
+            || SangoServices.session().getLastTurnReport() == null) {
+            return List.of();
+        }
+        List<BattleReport> reports = new ArrayList<>();
+        for (String battleReportId : SangoServices.session().getLastTurnReport().getBattleReportIds()) {
+            BattleReport battleReport = gameState.findBattleReport(battleReportId);
+            if (battleReport != null) {
+                reports.add(battleReport);
+            }
+        }
+        return reports;
     }
 
     private BattleReport requireSelectedReport() {

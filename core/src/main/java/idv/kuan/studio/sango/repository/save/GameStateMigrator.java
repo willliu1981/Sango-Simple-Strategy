@@ -12,7 +12,7 @@ import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 
 /**
- * 逐版遷移 2 -> 3 -> 4 -> 5 -> 6。僅遷移狀態結構，不替換舊劇本或憑空增加領地。
+ * 逐版遷移 2 -> 3 -> 4 -> 5 -> 6 -> 7。僅遷移狀態結構，不替換舊劇本或憑空增加領地。
  */
 @SuppressWarnings("deprecation")
 public final class GameStateMigrator {
@@ -32,6 +32,9 @@ public final class GameStateMigrator {
         }
         if (migratedState.schemaVersion == 5) {
             migrateSchemaFiveToSix(migratedState);
+        }
+        if (migratedState.schemaVersion == 6) {
+            migrateSchemaSixToSeven(migratedState);
         }
         if (migratedState.schemaVersion != SangoVersion.GAME_STATE_SCHEMA_VERSION) {
             throw new IllegalArgumentException(
@@ -117,6 +120,13 @@ public final class GameStateMigrator {
             ? gameState.requirePlayerFactionState().capitalCityId
             : gameState.victoryTargetCityId;
         gameState.schemaVersion = 6;
+    }
+
+    private void migrateSchemaSixToSeven(GameState gameState) {
+        for (CityState cityState : gameState.cityStates) {
+            cityState.publicOrderRecoveryStreakMonths = 0;
+        }
+        gameState.schemaVersion = 7;
     }
 
     private void normalizeCurrentState(GameState gameState) {

@@ -45,6 +45,7 @@ import idv.kuan.studio.sango.domain.rule.SeasonalEconomyRules;
 import idv.kuan.studio.sango.domain.rule.CampaignBalance;
 import idv.kuan.studio.sango.domain.rule.OfficerCommandProfile;
 import idv.kuan.studio.sango.domain.rule.PopulationRules;
+import idv.kuan.studio.sango.domain.rule.PublicOrderNaturalRecoveryRules;
 import idv.kuan.studio.sango.domain.rule.PublicOrderRules;
 import idv.kuan.studio.sango.domain.rule.NationalActionPointRules;
 import idv.kuan.studio.sango.domain.rule.RecruitmentRules;
@@ -659,6 +660,9 @@ public final class CityScreen extends SuiScreen {
         label("water_control_value_label").setText(cityState.waterControl + " / 100");
         label("defense_value_label").setText(cityState.defense + " / 100");
         label("public_order_value_label").setText(cityState.publicOrder + " / 100");
+        label("public_order_recovery_label").setText(
+            buildPublicOrderRecoveryText(gameState, cityState)
+        );
         label("training_value_label").setText(quality(TroopQualityRules.training(cityState)) + " / 100");
         label("morale_value_label").setText(quality(TroopQualityRules.morale(cityState)) + " / 100");
         label("tax_estimate_value_label").setText(
@@ -685,6 +689,28 @@ public final class CityScreen extends SuiScreen {
             gameState.gameplayStatus == GameplayStatus.ACTIVE
         );
         refreshStatusLabel();
+    }
+
+    private String buildPublicOrderRecoveryText(GameState gameState, CityState cityState) {
+        if (!gameState.playerFactionId.equals(cityState.ownerFactionId)) {
+            return text("city_public_order_recovery_not_owned", "民心穩定：僅適用我方城池");
+        }
+        if (cityState.publicOrder >= PublicOrderNaturalRecoveryRules.MAXIMUM_PUBLIC_ORDER) {
+            return text("city_public_order_recovery_maximum", "民心穩定：已達上限，無需自然恢復");
+        }
+        if (cityState.publicOrder < PublicOrderNaturalRecoveryRules.MINIMUM_QUALIFYING_PUBLIC_ORDER) {
+            return text(
+                "city_public_order_recovery_below_threshold",
+                "民心穩定：民心達 {0} 後開始累計",
+                PublicOrderNaturalRecoveryRules.MINIMUM_QUALIFYING_PUBLIC_ORDER
+            );
+        }
+        return text(
+            "city_public_order_recovery_progress",
+            "民心穩定：{0}/{1} 月",
+            cityState.publicOrderRecoveryStreakMonths,
+            PublicOrderNaturalRecoveryRules.REQUIRED_STREAK_MONTHS
+        );
     }
 
     private String buildSeasonForecast(GameState gameState, CityState cityState) {

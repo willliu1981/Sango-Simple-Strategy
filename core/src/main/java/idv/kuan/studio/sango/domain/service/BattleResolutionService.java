@@ -21,7 +21,7 @@ import idv.kuan.studio.sango.domain.rule.TroopQualityRules;
  * 處理抵達、增援、攻城與無抵抗佔領，並保存作戰當下的戰報快照。
  */
 public final class BattleResolutionService {
-    public void resolveArrival(
+    public boolean resolveArrival(
         GameState gameState,
         ArmyState armyState,
         TurnResolutionReport turnResolutionReport
@@ -33,7 +33,7 @@ public final class BattleResolutionService {
                 TurnEventType.ARMY_REINFORCED, armyState.factionId,
                 targetCityState.cityId, armyState.originCityId, armyState.troops, 0
             ));
-            return;
+            return false;
         }
 
         CityState defenderBefore = targetCityState.copy();
@@ -56,6 +56,7 @@ public final class BattleResolutionService {
 
         if (attackerWon) {
             targetCityState.ownerFactionId = armyState.factionId;
+            targetCityState.publicOrderRecoveryStreakMonths = 0;
             targetCityState.troops = attackerSurvivors;
             targetCityState.training = armyState.training;
             targetCityState.morale = armyState.morale;
@@ -102,6 +103,7 @@ public final class BattleResolutionService {
                 targetCityState.cityId, capturedDefendingCapital, turnResolutionReport
             );
         }
+        return attackerWon;
     }
 
     private BattleReport createBattleReport(

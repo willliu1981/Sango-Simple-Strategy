@@ -1,7 +1,9 @@
 package idv.kuan.studio.sango.domain.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import idv.kuan.studio.sango.application.result.TurnEvent;
 import idv.kuan.studio.sango.application.result.TurnEventType;
@@ -18,11 +20,12 @@ import idv.kuan.studio.sango.domain.model.GameStateValidator;
 import idv.kuan.studio.sango.domain.rule.NationalActionPointRules;
 import idv.kuan.studio.sango.domain.rule.FactionActionPointRules;
 import idv.kuan.studio.sango.domain.rule.PopulationRules;
+import idv.kuan.studio.sango.domain.rule.PublicOrderNaturalRecoveryRules;
 import idv.kuan.studio.sango.domain.rule.SeasonalEconomyRules;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 
 /**
- * 依固定順序處理軍糧、季節經濟、行軍、戰鬥、敵方 AI 與期限。
+ * 依固定順序處理軍糧、洪災、季節經濟、行軍、敵方 AI、民心恢復與期限。
  */
 public final class TurnResolutionService {
     private final GameDefinitionRepository definitionRepository;
@@ -66,12 +69,19 @@ public final class TurnResolutionService {
             nextState.mapId
         );
 
-        resolveMilitaryUpkeep(nextState, report);
-        resolveFloodSeason(nextState, report);
+        Set<String> foodShortageFactionIds = resolveMilitaryUpkeep(nextState, report);
+        Set<String> floodedCityIds = resolveFloodSeason(nextState, report);
         resolveQuarterlyTax(nextState, report);
         resolveHarvest(nextState, report);
-        resolveArmyMovement(nextState, report);
+        Set<String> changedOwnerCityIds = resolveArmyMovement(nextState, report);
         enemyTurnService.execute(nextState, mapDefinition, report);
+        resolvePublicOrderNaturalRecovery(
+            nextState,
+            report,
+            foodShortageFactionIds,
+            floodedCityIds,
+            changedOwnerCityIds
+        );
         resolveAnnualPopulation(nextState, report);
         advanceCampaignClock(nextState, report);
 
@@ -80,10 +90,11 @@ public final class TurnResolutionService {
         return new TurnResolutionResult(nextState, report);
     }
 
-    private void resolveMilitaryUpkeep(
+    private Set<String> resolveMilitaryUpkeep(
         GameState gameState,
         TurnResolutionReport report
     ) {
+        Set<String> foodShortageFactionIds = new HashSet<>();
         for (FactionState factionState : gameState.factionStates) {
             if (!factionState.active
                 || gameState.neutralFactionId.equals(factionState.factionId)) {
@@ -107,6 +118,7 @@ public final class TurnResolutionService {
 
             int shortage = foodCost - paidFood;
             if (shortage > 0) {
+                foodShortageFactionIds.add(factionState.factionId);
                 int deserters = applyFoodShortage(
                     gameState,
                     factionState.factionId,
@@ -124,6 +136,7 @@ public final class TurnResolutionService {
                 }
             }
         }
+        return foodShortageFactionIds;
     }
 
     private int calculateFactionTroops(GameState gameState, String factionId) {
@@ -181,12 +194,13 @@ public final class TurnResolutionService {
         }
     }
 
-    private void resolveFloodSeason(
+    private Set<String> resolveFloodSeason(
         GameState gameState,
         TurnResolutionReport report
     ) {
+        Set<String> floodedCityIds = new HashSet<>();
         if (gameState.currentMonth != SeasonalEconomyRules.FLOOD_RESOLUTION_MONTH) {
-            return;
+            return floodedCityIds;
         }
         for (CityState cityState : gameState.cityStates) {
             int riskPercent = SeasonalEconomyRules.calculateFloodRiskPercent(cityState);
@@ -198,6 +212,7 @@ public final class TurnResolutionService {
             );
             boolean floodOccurred = rolledPercent < riskPercent;
             if (floodOccurred) {
+                floodedCityIds.add(cityState.cityId);
                 int harvestLossPercent = SeasonalEconomyRules
                     .calculateFloodHarvestLossPercent(cityState);
                 cityState.harvestModifierPercent = 100 - harvestLossPercent;
@@ -228,6 +243,7 @@ public final class TurnResolutionService {
                 }
             }
         }
+        return floodedCityIds;
     }
 
     private void resolveQuarterlyTax(
@@ -288,10 +304,11 @@ public final class TurnResolutionService {
         }
     }
 
-    private void resolveArmyMovement(
+    private Set<String> resolveArmyMovement(
         GameState gameState,
         TurnResolutionReport report
     ) {
+        Set<String> changedOwnerCityIds = new HashSet<>();
         ArmyState[] movementSnapshot = gameState.armyStates.clone();
         for (ArmyState armyState : movementSnapshot) {
             if (!containsArmy(gameState, armyState.armyId)) {
@@ -311,8 +328,45 @@ public final class TurnResolutionService {
                 }
                 continue;
             }
-            battleResolutionService.resolveArrival(gameState, armyState, report);
+            if (battleResolutionService.resolveArrival(gameState, armyState, report)) {
+                changedOwnerCityIds.add(armyState.targetCityId);
+            }
             gameState.removeArmy(armyState.armyId);
+        }
+        return changedOwnerCityIds;
+    }
+
+    private void resolvePublicOrderNaturalRecovery(
+        GameState gameState,
+        TurnResolutionReport report,
+        Set<String> foodShortageFactionIds,
+        Set<String> floodedCityIds,
+        Set<String> changedOwnerCityIds
+    ) {
+        for (CityState cityState : gameState.cityStates) {
+            FactionState ownerFactionState = gameState.requireFactionState(
+                cityState.ownerFactionId
+            );
+            boolean ownerIsActiveAndNonNeutral = ownerFactionState.active
+                && !gameState.neutralFactionId.equals(ownerFactionState.factionId);
+            int recoveredPublicOrder = PublicOrderNaturalRecoveryRules.applyMonthEnd(
+                cityState,
+                ownerIsActiveAndNonNeutral,
+                foodShortageFactionIds.contains(ownerFactionState.factionId),
+                floodedCityIds.contains(cityState.cityId),
+                changedOwnerCityIds.contains(cityState.cityId)
+            );
+            if (recoveredPublicOrder > 0
+                && gameState.playerFactionId.equals(ownerFactionState.factionId)) {
+                report.add(new TurnEvent(
+                    TurnEventType.PUBLIC_ORDER_NATURALLY_RECOVERED,
+                    ownerFactionState.factionId,
+                    cityState.cityId,
+                    null,
+                    recoveredPublicOrder,
+                    cityState.publicOrder
+                ));
+            }
         }
     }
 

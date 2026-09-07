@@ -56,6 +56,13 @@ public final class TurnReportTextFormatter {
                 numberFormat.format(turnEvent.getPrimaryValue()),
                 numberFormat.format(turnEvent.getSecondaryValue())
             );
+            case PUBLIC_ORDER_NATURALLY_RECOVERED -> text(
+                "report_event_public_order_recovered",
+                "{0} 民心自然恢復 +{1}；目前民心 {2}。",
+                optionalCityName(turnEvent.getCityId()),
+                numberFormat.format(turnEvent.getPrimaryValue()),
+                numberFormat.format(turnEvent.getSecondaryValue())
+            );
             case QUARTERLY_TAX -> text(
                 "report_event_tax",
                 "季末商稅：+{0} 金（{1} 座城池）。",

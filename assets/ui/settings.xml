@@ -38,7 +38,7 @@
                 <textButton id="settings_return_lobby_button" fontSize="36" width="560" height="86" padTop="24">${text:button_save_return_lobby}</textButton>
                 <textButton id="settings_exit_game_button" fontSize="36" width="560" height="86" padLeft="32" padTop="24">${text:button_exit}</textButton>
                 <row />
-                <table width="560"></table>
+                <textButton id="settings_gameplay_guide_button" fontSize="36" width="560" height="86" padTop="24">${text:button_gameplay_guide}</textButton>
                 <textButton id="settings_back_button" fontSize="36" width="560" height="86" padLeft="32" padTop="24">${text:button_back}</textButton>
             </table>
             <row />

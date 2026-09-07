@@ -1,0 +1,22 @@
+<ui xmlns="http://kuan.studio/simpleui">
+    <table id="main" i18n="literal" flags="fillParent" pad="30"
+        backgroundColor="0.010,0.009,0.008,0.84">
+        <table width="1720" height="1010" pad="42" backgroundColor="0.046,0.036,0.030,0.995">
+            <label fontKey="title" fontSize="66" width="1600" height="86"
+                color="0.94,0.76,0.43,1">${text:gameplay_guide_title}</label>
+            <row />
+            <label fontSize="27" width="1600" height="62" wrap="true"
+                color="0.73,0.67,0.58,1">${text:gameplay_guide_description}</label>
+            <row />
+            <table width="1600" height="720" pad="32" backgroundColor="0.025,0.022,0.020,1">
+                <group id="gameplay_guide_scroll_host" width="1520" height="650">
+                    <label id="gameplay_guide_content_label" fontSize="28" width="1492" height="1"
+                        align="left" textAlign="left" wrap="true" color="0.87,0.82,0.72,1">${text:gameplay_guide_content}</label>
+                </group>
+            </table>
+            <row />
+            <textButton id="gameplay_guide_back_button" fontSize="36" width="520" height="78"
+                padTop="20">${text:button_back_to_settings}</textButton>
+        </table>
+    </table>
+</ui>

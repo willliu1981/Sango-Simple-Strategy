@@ -6,6 +6,7 @@ package idv.kuan.studio.sango.application.result;
 public enum TurnEventType {
     ACTION_POINTS_REFRESHED,
     POPULATION_CHANGED,
+    PUBLIC_ORDER_NATURALLY_RECOVERED,
     AI_ACTIONS_USED,
     MILITARY_UPKEEP,
     FOOD_SHORTAGE,

@@ -13,6 +13,8 @@ public final class CityState {
     public int defense;
     public int troops;
     public int publicOrder;
+    /** 民心自然恢復的連續合格月底數，上限為三個月。 */
+    public int publicOrderRecoveryStreakMonths;
     public int training;
     public int morale;
     /** 百萬分之一點；與整數素質一起保存，不因讀檔而丟失。 */
@@ -35,6 +37,7 @@ public final class CityState {
         copiedState.defense = defense;
         copiedState.troops = troops;
         copiedState.publicOrder = publicOrder;
+        copiedState.publicOrderRecoveryStreakMonths = publicOrderRecoveryStreakMonths;
         copiedState.training = training;
         copiedState.morale = morale;
         copiedState.trainingFraction = trainingFraction;
