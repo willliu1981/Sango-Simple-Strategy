@@ -609,7 +609,7 @@ public final class StrategicMapScreen extends SuiScreen {
     ) {
         if (gameState.playerFactionId.equals(selectedCityState.ownerFactionId)) {
             if (originCityState == null) {
-                return text("map_route_owned", "此城屬於我方；目前沒有相鄰我方城池可運兵。");
+                return text("map_route_owned", "此城屬於我方；目前沒有可運兵的我方城池。");
             }
             return text(
                 "map_route_owned_transfer_format",

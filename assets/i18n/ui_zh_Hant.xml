@@ -179,7 +179,7 @@
         <entry name="map_intel_estimate_format" value="兵力：約 {0}～{1}｜情報不足；偵察可取得三回合精確情報。" description="map_intel_estimate_format" />
         <entry name="map_stats_unknown" value="城防、訓練、士氣與內政狀態尚未掌握。" description="map_stats_unknown" />
         <entry name="map_stats_format" value="城防 {0}｜訓練 {1}｜士氣 {5}　農業 {2}｜商業 {3}｜治水 {4}" description="map_stats_format" />
-        <entry name="map_route_owned" value="此城屬於我方；目前沒有相鄰我方城池可運兵。" description="map_route_owned" />
+        <entry name="map_route_owned" value="此城屬於我方；目前沒有可運兵的我方城池。" description="map_route_owned" />
         <entry name="map_route_owned_transfer_format" value="可由 {0} 運兵至此，行程 {1} 個月。派兵消耗 1 行動力與 100 糧。" description="map_route_owned_transfer_format" />
         <entry name="map_route_not_adjacent" value="目前沒有與此城直接相鄰的我方城池，無法偵察或出征。" description="map_route_not_adjacent" />
         <entry name="map_route_format" value="可由 {0} 沿道路進軍，行程 {1} 個月。出征消耗 1 行動力與 100 糧。" description="map_route_format" />
