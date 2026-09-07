@@ -363,7 +363,8 @@
         <entry name="button_volume_up" value="＋10%" description="button_volume_up" />
         <entry name="button_open_save_screen" value="儲存遊戲" description="button_open_save_screen" />
         <entry name="button_save_return_lobby" value="保存並返回 Lobby" description="button_save_return_lobby" />
-        <entry name="settings_audio_note" value="BGM 依季節切換，鑑賞可自由選曲。音樂與音效音量分開保存；實際播放仍取決於裝置音訊支援。" description="settings_audio_note" />
+        <entry name="settings_audio_note" value="BGM 依季節切換。音樂與音效音量分開保存；實際播放仍取決於裝置音訊支援。" description="settings_audio_note" />
+        <entry name="lobby_settings_audio_note" value="可使用音樂鑑賞自由選曲。音樂與音效音量分開保存；實際播放仍取決於裝置音訊支援。" description="lobby_settings_audio_note" />
         <entry name="return_lobby_confirm_title" value="返回 Lobby？" description="return_lobby_confirm_title" />
         <entry name="return_lobby_confirm_description" value="目前進度將先保存。確定離開戰略／內政畫面並返回 Lobby？" description="return_lobby_confirm_description" />
         <entry name="settings_save_before_exit_failed" value="保存失敗，已取消返回或退出。" description="settings_save_before_exit_failed" />

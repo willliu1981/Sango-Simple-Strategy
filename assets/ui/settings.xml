@@ -33,12 +33,12 @@
             <row />
             <table width="1180" height="340" padTop="16">
                 <textButton id="settings_save_game_button" fontSize="36" width="560" height="86">${text:button_open_save_screen}</textButton>
-                <textButton id="settings_return_lobby_button" fontSize="36" width="560" height="86" padLeft="32">${text:button_save_return_lobby}</textButton>
+                <textButton id="settings_load_game_button" fontSize="36" width="560" height="86" padLeft="32">${text:button_load_game}</textButton>
                 <row />
-                <textButton id="settings_music_player_button" fontSize="34" width="560" height="76" padTop="18">${text:button_music_player}</textButton>
+                <textButton id="settings_return_lobby_button" fontSize="36" width="560" height="86" padTop="24">${text:button_save_return_lobby}</textButton>
+                <textButton id="settings_exit_game_button" fontSize="36" width="560" height="86" padLeft="32" padTop="24">${text:button_exit}</textButton>
+                <row />
                 <table width="560"></table>
-                <row />
-                <textButton id="settings_exit_game_button" fontSize="36" width="560" height="86" padTop="24">${text:button_exit}</textButton>
                 <textButton id="settings_back_button" fontSize="36" width="560" height="86" padLeft="32" padTop="24">${text:button_back}</textButton>
             </table>
             <row />

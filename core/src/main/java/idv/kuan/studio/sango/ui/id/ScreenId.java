@@ -14,6 +14,7 @@ public enum ScreenId implements ScreenIdentifier {
     BATTLE_REPORT("battle_report"),
     SAVE_LOAD("save_load"),
     SETTINGS("settings"),
+    LOBBY_SETTINGS("lobby_settings"),
     MUSIC_PLAYER("music_player");
 
     private final String value;

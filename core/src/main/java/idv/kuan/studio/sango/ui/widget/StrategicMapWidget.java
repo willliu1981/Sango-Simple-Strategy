@@ -38,6 +38,7 @@ public final class StrategicMapWidget extends WidgetGroup {
     private static final float DRAG_THRESHOLD = 12f;
     private final BitmapFont nodeFont;
     private final Consumer<String> citySelectionHandler;
+    private final Runnable mapTapHandler;
     private final MapCameraState camera = new MapCameraState();
     private final Map<String, String> captionsByCityId = new LinkedHashMap<>();
     private final Map<String, MapNodeTone> tonesByCityId = new LinkedHashMap<>();
@@ -55,11 +56,20 @@ public final class StrategicMapWidget extends WidgetGroup {
     private boolean dragging;
 
     public StrategicMapWidget(BitmapFont nodeFont, Consumer<String> citySelectionHandler) {
-        if (nodeFont == null || citySelectionHandler == null) {
-            throw new IllegalArgumentException("nodeFont 與 citySelectionHandler 不可為 null。");
+        this(nodeFont, citySelectionHandler, () -> { });
+    }
+
+    public StrategicMapWidget(
+        BitmapFont nodeFont,
+        Consumer<String> citySelectionHandler,
+        Runnable mapTapHandler
+    ) {
+        if (nodeFont == null || citySelectionHandler == null || mapTapHandler == null) {
+            throw new IllegalArgumentException("地圖字型、選城與點擊處理不可為 null。");
         }
         this.nodeFont = nodeFont;
         this.citySelectionHandler = citySelectionHandler;
+        this.mapTapHandler = mapTapHandler;
         setTouchable(Touchable.enabled);
         addCaptureListener(createNavigationListener());
     }
@@ -314,6 +324,8 @@ public final class StrategicMapWidget extends WidgetGroup {
                 pointers.remove(pointer);
                 if (dragging) {
                     cancelNodeClicks();
+                } else if (pointers.isEmpty() && event.getTarget() == StrategicMapWidget.this) {
+                    mapTapHandler.run();
                 }
             }
 

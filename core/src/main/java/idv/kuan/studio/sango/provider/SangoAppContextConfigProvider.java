@@ -13,6 +13,7 @@ import idv.kuan.studio.libgdx.simpleui.validation.ValidationMode;
 import idv.kuan.studio.sango.ui.BattleReportScreen;
 import idv.kuan.studio.sango.ui.CityScreen;
 import idv.kuan.studio.sango.ui.LobbyScreen;
+import idv.kuan.studio.sango.ui.LobbySettingsScreen;
 import idv.kuan.studio.sango.ui.MusicPlayerScreen;
 import idv.kuan.studio.sango.ui.MonthReportScreen;
 import idv.kuan.studio.sango.ui.NewGameScreen;
@@ -64,6 +65,7 @@ public final class SangoAppContextConfigProvider implements ApplicationContextCo
             .registerScreen(ScreenId.BATTLE_REPORT, BattleReportScreen::new)
             .registerScreen(ScreenId.SAVE_LOAD, SaveLoadScreen::new)
             .registerScreen(ScreenId.SETTINGS, SettingsScreen::new)
+            .registerScreen(ScreenId.LOBBY_SETTINGS, LobbySettingsScreen::new)
             .registerScreen(ScreenId.MUSIC_PLAYER, MusicPlayerScreen::new)
             .skipToValidation()
             .setVolidationMode(resolveValidationMode())

@@ -116,6 +116,11 @@
         </table>
     </table>
 
+    <table id="map_fullscreen_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0.010,0.009,0.008,1" flags="fillParent">
+        <table id="map_fullscreen_host" width="1920" height="1080"></table>
+    </table>
+
     <table id="expedition_dispatch_mask" i18n="literal" visible="false" touchable="enabled"
         backgroundColor="0,0,0,0.88" flags="fillParent">
         <table width="1080" pad="52" backgroundColor="0.055,0.043,0.035,0.995">

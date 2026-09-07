@@ -178,8 +178,7 @@ public final class LobbyScreen extends SuiScreen {
 
     private void openSettings() {
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);
-        SangoServices.session().openSettings(ScreenId.LOBBY);
-        Sui.screens.set(ScreenId.SETTINGS);
+        Sui.screens.set(ScreenId.LOBBY_SETTINGS);
     }
 
     private void refreshSaveSlotStatus() {

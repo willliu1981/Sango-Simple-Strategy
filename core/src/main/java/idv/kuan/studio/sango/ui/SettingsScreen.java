@@ -24,9 +24,7 @@ import idv.kuan.studio.sango.ui.id.ScreenId;
 import idv.kuan.studio.sango.ui.support.ScreenBackground;
 import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
 
-/**
- * Lobby 與遊戲畫面共用的設定／暫停選單。
- */
+/** 遊戲內的設定／暫停選單。 */
 public final class SettingsScreen extends SuiScreen {
     private static final String BACKGROUND_PATH = "picture/lobby/sango_lobby_background.png";
     private static final float VOLUME_STEP = 0.10f;
@@ -105,7 +103,6 @@ public final class SettingsScreen extends SuiScreen {
     }
 
     private void applyStyles() {
-        SangoUiStyles.applySecondaryButton(button("settings_music_player_button"));
         SangoUiStyles.applySecondaryButton(button("settings_music_toggle_button"));
         SangoUiStyles.applySecondaryButton(button("settings_music_down_button"));
         SangoUiStyles.applySecondaryButton(button("settings_music_up_button"));
@@ -113,6 +110,7 @@ public final class SettingsScreen extends SuiScreen {
         SangoUiStyles.applySecondaryButton(button("settings_sound_down_button"));
         SangoUiStyles.applySecondaryButton(button("settings_sound_up_button"));
         SangoUiStyles.applySecondaryButton(button("settings_save_game_button"));
+        SangoUiStyles.applySecondaryButton(button("settings_load_game_button"));
         SangoUiStyles.applyDangerButton(button("settings_return_lobby_button"));
         SangoUiStyles.applyDangerButton(button("settings_exit_game_button"));
         SangoUiStyles.applyPrimaryButton(button("settings_back_button"));
@@ -123,10 +121,6 @@ public final class SettingsScreen extends SuiScreen {
     }
 
     private void bindActions() {
-        ui.onClick("settings_music_player_button", () -> {
-            SangoServices.session().openMusicPlayer(ScreenId.SETTINGS);
-            Sui.screens.set(ScreenId.MUSIC_PLAYER);
-        });
         ui.onClick("settings_music_toggle_button", this::toggleMusic);
         ui.onClick("settings_music_down_button", () -> changeMusicVolume(-VOLUME_STEP));
         ui.onClick("settings_music_up_button", () -> changeMusicVolume(VOLUME_STEP));
@@ -134,6 +128,7 @@ public final class SettingsScreen extends SuiScreen {
         ui.onClick("settings_sound_down_button", () -> changeSoundVolume(-VOLUME_STEP));
         ui.onClick("settings_sound_up_button", () -> changeSoundVolume(VOLUME_STEP));
         ui.onClick("settings_save_game_button", this::openSaveScreen);
+        ui.onClick("settings_load_game_button", this::openLoadScreen);
         ui.onClick("settings_return_lobby_button", () -> openModal(returnLobbyMask));
         ui.onClick("settings_exit_game_button", () -> openModal(exitMask));
         ui.onClick("settings_back_button", this::returnToPreviousScreen);
@@ -219,6 +214,12 @@ public final class SettingsScreen extends SuiScreen {
         }
         SangoServices.audio().playSound(SoundEffect.CONFIRM);
         SangoServices.session().openSaveLoad(SaveLoadMode.SAVE, ScreenId.SETTINGS);
+        Sui.screens.set(ScreenId.SAVE_LOAD);
+    }
+
+    private void openLoadScreen() {
+        SangoServices.audio().playSound(SoundEffect.CONFIRM);
+        SangoServices.session().openSaveLoad(SaveLoadMode.LOAD, ScreenId.SETTINGS);
         Sui.screens.set(ScreenId.SAVE_LOAD);
     }
 

@@ -17,7 +17,7 @@ public final class ScreenMusic {
         if (context == ScreenId.SETTINGS) {
             context = SangoServices.session().getSettingsReturnScreen();
         }
-        if (context == ScreenId.LOBBY || context == ScreenId.NEW_GAME
+        if (context == ScreenId.LOBBY || context == ScreenId.LOBBY_SETTINGS || context == ScreenId.NEW_GAME
             || !SangoServices.session().hasCurrentState()) {
             return MusicTrack.LOBBY;
         }

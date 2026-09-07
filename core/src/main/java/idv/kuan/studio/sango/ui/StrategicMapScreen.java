@@ -73,8 +73,11 @@ public final class StrategicMapScreen extends SuiScreen {
     private Actor endMonthConfirmMask;
     private Actor battlePromptMask;
     private Actor expeditionDispatchMask;
+    private Actor mapFullscreenMask;
     private Group mapHost;
+    private Group mapFullscreenHost;
     private StrategicMapWidget strategicMapWidget;
+    private boolean mapFullscreen;
     private String currentStatusMessage;
     private Color currentStatusColor = STATUS_NORMAL_COLOR;
     private String pendingOriginCityId;
@@ -97,10 +100,13 @@ public final class StrategicMapScreen extends SuiScreen {
         endMonthConfirmMask = attachModalMask("end_month_confirm_mask");
         battlePromptMask = attachModalMask("battle_prompt_mask");
         expeditionDispatchMask = attachModalMask("expedition_dispatch_mask");
+        mapFullscreenMask = attachModalMask("map_fullscreen_mask");
         mapHost = ui.getActor("map_host", Group.class);
+        mapFullscreenHost = ui.getActor("map_fullscreen_host", Group.class);
         strategicMapWidget = new StrategicMapWidget(
             label("map_font_probe").getStyle().font,
-            this::selectCity
+            this::selectCity,
+            this::toggleMapFullscreen
         );
         mapHost.addActor(strategicMapWidget);
         resizeMapWidget();
@@ -132,6 +138,8 @@ public final class StrategicMapScreen extends SuiScreen {
                 if (keycode == Input.Keys.BACK || keycode == Input.Keys.ESCAPE) {
                     if (isAnyModalVisible()) {
                         closeModals();
+                    } else if (mapFullscreen) {
+                        setMapFullscreen(false);
                     } else {
                         openSettings();
                     }
@@ -178,10 +186,30 @@ public final class StrategicMapScreen extends SuiScreen {
         if (mapHost == null || strategicMapWidget == null) {
             return;
         }
-        float mapWidth = mapHost.getWidth() > 0f ? mapHost.getWidth() : MAP_FALLBACK_WIDTH;
-        float mapHeight = mapHost.getHeight() > 0f ? mapHost.getHeight() : MAP_FALLBACK_HEIGHT;
+        Group activeHost = mapFullscreen ? mapFullscreenHost : mapHost;
+        float mapWidth = activeHost.getWidth() > 0f ? activeHost.getWidth() : MAP_FALLBACK_WIDTH;
+        float mapHeight = activeHost.getHeight() > 0f ? activeHost.getHeight() : MAP_FALLBACK_HEIGHT;
         strategicMapWidget.setBounds(0f, 0f, mapWidth, mapHeight);
         strategicMapWidget.invalidateHierarchy();
+    }
+
+    private void toggleMapFullscreen() {
+        setMapFullscreen(!mapFullscreen);
+    }
+
+    private void setMapFullscreen(boolean fullscreen) {
+        if (mapFullscreen == fullscreen || mapFullscreenMask == null || strategicMapWidget == null) {
+            return;
+        }
+        mapFullscreen = fullscreen;
+        Group activeHost = fullscreen ? mapFullscreenHost : mapHost;
+        activeHost.addActor(strategicMapWidget);
+        mapFullscreenMask.setVisible(fullscreen);
+        if (fullscreen) {
+            mapFullscreenMask.toFront();
+        }
+        resizeMapWidget();
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
     }
 
     private void applyStyles() {
