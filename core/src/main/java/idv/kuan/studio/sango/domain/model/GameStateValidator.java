@@ -111,6 +111,8 @@ public final class GameStateValidator {
                 "victoryTargetCityId 沒有對應城池：" + gameState.victoryTargetCityId
             );
         }
+        requireCityReference(cityStatesById, gameState.strategicMapFocusedCityId,
+            "strategicMapFocusedCityId");
 
         for (FactionState factionState : gameState.factionStates) {
             validateCapitalReference(factionState, cityStatesById);

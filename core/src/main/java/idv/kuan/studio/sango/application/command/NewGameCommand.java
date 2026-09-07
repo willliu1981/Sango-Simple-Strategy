@@ -145,6 +145,7 @@ public final class NewGameCommand {
         gameState.opponentFactionId = opponentFactionDefinition.id;
         gameState.neutralFactionId = neutralFactionDefinition.id;
         gameState.victoryTargetCityId = campaignStartDefinition.targetCityId;
+        gameState.strategicMapFocusedCityId = campaignStartDefinition.startCityId;
         gameState.scenarioObjectiveStatus = ScenarioObjectiveStatus.IN_PROGRESS;
         gameState.gameplayStatus = GameplayStatus.ACTIVE;
         gameState.currentTurn = scenarioDefinition.initialTurn;
@@ -200,6 +201,7 @@ public final class NewGameCommand {
         gameState.opponentFactionId = scenarioDefinition.opponentFactionId;
         gameState.neutralFactionId = scenarioDefinition.neutralFactionId;
         gameState.victoryTargetCityId = playerStart.targetCityId;
+        gameState.strategicMapFocusedCityId = playerStart.startCityId;
         gameState.scenarioObjectiveStatus = ScenarioObjectiveStatus.IN_PROGRESS;
         gameState.gameplayStatus = GameplayStatus.ACTIVE;
         gameState.currentTurn = scenarioDefinition.initialTurn;

@@ -130,6 +130,12 @@
             <label id="dispatch_route_label" fontSize="31" width="930" height="150"
                 align="left" textAlign="left" wrap="true" color="0.84,0.80,0.72,1">${text:dispatch_route_placeholder}</label>
             <row />
+            <table width="930" height="64">
+                <textButton id="dispatch_origin_previous_button" fontSize="28" width="210" height="60">${text:button_dispatch_origin_previous}</textButton>
+                <label id="dispatch_origin_label" fontSize="25" width="450" height="60" align="center" textAlign="center">${text:dispatch_origin_selection_placeholder}</label>
+                <textButton id="dispatch_origin_next_button" fontSize="28" width="210" height="60" padLeft="14">${text:button_dispatch_origin_next}</textButton>
+            </table>
+            <row />
             <label id="dispatch_amount_label" fontKey="title" fontSize="42" width="930" height="64"
                 color="0.96,0.78,0.40,1">${text:dispatch_amount_placeholder}</label>
             <row />

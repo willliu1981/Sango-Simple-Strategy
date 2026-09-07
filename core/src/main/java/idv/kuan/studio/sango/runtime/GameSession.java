@@ -46,10 +46,14 @@ public final class GameSession {
             throw new IllegalArgumentException("slotNumber 必須介於 1 到 3。");
         }
         GameStateValidator.validate(gameState);
+        boolean changedSaveSlot = currentState == null || currentSaveSlot != slotNumber;
         currentSaveSlot = slotNumber;
         currentState = gameState;
-        if (selectedCityId == null || gameState.findCityState(selectedCityId) == null) {
-            selectedCityId = resolveDefaultSelectedCity(gameState);
+        selectedCityId = gameState.findCityState(gameState.strategicMapFocusedCityId) != null
+            ? gameState.strategicMapFocusedCityId : resolveDefaultSelectedCity(gameState);
+        gameState.strategicMapFocusedCityId = selectedCityId;
+        if (changedSaveSlot) {
+            requestStrategicMapFocus();
         }
     }
 
@@ -72,6 +76,9 @@ public final class GameSession {
             throw new IllegalArgumentException("選取了戰局中不存在的城池：" + selectedCityId);
         }
         this.selectedCityId = selectedCityId;
+        if (currentState != null) {
+            currentState.strategicMapFocusedCityId = selectedCityId;
+        }
     }
 
     public BattleTactic getSelectedBattleTactic() {
@@ -152,7 +159,8 @@ public final class GameSession {
     }
 
     public void openMusicPlayer(ScreenId returnScreen) {
-        if (returnScreen != ScreenId.LOBBY && returnScreen != ScreenId.SETTINGS) {
+        if (returnScreen != ScreenId.LOBBY && returnScreen != ScreenId.LOBBY_SETTINGS
+            && returnScreen != ScreenId.SETTINGS) {
             throw new IllegalArgumentException("音樂鑑賞只能由主選單或設定畫面開啟。");
         }
         musicPlayerReturnScreen = returnScreen;

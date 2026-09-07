@@ -4,8 +4,7 @@ import idv.kuan.studio.sango.domain.model.ArmyState;
 import idv.kuan.studio.sango.domain.model.CityState;
 
 /**
- * 素質使用百萬分之一點的固定小數，保留不足一點的訓練及合併成果。
- * 不逐一保存士兵；訓練覆蓋視為從同質平均部隊中抽取的代表性樣本。
+ * 素質計算使用固定小數，但每次操作後一律無條件進位為整數。
  */
 public final class TroopQualityRules {
     public static final int SCALE = 1_000_000;
@@ -41,10 +40,10 @@ public final class TroopQualityRules {
     public static void set(CityState cityState, int trainingScaled, int moraleScaled) {
         validateScaled(trainingScaled);
         validateScaled(moraleScaled);
-        cityState.training = trainingScaled / SCALE;
-        cityState.trainingFraction = trainingScaled % SCALE;
-        cityState.morale = moraleScaled / SCALE;
-        cityState.moraleFraction = moraleScaled % SCALE;
+        cityState.training = roundedOperationQuality(trainingScaled);
+        cityState.trainingFraction = 0;
+        cityState.morale = roundedOperationQuality(moraleScaled);
+        cityState.moraleFraction = 0;
     }
 
     public static void merge(CityState cityState, int addedTroops, int trainingScaled, int moraleScaled) {
@@ -86,6 +85,10 @@ public final class TroopQualityRules {
         if (quality < 0 || quality > MAXIMUM_SCALED_QUALITY) {
             throw new IllegalArgumentException("部隊素質必須介於 0 到 100。");
         }
+    }
+
+    private static int roundedOperationQuality(int scaledQuality) {
+        return Math.min(100, Math.max(1, (scaledQuality + SCALE - 1) / SCALE));
     }
 
     public record TrainingProjection(int coveredTroops, int trainingScaled, int moraleScaled) {

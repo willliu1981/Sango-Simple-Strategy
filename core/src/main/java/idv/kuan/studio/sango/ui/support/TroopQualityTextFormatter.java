@@ -2,17 +2,14 @@ package idv.kuan.studio.sango.ui.support;
 
 import idv.kuan.studio.sango.domain.rule.TroopQualityRules;
 
-/** 顯示到小數兩位並向下截斷；內部六位小數不因格式化而消失。 */
+/** 素質顯示為整數，舊存檔中的小數也一律向上取整。 */
 public final class TroopQualityTextFormatter {
     private TroopQualityTextFormatter() {
     }
 
     public static String format(int scaledQuality) {
-        int whole = scaledQuality / TroopQualityRules.SCALE;
-        int hundredths = scaledQuality % TroopQualityRules.SCALE / (TroopQualityRules.SCALE / 100);
-        if (hundredths == 0) {
-            return Integer.toString(whole);
-        }
-        return whole + "." + (hundredths < 10 ? "0" : "") + hundredths;
+        int rounded = Math.min(100, Math.max(1,
+            (scaledQuality + TroopQualityRules.SCALE - 1) / TroopQualityRules.SCALE));
+        return Integer.toString(rounded);
     }
 }

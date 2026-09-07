@@ -75,10 +75,7 @@ public final class LaunchExpeditionCommand {
         FactionState playerFactionState = nextState.requirePlayerFactionState();
         CityState originCityState = nextState.requireCityState(originCityId);
         StrategicMapDefinition mapDefinition = definitionRepository.requireMap(nextState.mapId);
-        CityConnectionDefinition connectionDefinition = mapDefinition.findConnection(
-            originCityId,
-            targetCityId
-        );
+        int travelMonths = mapDefinition.shortestTravelMonths(originCityId, targetCityId);
         int dispatchedTroops = amount;
 
         originCityState.troops -= dispatchedTroops;
@@ -90,7 +87,7 @@ public final class LaunchExpeditionCommand {
         armyState.factionId = nextState.playerFactionId;
         armyState.originCityId = originCityId;
         armyState.targetCityId = targetCityId;
-        armyState.remainingTravelMonths = connectionDefinition.travelMonths;
+        armyState.remainingTravelMonths = travelMonths;
         armyState.troops = dispatchedTroops;
         armyState.training = originCityState.training;
         armyState.morale = originCityState.morale;
@@ -121,7 +118,7 @@ public final class LaunchExpeditionCommand {
             throw new IllegalArgumentException("battleTactic 不可為 null。");
         }
         CityState originCityState = gameState.requireCityState(originCityId);
-        gameState.requireCityState(targetCityId);
+        CityState targetCityState = gameState.requireCityState(targetCityId);
         if (gameState.gameplayStatus != GameplayStatus.ACTIVE) {
             return StrategicActionFailureReason.PLAYER_ELIMINATED;
         }
@@ -129,7 +126,9 @@ public final class LaunchExpeditionCommand {
             return StrategicActionFailureReason.ORIGIN_NOT_OWNED;
         }
         StrategicMapDefinition mapDefinition = definitionRepository.requireMap(gameState.mapId);
-        if (mapDefinition.findConnection(originCityId, targetCityId) == null) {
+        boolean transfer = gameState.playerFactionId.equals(targetCityState.ownerFactionId);
+        if ((!transfer && mapDefinition.findConnection(originCityId, targetCityId) == null)
+            || (transfer && mapDefinition.shortestTravelMonths(originCityId, targetCityId) < 1)) {
             return StrategicActionFailureReason.TARGET_NOT_CONNECTED;
         }
         if (gameState.actionPointsRemaining < ACTION_POINT_COST) {

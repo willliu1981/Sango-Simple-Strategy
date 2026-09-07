@@ -14,6 +14,8 @@ public final class GameState {
     public String opponentFactionId;
     public String neutralFactionId;
     public String victoryTargetCityId;
+    /** 每個存檔各自保留的戰略地圖最後焦點城池。 */
+    public String strategicMapFocusedCityId;
 
     /**
      * 只供 schema 2 存檔遷移使用；schema 3 以上的新存檔應為 null。
@@ -52,6 +54,7 @@ public final class GameState {
         copiedState.opponentFactionId = opponentFactionId;
         copiedState.neutralFactionId = neutralFactionId;
         copiedState.victoryTargetCityId = victoryTargetCityId;
+        copiedState.strategicMapFocusedCityId = strategicMapFocusedCityId;
         copiedState.campaignStatus = campaignStatus;
         copiedState.scenarioObjectiveStatus = scenarioObjectiveStatus;
         copiedState.gameplayStatus = gameplayStatus;

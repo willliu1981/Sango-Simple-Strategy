@@ -253,6 +253,11 @@
         <entry name="dispatch_transfer_title" value="運兵" description="dispatch_transfer_title" />
         <entry name="dispatch_expedition_title" value="出征派兵" description="dispatch_expedition_title" />
         <entry name="dispatch_route_placeholder" value="來源、目的與路程尚未載入。" description="dispatch_route_placeholder" />
+        <entry name="dispatch_origin_selection_placeholder" value="運兵來源" description="dispatch_origin_selection_placeholder" />
+        <entry name="dispatch_origin_selection_format" value="運兵來源：{0}（{1}/{2}）" description="dispatch_origin_selection_format" />
+        <entry name="dispatch_origin_selection_hidden" value="" description="dispatch_origin_selection_hidden" />
+        <entry name="button_dispatch_origin_previous" value="上一城" description="button_dispatch_origin_previous" />
+        <entry name="button_dispatch_origin_next" value="下一城" description="button_dispatch_origin_next" />
         <entry name="dispatch_route_format" value="來源：{0}\n目的：{1}\n路程：{2} 個月" description="dispatch_route_format" />
         <entry name="dispatch_amount_placeholder" value="派兵數量：400" description="dispatch_amount_placeholder" />
         <entry name="dispatch_amount_format" value="派兵數量：{0}" description="dispatch_amount_format" />
