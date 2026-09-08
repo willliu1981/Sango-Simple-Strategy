@@ -7,6 +7,7 @@ import java.util.List;
 import idv.kuan.studio.sango.application.result.TurnEvent;
 import idv.kuan.studio.sango.application.result.TurnEventType;
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
+import idv.kuan.studio.sango.domain.definition.StrategicMapDefinition;
 import idv.kuan.studio.sango.domain.model.ArmyState;
 import idv.kuan.studio.sango.domain.model.BattleContribution;
 import idv.kuan.studio.sango.domain.model.BattleOutcome;
@@ -21,13 +22,16 @@ import idv.kuan.studio.sango.domain.rule.TroopQualityRules;
 
 /** 處理單軍或聯合軍抵達，並保存作戰當下的戰報快照。 */
 public final class BattleResolutionService {
+    private final RetreatRoutePlanner retreatRoutePlanner = new RetreatRoutePlanner();
+
     public boolean resolveArrival(GameState gameState, ArmyState armyState,
-        TurnResolutionReport turnResolutionReport) {
-        return resolveArrival(gameState, Collections.singletonList(armyState), turnResolutionReport);
+        StrategicMapDefinition mapDefinition, TurnResolutionReport turnResolutionReport) {
+        return resolveArrival(gameState, Collections.singletonList(armyState), mapDefinition,
+            turnResolutionReport);
     }
 
     public boolean resolveArrival(GameState gameState, List<ArmyState> armyStates,
-        TurnResolutionReport turnResolutionReport) {
+        StrategicMapDefinition mapDefinition, TurnResolutionReport turnResolutionReport) {
         validateGroup(armyStates);
         ArmyState firstArmy = armyStates.get(0);
         CityState targetCityState = gameState.requireCityState(firstArmy.targetCityId);
@@ -69,8 +73,8 @@ public final class BattleResolutionService {
             int occupationDamage = unopposedOccupation ? 5 : 10;
             targetCityState.publicOrder = Math.max(0, targetCityState.publicOrder - occupationDamage);
             targetCityState.defense = Math.max(0, targetCityState.defense - occupationDamage);
-            refreshFactionCapital(gameState, defendingFactionId);
-            refreshFactionCapital(gameState, firstArmy.factionId);
+            refreshFactionCapital(gameState, defendingFactionId, turnResolutionReport);
+            refreshFactionCapital(gameState, firstArmy.factionId, turnResolutionReport);
             if (unopposedOccupation) {
                 turnResolutionReport.add(new TurnEvent(TurnEventType.CITY_OCCUPIED_UNOPPOSED,
                     firstArmy.factionId, targetCityState.cityId, firstArmy.originCityId,
@@ -85,8 +89,9 @@ public final class BattleResolutionService {
         } else {
             targetCityState.troops = defenderSurvivors;
             for (int i = 0; i < armyStates.size(); i++) {
-                returnSurvivors(gameState, armyStates.get(i),
-                    armyStates.get(i).troops - lossesByArmy[i]);
+                startRetreat(gameState, armyStates.get(i),
+                    armyStates.get(i).troops - lossesByArmy[i], mapDefinition,
+                    turnResolutionReport);
             }
             turnResolutionReport.add(new TurnEvent(TurnEventType.BATTLE_DEFENDER_WON,
                 defendingFactionId, targetCityState.cityId, firstArmy.originCityId,
@@ -267,7 +272,8 @@ public final class BattleResolutionService {
         return (int) ((long) cityState.troops * lossPercent / 100);
     }
 
-    private void refreshFactionCapital(GameState gameState, String factionId) {
+    private void refreshFactionCapital(GameState gameState, String factionId,
+        TurnResolutionReport turnResolutionReport) {
         FactionState factionState = gameState.requireFactionState(factionId);
         List<CityState> ownedCities = gameState.findCitiesOwnedBy(factionId);
         if (ownedCities.isEmpty()) {
@@ -280,6 +286,13 @@ public final class BattleResolutionService {
                 }
             }
             for (String armyId : disbandedArmyIds) {
+                ArmyState armyState = findArmy(gameState, armyId);
+                if (armyState != null) {
+                    turnResolutionReport.add(new TurnEvent(TurnEventType.ARMY_RETREAT_DISBANDED,
+                        armyState.factionId,
+                        armyState.isRetreating() ? armyState.retreatCurrentCityId() : armyState.targetCityId,
+                        armyState.retreatDestinationCityId(), armyState.troops, 0));
+                }
                 gameState.removeArmy(armyId);
             }
             return;
@@ -290,15 +303,41 @@ public final class BattleResolutionService {
         }
     }
 
-    private void returnSurvivors(GameState gameState, ArmyState armyState, int survivors) {
+    private void startRetreat(GameState gameState, ArmyState armyState, int survivors,
+        StrategicMapDefinition mapDefinition, TurnResolutionReport turnResolutionReport) {
         if (survivors <= 0) {
+            gameState.removeArmy(armyState.armyId);
             return;
         }
-        CityState originCityState = gameState.findCityState(armyState.originCityId);
-        if (originCityState != null && armyState.factionId.equals(originCityState.ownerFactionId)) {
-            TroopQualityRules.merge(originCityState, survivors,
-                TroopQualityRules.training(armyState), TroopQualityRules.morale(armyState));
+        RetreatRoutePlanner.RoutePlan plan = retreatRoutePlanner.findRoute(gameState, mapDefinition,
+            armyState.factionId, armyState.targetCityId, armyState.originCityId);
+        if (plan == null) {
+            gameState.removeArmy(armyState.armyId);
+            turnResolutionReport.add(new TurnEvent(TurnEventType.ARMY_RETREAT_DISBANDED,
+                armyState.factionId, armyState.targetCityId, null, survivors, 0));
+            return;
         }
+        armyState.troops = survivors;
+        armyState.expeditionGroupId = armyState.armyId;
+        armyState.retreatRouteCityIds = plan.cityIds();
+        armyState.retreatRouteIndex = 0;
+        armyState.remainingTravelMonths = mapDefinition.findConnection(
+            armyState.retreatRouteCityIds[0], armyState.retreatRouteCityIds[1]).travelMonths;
+        if (findArmy(gameState, armyState.armyId) == null) {
+            gameState.addArmy(armyState);
+        }
+        turnResolutionReport.add(new TurnEvent(TurnEventType.ARMY_RETREAT_STARTED,
+            armyState.factionId, armyState.targetCityId, armyState.retreatDestinationCityId(),
+            survivors, plan.totalTravelMonths()));
+    }
+
+    private ArmyState findArmy(GameState gameState, String armyId) {
+        for (ArmyState candidate : gameState.armyStates) {
+            if (armyId.equals(candidate.armyId)) {
+                return candidate;
+            }
+        }
+        return null;
     }
 
     private boolean isDefendingCapital(GameState gameState, String defendingFactionId,

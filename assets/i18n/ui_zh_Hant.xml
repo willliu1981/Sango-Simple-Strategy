@@ -1,6 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <i18n>
     <scope id="literal">
+        <entry name="report_retreat_started" value="{0} 戰敗後，{2} 名生還士兵撤往 {1}，行程 {3} 個月，下月開始移動。" />
+        <entry name="report_retreat_advanced" value="撤退部隊 {2} 兵由 {0} 前往 {1}，此段道路尚需 {3} 個月。" />
+        <entry name="report_retreat_rerouted" value="原撤退路線通往 {0}，現已失效；{2} 兵改撤往 {1}，新行程 {3} 個月。" />
+        <entry name="report_retreat_arrived" value="由 {1} 戰場撤回的 {2} 兵已抵達 {0}，併入守軍。" />
+        <entry name="report_retreat_disbanded" value="{0} 一帶部隊無可撤往的安全我方城池，{1} 兵潰散。" />
+        <entry name="map_army_retreat_summary" value="{0} {1} 兵・士氣 {2}｜撤往 {3}（尚需 {4} 個月）" />
         <entry name="world_battle_heading" value="天下戰報" />
         <entry name="world_battle_description" value="只列戰鬥事件；我方相關優先，同類依月份由新到舊排列。已讀戰報仍可點開。" />
         <entry name="world_battle_player" value="我方戰事" />
@@ -29,7 +35,7 @@
         <entry name="dispatch_expedition_help_button" value="出征說明" />
         <entry name="dispatch_selected_origin_line_format" value="{0}：{1} 兵｜{2} 個月" />
         <entry name="dispatch_selected_origins_empty" value="已選來源：尚未加入任何城池。" />
-        <entry name="dispatch_selected_origins_format" value="已選來源：&#10;{0}" />
+        <entry name="dispatch_selected_origins_format" value="已選來源：\n{0}" />
         <entry name="dispatch_summary_format" value="合計 {0} 城／{1} 兵｜費用 {2} AP、{3} 糧｜集結 {4} 個月（最慢路程）" />
         <entry name="dispatch_status_ready" value="資源足夠；確認後所有來源將編入同一批行動。" />
         <entry name="dispatch_status_select_origin" value="請至少加入一座來源城。" />
@@ -38,15 +44,15 @@
         <entry name="dispatch_status_insufficient_food_format" value="糧不足：本次需 {0} 糧，目前只有 {1}。" />
         <entry name="dispatch_status_army_active" value="我方已有部隊行軍中，需等待其抵達。" />
         <entry name="help_map_title" value="戰略圖操作說明" />
-        <entry name="help_map_body" value="共用金與共用糧屬於整個勢力；行動力（AP）限制本月可下達的命令。&#10;&#10;偵察與出征的目標必須和至少一座我方城有直接道路連接；運兵則可沿道路前往我方城池。偵察非我方城消耗 1 AP 與 20 金，提供三回合精確情報，不消耗軍糧。&#10;&#10;使用＋、－縮放，「全圖」重設視野，「定位」回到選取城。快速點兩下地圖進入全螢幕；全螢幕點一下即可返回。&#10;&#10;勢力月報記錄我方收支、缺糧、災害與戰事；天下戰報只列各地戰鬥，我方戰事優先。" />
+        <entry name="help_map_body" value="共用金與共用糧屬於整個勢力；行動力（AP）限制本月可下達的命令。\n\n偵察與出征的目標必須和至少一座我方城有直接道路連接；運兵則可沿道路前往我方城池。偵察非我方城消耗 1 AP 與 20 金，提供三回合精確情報，不消耗軍糧。\n\n使用＋、－縮放，「全圖」重設視野，「定位」回到選取城。快速點兩下地圖進入全螢幕；全螢幕時單擊城池只選取；雙擊城池返回並聚焦；點擊空白處不返回。\n\n勢力月報記錄我方收支、缺糧、災害與戰事；天下戰報只列各地戰鬥，我方戰事優先。" />
         <entry name="help_city_title" value="內政操作說明" />
-        <entry name="help_city_body" value="金、糧是全勢力共用資源；人口屬於本城。農業提高秋收，商業提高季末商稅，治水降低夏季洪災風險與損失，城防影響守城；訓練與士氣影響作戰表現。&#10;&#10;安民可提高民心，最高到 95。民心至少 95，且沒有缺糧、洪災或易主時，月底累計一個穩定月；連續第 3 個合格月底起，每月自然提高 1 點，最高 100。不合格時累計歸零，不代表直接扣除民心。&#10;&#10;缺軍糧會造成逃兵，並依缺口比例降低駐軍與行軍部隊士氣。缺一半軍糧扣 10 點，完全缺糧扣 20 點；士氣最低 0。補足軍糧不會立即回復已失去的士氣。" />
+        <entry name="help_city_body" value="金、糧是全勢力共用資源；人口屬於本城。農業提高秋收，商業提高季末商稅，治水降低夏季洪災風險與損失，城防影響守城；訓練與士氣影響作戰表現。\n\n安民可提高民心，最高到 95。民心至少 95，且沒有缺糧、洪災或易主時，月底累計一個穩定月；連續第 3 個合格月底起，每月自然提高 1 點，最高 100。不合格時累計歸零，不代表直接扣除民心。\n\n缺軍糧會造成逃兵，並依缺口比例降低駐軍與行軍部隊士氣。缺一半軍糧扣 10 點，完全缺糧扣 20 點；士氣最低 0。補足軍糧不會立即回復已失去的士氣。" />
         <entry name="help_recruit_title" value="徵兵說明" />
-        <entry name="help_recruit_body" value="徵兵立即減少本城人口，消耗 1 AP，並依實際人數扣除金與糧；確認前請查看費用預覽。&#10;&#10;可徵人數受人口保留量、單次上限、可用金糧及武將統率限制。&#10;&#10;新兵訓練與士氣依有效民心決定，加入後按新舊兵力加權；大量徵兵可能降低整體訓練與士氣。增加兵力也會提高後續每月軍糧需求。" />
+        <entry name="help_recruit_body" value="徵兵立即減少本城人口，消耗 1 AP，並依實際人數扣除金與糧；確認前請查看費用預覽。\n\n可徵人數受人口保留量、單次上限、可用金糧及武將統率限制。\n\n新兵訓練與士氣依有效民心決定，加入後按新舊兵力加權；大量徵兵可能降低整體訓練與士氣。增加兵力也會提高後續每月軍糧需求。" />
         <entry name="help_transfer_title" value="運兵說明" />
-        <entry name="help_transfer_body" value="運兵只在我方城池間進行。使用上一城／下一城切換沿道路可達的来源，再調整兵數。&#10;&#10;每次至少派 400 兵，來源城保留 400 守軍，以 100 人增減，單次最多 10,000 兵。派遣消耗 1 AP 與 100 糧。&#10;&#10;行程依道路最短時間計算，抵達後才加入目標城；行軍期間仍受軍糧不足影響。" />
+        <entry name="help_transfer_body" value="運兵只在我方城池間進行。使用上一城／下一城切換沿道路可達的來源，再調整兵數。\n\n每次至少派 400 兵，來源城保留 400 守軍，以 100 人增減，單次最多 10,000 兵。派遣消耗 1 AP 與 100 糧。\n\n行程依道路最短時間計算，抵達後才加入目標城；行軍期間仍受軍糧不足影響。其他部隊正在行軍時，只要兵力、行動力與糧食足夠，仍可再派兵。" />
         <entry name="help_expedition_title" value="聯合出征說明" />
-        <entry name="help_expedition_body" value="選擇敵方或中立目標城，再用上一城／下一城切換直接相鄰的我方來源城。逐城加入出征並設定兵數，各城數量分別保留。&#10;&#10;每城至少派 400 兵、保留 400 守軍，以 100 人增減，每城最多 10,000 兵。每個來源消耗 1 AP 與 100 糧；確認時整批檢查資源，不能只扣除部分來源。&#10;&#10;先到部隊等待同批其他部隊集結，再共同進入一場戰鬥。戰報可查看各城出兵、戰損與生還兵力。本功能限同一勢力，不包含盟軍。" />
+        <entry name="help_expedition_body" value="選擇敵方或中立目標城，再用上一城／下一城切換直接相鄰的我方來源城。逐城加入出征並設定兵數，各城數量分別保留。\n\n每城至少派 400 兵、保留 400 守軍，以 100 人增減，每城最多 10,000 兵。每個來源消耗 1 AP 與 100 糧；確認時整批檢查資源，不能只扣除部分來源。\n\n先到部隊等待同批其他部隊集結，再共同進入一場戰鬥。戰報可查看各城出兵、戰損與生還兵力。本功能限同一勢力，不包含盟軍。已有部隊行軍不會阻止另一次派兵。\n\n戰敗生還者從下月起撤往安全道路上最近的我方城；同距離優先原城，再比較城防。撤退途中仍需軍糧，退路失效會改道，無路可退時潰散，結果列入勢力月報。" />
         <entry name="lobby_sango" value="SANGO" description="lobby_sango" />
         <entry name="lobby_title" value="簡易三國志" description="lobby_title" />
         <entry name="lobby_tagline" value="漢末群雄 · 天下待定" description="lobby_tagline" />
@@ -298,16 +304,16 @@
         <entry name="button_transfer_troops" value="運兵" description="button_transfer_troops" />
         <entry name="dispatch_title_placeholder" value="派兵" description="dispatch_title_placeholder" />
         <entry name="dispatch_transfer_title" value="運兵" description="dispatch_transfer_title" />
-        <entry name="dispatch_expedition_title" value="出征派兵" description="dispatch_expedition_title" />
+        <entry name="dispatch_expedition_title" value="聯合出征" description="dispatch_expedition_title" />
         <entry name="dispatch_route_placeholder" value="來源、目的與路程尚未載入。" description="dispatch_route_placeholder" />
-        <entry name="dispatch_origin_selection_placeholder" value="運兵來源" description="dispatch_origin_selection_placeholder" />
-        <entry name="dispatch_origin_selection_format" value="運兵來源：{0}（{1}/{2}）" description="dispatch_origin_selection_format" />
+        <entry name="dispatch_origin_selection_placeholder" value="派兵來源" description="dispatch_origin_selection_placeholder" />
+        <entry name="dispatch_origin_selection_format" value="來源：{0}（{1}/{2}）" description="dispatch_origin_selection_format" />
         <entry name="dispatch_origin_selection_hidden" value="" description="dispatch_origin_selection_hidden" />
         <entry name="button_dispatch_origin_previous" value="上一城" description="button_dispatch_origin_previous" />
         <entry name="button_dispatch_origin_next" value="下一城" description="button_dispatch_origin_next" />
-        <entry name="dispatch_route_format" value="來源：{0}\n目的：{1}\n路程：{2} 個月" description="dispatch_route_format" />
+        <entry name="dispatch_route_format" value="目標：{1}｜目前來源：{0}｜路程：{2} 個月" description="dispatch_route_format" />
         <entry name="dispatch_amount_placeholder" value="派兵數量：400" description="dispatch_amount_placeholder" />
-        <entry name="dispatch_amount_format" value="派兵數量：{0}" description="dispatch_amount_format" />
+        <entry name="dispatch_amount_format" value="目前來源派兵：{0}" description="dispatch_amount_format" />
         <entry name="dispatch_amount_hint" value="每次增減 100；至少派出 400，且出發城須保留 400 守軍，單次上限 10,000。" description="dispatch_amount_hint" />
         <entry name="button_dispatch_decrease" value="－100" description="button_dispatch_decrease" />
         <entry name="button_dispatch_increase" value="＋100" description="button_dispatch_increase" />
@@ -425,7 +431,7 @@
         <entry name="settings_save_before_exit_failed" value="保存失敗，已取消返回或退出。" description="settings_save_before_exit_failed" />
         <entry name="gameplay_guide_title" value="玩法說明" description="gameplay_guide_title" />
         <entry name="gameplay_guide_description" value="主要內政、軍事與資源規則；所有消耗均以畫面當下顯示為準。" description="gameplay_guide_description" />
-        <entry name="gameplay_guide_content" value="【經營勢力】\n金糧由全勢力共用。每月分配行動力，在內政、徵兵與軍事之間取捨；未使用的行動力不保留。商業帶來季末稅金，農業帶來九月秋收，治水降低六月災害風險。\n\n【維持軍隊】\n駐軍與行軍部隊都需要軍糧，訓練與士氣共同影響戰力。缺糧會造成逃兵與士氣下降，也會中斷民心自然恢復的穩定月份。軍糧完全不足時，當月士氣最多下降 20 點。\n\n【民心與成長】\n安民最高提升至 95。之後連續三個合格月底，可從 95 自然提升到 96，再逐月升至 100；缺糧、洪災、易主或民心低於 95 都會使穩定月份歸零。缺糧本身不直接扣民心。\n\n【戰略與協同】\n偵察與出征依城市間直接道路判定。可以選擇多座我方城市共同攻打一城，各城分別出兵與支付費用，等待全員抵達後一起作戰；我方城池之間也可運兵增援。\n\n【閱讀報告】\n勢力月報整理我方收支、缺糧損失、民心、災害與參戰結果。天下戰報只列各勢力的戰鬥，我方相關優先；兩個入口查看的是同一份戰報。\n\n【操作提示】\n戰略圖、內政與派兵視窗的操作說明，只解釋當前畫面的內容。徵兵、運兵與出征的數量、成本及限制，請在各自操作處查看。" description="gameplay_guide_content" />
+        <entry name="gameplay_guide_content" value="【經營勢力】\n金糧由全勢力共用。每月分配行動力，在內政、徵兵與軍事之間取捨；未使用的行動力不保留。商業帶來季末稅金，農業帶來九月秋收，治水降低六月災害風險。\n\n【維持軍隊】\n駐軍與行軍部隊都需要軍糧，訓練與士氣共同影響戰力。缺糧會造成逃兵與士氣下降，也會中斷民心自然恢復的穩定月份。軍糧完全不足時，當月士氣最多下降 20 點。\n\n【民心與成長】\n安民最高提升至 95。之後連續三個合格月底，可從 95 自然提升到 96，再逐月升至 100；缺糧、洪災、易主或民心低於 95 都會使穩定月份歸零。缺糧本身不直接扣民心。\n\n【戰略與協同】\n偵察與出征依城市間直接道路判定。可以選擇多座我方城市共同攻打一城，各城分別出兵與支付費用，等待全員抵達後一起作戰；我方城池之間也可運兵增援。資源足夠時可以同時多路派兵。戰敗後生還者需要時間撤退，退路中斷可能造成潰散。\n\n【閱讀報告】\n勢力月報整理我方收支、缺糧損失、民心、災害與參戰結果。天下戰報只列各勢力的戰鬥，我方相關優先；兩個入口查看的是同一份戰報。\n\n【操作提示】\n戰略圖、內政與派兵視窗的操作說明，只解釋當前畫面的內容。徵兵、運兵與出征的數量、成本及限制，請在各自操作處查看。" description="gameplay_guide_content" />
         <entry name="button_back_to_settings" value="返回設定" description="button_back_to_settings" />
         <entry name="city_status_player_eliminated" value="我方已失去全部城池，不能再下達命令或推進月份。" description="city_status_player_eliminated" />
         <entry name="scenario_china_name" value="漢末群雄・全國征戰" description="scenario_china_name" />

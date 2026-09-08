@@ -67,14 +67,16 @@ public final class CampaignGrowthSmokeTest {
             }
             LocalJsonSaveGameRepository legacySaves = new LocalJsonSaveGameRepository(legacyDirectory);
             GameState legacyLoaded = legacySaves.load(1);
-            check(legacyLoaded.schemaVersion == 5 && legacyLoaded.cityStates.length == 42,
+            check(legacyLoaded.schemaVersion == idv.kuan.studio.sango.SangoVersion.GAME_STATE_SCHEMA_VERSION
+                && legacyLoaded.cityStates.length == 42,
                 "由未修改 0.5.2 寫出的真實 JSON 可經 Repository 遷移");
             check(legacyLoaded.actionPointsPerTurn == 9 && legacyLoaded.actionPointsRemaining == 2,
                 "真實 Schema 4 JSON 遷移保留 2/9 快照");
             check(legacyLoaded.requireCapitalCityState().morale == 0,
                 "真實舊 JSON 的零士氣不被 default 重設");
             legacySaves.save(1, legacyLoaded);
-            check(legacySaves.load(1).schemaVersion == 5, "真實舊檔遷移後可重新安全保存");
+            check(legacySaves.load(1).schemaVersion == idv.kuan.studio.sango.SangoVersion.GAME_STATE_SCHEMA_VERSION,
+                "真實舊檔遷移後可重新安全保存");
             testRecruitmentCurve();
             testWeightedQuality();
             testTrainingCoverage();
@@ -135,7 +137,8 @@ public final class CampaignGrowthSmokeTest {
         city.troops = 2000;
         TroopQualityRules.set(city, 100 * scale, 100 * scale);
         TroopQualityRules.merge(city, 1000, 50 * scale, 50 * scale);
-        check(city.troops == 3000 && city.training == 83 && city.trainingFraction == 333333, "合併保存平均小數");
+        check(city.troops == 3000 && city.training == 84 && city.trainingFraction == 0,
+            "操作後平均值無條件進位並取代原值");
     }
 
     private static void testTrainingCoverage() {
@@ -155,14 +158,16 @@ public final class CampaignGrowthSmokeTest {
         city.troops = 100000;
         TroopQualityRules.set(city, 99_000_000, 100_000_000);
         TroopQualityRules.train(city, DEFAULT_OFFICER);
-        check(TroopQualityRules.training(city) == 99_200_000, "先限制受訓部分到 100，不把整軍錯加到 100");
+        check(TroopQualityRules.training(city) == 100_000_000,
+            "操作後訓練小數無條件進位並取代原值");
         check(TroopQualityRules.morale(city) == 100_000_000, "已滿士氣不溢位");
         city.troops = 2_000_000;
         TroopQualityRules.set(city, 50_000_000, 50_000_000);
         for (int i = 0; i < 20; i++) {
             TroopQualityRules.train(city, DEFAULT_OFFICER);
         }
-        check(city.training == 51 && city.trainingFraction == 0, "二十次小數訓練累積成一點");
+        check(city.training == 70 && city.trainingFraction == 0,
+            "每次操作的小數結果皆無條件進位並取代原值");
         TroopQualityRules.set(city, 99_999_999, 100_000_000);
         TroopQualityRules.train(city, DEFAULT_OFFICER);
         check(city.training == 100 && city.trainingFraction == 0, "最後一個微小單位不永久卡住");
@@ -301,7 +306,8 @@ public final class CampaignGrowthSmokeTest {
         state.requireCapitalCityState().morale = 0;
         int initialPopulation = state.requireCapitalCityState().population;
         GameState migrated = new GameStateMigrator().migrate(state);
-        check(migrated.schemaVersion == 5 && state.schemaVersion == 4, "Schema 4 遷移使用副本");
+        check(migrated.schemaVersion == idv.kuan.studio.sango.SangoVersion.GAME_STATE_SCHEMA_VERSION
+            && state.schemaVersion == 4, "Schema 4 遷移使用副本");
         check(migrated.actionPointsPerTurn == 9 && migrated.actionPointsRemaining == 2, "舊月中 2/9 不回補或重算");
         check(migrated.requireCapitalCityState().morale == 0
             && migrated.requireCapitalCityState().population == initialPopulation, "零士氣與人口不重設");
@@ -310,22 +316,24 @@ public final class CampaignGrowthSmokeTest {
         TroopQualityRules.set(city, 75_123_456, 60_234_567);
         saves.save(2, migrated);
         GameState loaded = saves.load(2);
-        check(TroopQualityRules.training(loaded.requireCapitalCityState()) == 75_123_456, "城市訓練小數存讀");
-        check(TroopQualityRules.morale(loaded.requireCapitalCityState()) == 60_234_567, "城市士氣小數存讀");
-        check(new GameStateMigrator().migrate(loaded).requireCapitalCityState().trainingFraction == 123456,
-            "Schema 5 重讀不清除小數");
+        check(TroopQualityRules.training(loaded.requireCapitalCityState()) == 76_000_000,
+            "城市訓練操作後以整數存讀");
+        check(TroopQualityRules.morale(loaded.requireCapitalCityState()) == 61_000_000,
+            "城市士氣操作後以整數存讀");
+        check(new GameStateMigrator().migrate(loaded).requireCapitalCityState().trainingFraction == 0,
+            "目前 schema 重讀保留整數素質");
         GameState launched = new LaunchExpeditionCommand(definitions, saves)
             .execute(2, loaded, city.cityId, "runan", BattleTactic.BALANCED).getGameState();
-        check(launched.armyStates[0].trainingFraction == 123456 && launched.armyStates[0].moraleFraction == 234567,
-            "出征軍保存原城小數素質");
-        check(saves.load(2).armyStates[0].trainingFraction == 123456, "野戰軍小數存讀");
+        check(launched.armyStates[0].trainingFraction == 0 && launched.armyStates[0].moraleFraction == 0,
+            "出征軍保存原城整數素質");
+        check(saves.load(2).armyStates[0].trainingFraction == 0, "野戰軍整數素質存讀");
         launched.requireCityState("runan").troops = 0;
         launched.enemyAttackCountdown = 99;
         for (FactionState faction : launched.factionStates) {
             faction.aiActionPointsRemaining = 0;
         }
         GameState occupied = new TurnResolutionService(definitions).resolve(launched).getGameState();
-        check(occupied.requireCityState("runan").trainingFraction == 123456, "佔領後守軍保留小數");
+        check(occupied.requireCityState("runan").trainingFraction == 0, "佔領後守軍維持整數素質");
         GameStateValidator.validate(occupied);
     }
 

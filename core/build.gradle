@@ -96,3 +96,35 @@ tasks.register('runMusicPlaybackSmokeTest', JavaExec) {
 tasks.named('check') {
   dependsOn 'runCampaignGrowthSmokeTest', 'runMusicPlaybackSmokeTest'
 }
+
+tasks.register('runMapInteractionSmokeTest', JavaExec) {
+  group = 'verification'
+  description = 'Check map host sizing and city double-tap behavior without opening the game.'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.MapInteractionSmokeTest')
+}
+
+tasks.register('runReportCatalogSmokeTest', JavaExec) {
+  group = 'verification'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.ReportCatalogSmokeTest')
+}
+
+tasks.named('check') {
+  dependsOn 'runMapInteractionSmokeTest', 'runReportCatalogSmokeTest'
+}
+
+tasks.register('runRetreatExpeditionSmokeTest', JavaExec) {
+  group = 'verification'
+  description = 'Check simultaneous expeditions, retreat routing and save compatibility.'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.RetreatExpeditionSmokeTest')
+  args rootProject.file('assets').absolutePath
+}
+
+tasks.named('check') {
+  dependsOn 'runRetreatExpeditionSmokeTest'
+}

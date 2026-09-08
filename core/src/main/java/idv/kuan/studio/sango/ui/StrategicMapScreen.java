@@ -19,8 +19,10 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.utils.Align;
 
 import idv.kuan.studio.libgdx.simpleui.Sui;
 import idv.kuan.studio.libgdx.simpleui.SuiScreen;
@@ -68,9 +70,6 @@ public final class StrategicMapScreen extends SuiScreen {
     private static final Color STATUS_NORMAL_COLOR = new Color(0.79f, 0.72f, 0.61f, 1f);
     private static final Color STATUS_SUCCESS_COLOR = new Color(0.94f, 0.76f, 0.38f, 1f);
     private static final Color STATUS_ERROR_COLOR = new Color(0.95f, 0.43f, 0.30f, 1f);
-    private static final float MAP_FALLBACK_WIDTH = 1030f;
-    private static final float MAP_FALLBACK_HEIGHT = 505f;
-    private static final long MAP_FULLSCREEN_DOUBLE_TAP_MILLIS = 350L;
 
     private final ScreenBackground screenBackground = new ScreenBackground();
     private final MapTerrainBackground mapTerrainBackground = new MapTerrainBackground();
@@ -85,8 +84,8 @@ public final class StrategicMapScreen extends SuiScreen {
     private Group mapFullscreenHost;
     private StrategicMapWidget strategicMapWidget;
     private ContextHelpOverlay contextHelpOverlay;
+    private ScrollPane dispatchOriginsPane;
     private boolean mapFullscreen;
-    private long lastMapTapMillis;
     private String currentStatusMessage;
     private Color currentStatusColor = STATUS_NORMAL_COLOR;
     private String pendingOriginCityId;
@@ -116,11 +115,24 @@ public final class StrategicMapScreen extends SuiScreen {
         strategicMapWidget = new StrategicMapWidget(
             label("map_font_probe").getStyle().font,
             this::selectCity,
-            this::toggleMapFullscreen
+            () -> setMapFullscreen(true),
+            this::restoreMapAndFocusCity
         );
         mapHost.addActor(strategicMapWidget);
         resizeMapWidget();
         applyStyles();
+        Label selectedOrigins = label("dispatch_selected_origins_label");
+        selectedOrigins.remove();
+        selectedOrigins.setVisible(true);
+        selectedOrigins.setAlignment(Align.topLeft);
+        Table selectedContent = new Table();
+        selectedContent.top().left();
+        selectedContent.add(selectedOrigins).growX().top().left().padRight(18f);
+        dispatchOriginsPane = new ScrollPane(selectedContent);
+        dispatchOriginsPane.setFillParent(true);
+        dispatchOriginsPane.setScrollingDisabled(true, false);
+        dispatchOriginsPane.setOverscroll(false, false);
+        ui.getActor("dispatch_selected_origins_host", Group.class).addActor(dispatchOriginsPane);
         button("context_help_button").setText(text("context_help_button", "操作說明"));
         contextHelpOverlay = new ContextHelpOverlay(
             stage,
@@ -141,6 +153,7 @@ public final class StrategicMapScreen extends SuiScreen {
         }
         closeModals();
         contextHelpOverlay.hide();
+        setMapFullscreen(false);
         ensureCurrentGameState();
         ScreenMusic.play(ScreenId.STRATEGIC_MAP);
         refreshView();
@@ -210,25 +223,13 @@ public final class StrategicMapScreen extends SuiScreen {
         if (mapHost == null || strategicMapWidget == null) {
             return;
         }
-        Group activeHost = mapFullscreen ? mapFullscreenHost : mapHost;
-        float mapWidth = activeHost.getWidth() > 0f ? activeHost.getWidth() : MAP_FALLBACK_WIDTH;
-        float mapHeight = activeHost.getHeight() > 0f ? activeHost.getHeight() : MAP_FALLBACK_HEIGHT;
-        strategicMapWidget.setBounds(0f, 0f, mapWidth, mapHeight);
-        strategicMapWidget.invalidateHierarchy();
+        // The widget fills its current host during validation, after parent layout.
+        strategicMapWidget.invalidate();
     }
 
-    private void toggleMapFullscreen() {
-        if (mapFullscreen) {
-            setMapFullscreen(false);
-            return;
-        }
-        long currentTapMillis = TimeUtils.millis();
-        if (currentTapMillis - lastMapTapMillis <= MAP_FULLSCREEN_DOUBLE_TAP_MILLIS) {
-            setMapFullscreen(true);
-            lastMapTapMillis = 0L;
-        } else {
-            lastMapTapMillis = currentTapMillis;
-        }
+    private void restoreMapAndFocusCity() {
+        setMapFullscreen(false);
+        strategicMapWidget.focusSelectedCity();
     }
 
     private void setMapFullscreen(boolean fullscreen) {
@@ -236,6 +237,7 @@ public final class StrategicMapScreen extends SuiScreen {
             return;
         }
         mapFullscreen = fullscreen;
+        strategicMapWidget.setFullscreen(fullscreen);
         Group activeHost = fullscreen ? mapFullscreenHost : mapHost;
         activeHost.addActor(strategicMapWidget);
         mapFullscreenMask.setVisible(fullscreen);
@@ -626,8 +628,7 @@ public final class StrategicMapScreen extends SuiScreen {
             && originCityState != null
             && dispatchTroops >= LaunchExpeditionCommand.MINIMUM_EXPEDITION
             && gameState.actionPointsRemaining >= 1
-            && gameState.requirePlayerFactionState().food >= LaunchExpeditionCommand.FOOD_COST
-            && !gameState.hasArmyForFaction(gameState.playerFactionId);
+            && gameState.requirePlayerFactionState().food >= LaunchExpeditionCommand.FOOD_COST;
         setButtonEnabled(button("launch_expedition_button"), expeditionEnabled);
     }
 
@@ -771,6 +772,19 @@ public final class StrategicMapScreen extends SuiScreen {
             shownArmy.troops, shownArmy.morale, cityName(shownArmy.originCityId),
             cityName(shownArmy.targetCityId), shownArmy.remainingTravelMonths
         );
+        if (shownArmy.retreatRouteCityIds != null) {
+            String[] route = shownArmy.retreatRouteCityIds;
+            int months = shownArmy.remainingTravelMonths;
+            StrategicMapDefinition definition = SangoServices.definitions().requireMap(gameState.mapId);
+            for (int i = shownArmy.retreatRouteIndex + 1; i < route.length - 1; i++) {
+                CityConnectionDefinition connection = definition.findConnection(route[i], route[i + 1]);
+                if (connection != null) months += connection.travelMonths;
+            }
+            summary = text("map_army_retreat_summary",
+                "{0} {1} 兵・士氣 {2}｜撤往 {3}（尚需 {4} 個月）",
+                localized(armyFaction.nameKey, armyFaction.id), numberFormat.format(shownArmy.troops),
+                shownArmy.morale, cityName(route[route.length - 1]), months);
+        }
         if (gameState.armyStates.length > 1) {
             summary += "\n" + text("map_army_more", "", gameState.armyStates.length - 1);
         }
@@ -861,6 +875,8 @@ public final class StrategicMapScreen extends SuiScreen {
         pendingSelectedOriginCityIds.add(originCityState.cityId);
         refreshDispatchDetails();
         openModal(expeditionDispatchMask);
+        dispatchOriginsPane.setScrollY(0f);
+        stage.setScrollFocus(dispatchOriginsPane);
     }
 
     private void cycleDispatchOrigin(int direction) {
@@ -1068,9 +1084,6 @@ public final class StrategicMapScreen extends SuiScreen {
                 numberFormat.format(foodCost),
                 numberFormat.format(gameState.requirePlayerFactionState().food)
             );
-        }
-        if (gameState.hasArmyForFaction(gameState.playerFactionId)) {
-            return text("dispatch_status_army_active", "我方已有部隊行軍中，需等待其抵達。 ");
         }
         return null;
     }

@@ -12,6 +12,10 @@ public final class ArmyState {
     public String factionId;
     public String originCityId;
     public String targetCityId;
+    /** 退卻路徑；第一個節點固定為原戰場，null 表示一般行軍。 */
+    public String[] retreatRouteCityIds;
+    /** 退卻軍目前所在節點於 retreatRouteCityIds 的索引。 */
+    public int retreatRouteIndex;
     public int remainingTravelMonths;
     public int troops;
     public int training;
@@ -31,6 +35,9 @@ public final class ArmyState {
         copiedState.factionId = factionId;
         copiedState.originCityId = originCityId;
         copiedState.targetCityId = targetCityId;
+        copiedState.retreatRouteCityIds = retreatRouteCityIds == null
+            ? null : retreatRouteCityIds.clone();
+        copiedState.retreatRouteIndex = retreatRouteIndex;
         copiedState.remainingTravelMonths = remainingTravelMonths;
         copiedState.troops = troops;
         copiedState.training = training;
@@ -39,5 +46,20 @@ public final class ArmyState {
         copiedState.moraleFraction = moraleFraction;
         copiedState.tactic = tactic;
         return copiedState;
+    }
+
+    public boolean isRetreating() {
+        return retreatRouteCityIds != null;
+    }
+
+    public String retreatDestinationCityId() {
+        return isRetreating() && retreatRouteCityIds.length > 0
+            ? retreatRouteCityIds[retreatRouteCityIds.length - 1] : null;
+    }
+
+    public String retreatCurrentCityId() {
+        return isRetreating() && retreatRouteIndex >= 0
+            && retreatRouteIndex < retreatRouteCityIds.length
+            ? retreatRouteCityIds[retreatRouteIndex] : null;
     }
 }

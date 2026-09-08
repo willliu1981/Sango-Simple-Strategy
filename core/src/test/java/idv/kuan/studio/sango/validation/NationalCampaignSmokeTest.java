@@ -274,7 +274,8 @@ public final class NationalCampaignSmokeTest {
             targetCity.morale = 50;
             targetCity.defense = 0;
             new BattleResolutionService().resolveArrival(gameState,
-                army("cao_cao", "chenliu", "runan", 1000, 50, morale), new TurnResolutionReport(190, 1));
+                army("cao_cao", "chenliu", "runan", 1000, 50, morale), definitions.requireMap(gameState.mapId),
+                new TurnResolutionReport(190, 1));
             check(gameState.battleReports[0].cityCaptured == (morale == 100), "士氣差異確實改變戰鬥勝負");
             check(gameState.battleReports[0].outcome != BattleOutcome.UNOPPOSED_OCCUPATION,
                 "城防為零不代表無守軍");
@@ -286,7 +287,8 @@ public final class NationalCampaignSmokeTest {
         friendlyCity.morale = 80;
         friendlyCity.training = 70;
         new BattleResolutionService().resolveArrival(gameState,
-            army("cao_cao", "chenliu", "xuchang", 600, 20, 40), new TurnResolutionReport(190, 1));
+            army("cao_cao", "chenliu", "xuchang", 600, 20, 40), definitions.requireMap(gameState.mapId),
+            new TurnResolutionReport(190, 1));
         check(friendlyCity.troops == 1000 && friendlyCity.morale == 56 && friendlyCity.training == 40,
             "增援以兵力加權，不能洗出滿士氣或訓練");
         GameStateValidator.validate(gameState);
@@ -313,7 +315,12 @@ public final class NationalCampaignSmokeTest {
         gameState.requireFactionState("yellow_turban").capitalCityId = "";
         gameState.enemyAttackCountdown = 0;
         new EnemyTurnService().execute(gameState, definitions.requireMap(gameState.mapId), new TurnResolutionReport(190, 1));
-        check(gameState.armyStates.length == 5, "黃巾滅亡後其他 AI 不可停擺");
+        Set<String> survivingAiFactions = new HashSet<>();
+        for (ArmyState armyState : gameState.armyStates) {
+            survivingAiFactions.add(armyState.factionId);
+        }
+        check(survivingAiFactions.size() == 5 && gameState.armyStates.length >= 5,
+            "黃巾滅亡後其他 AI 仍可各自出兵，且不受單一野戰軍上限限制");
         GameStateValidator.validate(gameState);
 
         gameState = newGame("cao_cao");
@@ -323,13 +330,13 @@ public final class NationalCampaignSmokeTest {
         BattleResolutionService battles = new BattleResolutionService();
         gameState.requireCityState("chenliu").troops = 0;
         battles.resolveArrival(gameState, army("yellow_turban", "runan", "chenliu", 600, 50, 60),
-            new TurnResolutionReport(190, 1));
+            definitions.requireMap(gameState.mapId), new TurnResolutionReport(190, 1));
         check(gameState.gameplayStatus == GameplayStatus.ACTIVE, "首都失守但有城仍能繼續");
         check(gameState.requirePlayerFactionState().capitalCityId.equals("xuchang"), "自動遷都到許昌");
         check(gameState.hasArmyForFaction("cao_cao"), "尚存勢力的野戰軍不可消失");
         gameState.requireCityState("xuchang").troops = 0;
         battles.resolveArrival(gameState, army("yellow_turban", "runan", "xuchang", 600, 50, 60),
-            new TurnResolutionReport(190, 1));
+            definitions.requireMap(gameState.mapId), new TurnResolutionReport(190, 1));
         check(gameState.gameplayStatus == GameplayStatus.ELIMINATED && gameState.actionPointsRemaining == 0,
             "全部城池失去才停止操作");
         check(!gameState.hasArmyForFaction("cao_cao"), "已滅亡勢力的在途軍隊解散");
@@ -356,7 +363,8 @@ public final class NationalCampaignSmokeTest {
         check(!new String(fixtureBytes, StandardCharsets.UTF_8).contains("moraleRecorded"), "舊 fixture 沒有新版戰報欄位");
         LocalJsonSaveGameRepository legacySaves = new LocalJsonSaveGameRepository(legacyDirectory);
         GameState migratedState = legacySaves.load(1);
-        check(migratedState.schemaVersion == 5, "schema 3 遷移至 4");
+        check(migratedState.schemaVersion == idv.kuan.studio.sango.SangoVersion.GAME_STATE_SCHEMA_VERSION,
+            "schema 3 遷移至目前版本");
         check(migratedState.cityStates.length == 6 && migratedState.mapId.equals("prototype_central_region"),
             "舊戰局保留六城，不憑空加入新領地");
         check(migratedState.requireCityState("chenliu").morale == 50, "舊城低民心士氣初始化為 50");
@@ -411,11 +419,6 @@ public final class NationalCampaignSmokeTest {
                 check(gameState.gameplayStatus == GameplayStatus.ACTIVE, "長回合壓力測試玩家仍可操作");
                 check(gameState.actionPointsRemaining == NationalActionPointRules.calculateMonthlyActionPoints(gameState), "每月重置行動力");
                 check(gameState.cityStates.length == 42, "回合過程不得丟失城市");
-                for (FactionState factionState : gameState.factionStates) {
-                    long armyCount = Arrays.stream(gameState.armyStates)
-                        .filter(armyState -> armyState.factionId.equals(factionState.factionId)).count();
-                    check(armyCount <= 1, "每個勢力最多一支在途野戰軍");
-                }
             }
             check(gameState.elapsedMonths == 48 && gameState.currentYear == 194, "完整推進四年");
             check(gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.FAILED,

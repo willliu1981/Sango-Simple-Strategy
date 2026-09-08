@@ -244,6 +244,29 @@ public final class GameStateValidator {
         if (armyState.remainingTravelMonths < 0) {
             throw new IllegalArgumentException("remainingTravelMonths 不可小於 0。");
         }
+        if (armyState.isRetreating()) {
+            if (armyState.retreatRouteCityIds.length < 2
+                || !armyState.targetCityId.equals(armyState.retreatRouteCityIds[0])) {
+                throw new IllegalArgumentException("退卻路線必須由原戰場開始並包含目的地。");
+            }
+            if (armyState.retreatRouteIndex < 0
+                || armyState.retreatRouteIndex >= armyState.retreatRouteCityIds.length - 1) {
+                throw new IllegalArgumentException("retreatRouteIndex 超出尚未抵達的退卻路線範圍。");
+            }
+            if (armyState.remainingTravelMonths <= 0) {
+                throw new IllegalArgumentException("退卻軍目前道路倒數必須大於 0。");
+            }
+            if (!armyState.armyId.equals(armyState.expeditionGroupId)) {
+                throw new IllegalArgumentException("退卻軍必須使用獨立 armyId 作為群組 ID。");
+            }
+            for (String routeCityId : armyState.retreatRouteCityIds) {
+                requireText(routeCityId, "armyState.retreatRouteCityIds");
+                requireCityReference(cityStatesById, routeCityId,
+                    "armyState.retreatRouteCityIds");
+            }
+        } else if (armyState.retreatRouteIndex != 0) {
+            throw new IllegalArgumentException("一般行軍的 retreatRouteIndex 必須為 0。");
+        }
         if (armyState.troops < 1) {
             throw new IllegalArgumentException("armyState.troops 必須大於或等於 1。");
         }

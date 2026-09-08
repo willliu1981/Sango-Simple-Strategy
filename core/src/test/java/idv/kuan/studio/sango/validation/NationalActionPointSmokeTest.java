@@ -255,7 +255,8 @@ public final class NationalActionPointSmokeTest {
         saves.save(1, legacyState);
         for (int i = 0; i < 5; i++) {
             GameState loadedState = saves.load(1);
-            check(loadedState.schemaVersion == 5, "小數素質與 AI 額度使用 Schema 5");
+            check(loadedState.schemaVersion == idv.kuan.studio.sango.SangoVersion.GAME_STATE_SCHEMA_VERSION,
+                "小數素質與 AI 額度保存為目前版本");
             check(loadedState.actionPointsPerTurn == 3 && loadedState.actionPointsRemaining == 2,
                 "舊 0.5.1 月中存檔保留 2/3，不在讀檔時回補");
             loadedState = new GameStateMigrator().migrate(loadedState);

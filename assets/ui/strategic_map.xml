@@ -126,12 +126,12 @@
             <label id="dispatch_title_label" fontKey="title" fontSize="52" width="1180" height="68"
                 color="0.94,0.76,0.43,1">${text:dispatch_title_placeholder}</label>
             <row />
-            <label id="dispatch_route_label" fontSize="27" width="1170" height="58"
+            <label id="dispatch_route_label" fontSize="25" width="1170" height="76"
                 align="left" textAlign="left" wrap="true" color="0.84,0.80,0.72,1">${text:dispatch_route_placeholder}</label>
             <row />
             <table width="1170" height="60">
                 <textButton id="dispatch_origin_previous_button" fontSize="27" width="210" height="56">${text:button_dispatch_origin_previous}</textButton>
-                <label id="dispatch_origin_label" fontSize="25" width="520" height="56" align="center" textAlign="center">${text:dispatch_origin_selection_placeholder}</label>
+                <label id="dispatch_origin_label" fontSize="25" width="494" height="56" align="center" textAlign="center">${text:dispatch_origin_selection_placeholder}</label>
                 <textButton id="dispatch_origin_next_button" fontSize="27" width="210" height="56" padLeft="14">${text:button_dispatch_origin_next}</textButton>
                 <textButton id="dispatch_origin_toggle_button" fontSize="25" width="200" height="56" padLeft="14">加入此城</textButton>
             </table>
@@ -152,8 +152,7 @@
             <label fontSize="23" width="1170" height="42" wrap="true"
                 color="0.70,0.65,0.56,1">${text:dispatch_amount_hint}</label>
             <row />
-            <label id="dispatch_selected_origins_label" fontSize="24" width="1170" height="128" wrap="true"
-                align="left" textAlign="left" color="0.82,0.78,0.69,1">已選來源</label>
+            <group id="dispatch_selected_origins_host" width="1170" height="128" touchChildrenOnly="true" />
             <row />
             <label id="dispatch_summary_label" fontSize="25" width="1170" height="62" wrap="true"
                 align="left" textAlign="left" color="0.94,0.76,0.38,1">出征摘要</label>
@@ -203,4 +202,7 @@
             </table>
         </table>
     </table>
+
+    <label id="dispatch_selected_origins_label" fontSize="24" visible="false" wrap="true"
+        align="left" textAlign="left" color="0.82,0.78,0.69,1">已選來源</label>
 </ui>

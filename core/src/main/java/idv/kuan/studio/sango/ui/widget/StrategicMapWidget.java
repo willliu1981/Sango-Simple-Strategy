@@ -21,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.TimeUtils;
 
 import idv.kuan.studio.sango.domain.definition.CityConnectionDefinition;
 import idv.kuan.studio.sango.domain.definition.MapCityNodeDefinition;
@@ -39,6 +40,9 @@ public final class StrategicMapWidget extends WidgetGroup {
     private final BitmapFont nodeFont;
     private final Consumer<String> citySelectionHandler;
     private final Runnable mapTapHandler;
+    private final Runnable cityActivationHandler;
+    private final MapInteractionState interaction = new MapInteractionState();
+    private boolean fullscreen;
     private final MapCameraState camera = new MapCameraState();
     private final Map<String, String> captionsByCityId = new LinkedHashMap<>();
     private final Map<String, MapNodeTone> tonesByCityId = new LinkedHashMap<>();
@@ -64,12 +68,20 @@ public final class StrategicMapWidget extends WidgetGroup {
         Consumer<String> citySelectionHandler,
         Runnable mapTapHandler
     ) {
-        if (nodeFont == null || citySelectionHandler == null || mapTapHandler == null) {
+        this(nodeFont, citySelectionHandler, mapTapHandler, () -> { });
+    }
+
+    public StrategicMapWidget(BitmapFont nodeFont, Consumer<String> citySelectionHandler,
+        Runnable mapTapHandler, Runnable cityActivationHandler) {
+        if (nodeFont == null || citySelectionHandler == null || mapTapHandler == null
+            || cityActivationHandler == null) {
             throw new IllegalArgumentException("地圖字型、選城與點擊處理不可為 null。");
         }
         this.nodeFont = nodeFont;
         this.citySelectionHandler = citySelectionHandler;
         this.mapTapHandler = mapTapHandler;
+        this.cityActivationHandler = cityActivationHandler;
+        setFillParent(true);
         setTouchable(Touchable.enabled);
         addCaptureListener(createNavigationListener());
     }
@@ -117,13 +129,14 @@ public final class StrategicMapWidget extends WidgetGroup {
     }
 
     public void focusSelectedCity() {
-        validate();
-        if (mapDefinition != null && selectedCityId != null) {
-            MapCityNodeDefinition selectedNode = mapDefinition.requireNode(selectedCityId);
-            camera.zoomAt(Math.max(camera.minimumZoom(), 1f), getWidth() / 2f, getHeight() / 2f);
-            camera.centerOn(selectedNode.x * worldWidth, selectedNode.y * worldHeight);
-            invalidate();
-        }
+        // Focus after the host has completed layout, including the first loaded frame.
+        initialFocusPending = true;
+        invalidate();
+    }
+
+    public void setFullscreen(boolean fullscreen) {
+        this.fullscreen = fullscreen;
+        interaction.reset();
     }
 
     @Override
@@ -135,7 +148,7 @@ public final class StrategicMapWidget extends WidgetGroup {
         worldWidth = largeMap ? LARGE_WORLD_WIDTH : getWidth();
         worldHeight = largeMap ? LARGE_WORLD_HEIGHT : getHeight();
         camera.configure(getWidth(), getHeight(), worldWidth, worldHeight);
-        if (initialFocusPending) {
+        if (initialFocusPending && selectedCityId != null) {
             initialFocusPending = false;
             camera.zoomAt(1f, getWidth() / 2f, getHeight() / 2f);
             MapCityNodeDefinition focusNode = mapDefinition.requireNode(selectedCityId);
@@ -208,7 +221,7 @@ public final class StrategicMapWidget extends WidgetGroup {
             ClickListener clickListener = new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float localX, float localY) {
-                    citySelectionHandler.accept(node.cityId);
+                    handleTap(node.cityId, event);
                 }
             };
             nodeButton.addListener(clickListener);
@@ -322,10 +335,10 @@ public final class StrategicMapWidget extends WidgetGroup {
             @Override
             public void touchUp(InputEvent event, float localX, float localY, int pointer, int mouseButton) {
                 pointers.remove(pointer);
-                if (dragging) {
+                if (event.isTouchFocusCancel() || dragging) {
                     cancelNodeClicks();
                 } else if (pointers.isEmpty() && event.getTarget() == StrategicMapWidget.this) {
-                    mapTapHandler.run();
+                    handleTap(null, event);
                 }
             }
 
@@ -345,6 +358,7 @@ public final class StrategicMapWidget extends WidgetGroup {
                 }
                 validate();
                 float factor = (float) Math.exp(-amountY * 0.18f);
+                interaction.reset();
                 camera.zoomAt(camera.getZoom() * factor, localX, localY);
                 invalidate();
                 return true;
@@ -354,8 +368,22 @@ public final class StrategicMapWidget extends WidgetGroup {
 
     private void cancelNodeClicks() {
         dragging = true;
+        interaction.reset();
         for (ClickListener clickListener : nodeClickListeners) {
             clickListener.cancel();
+        }
+    }
+
+    private void handleTap(String cityId, InputEvent event) {
+        MapInteractionState.Action action = interaction.tap(
+            cityId, fullscreen, TimeUtils.millis(), event.getStageX(), event.getStageY());
+        if (cityId != null) {
+            citySelectionHandler.accept(cityId);
+        }
+        if (action == MapInteractionState.Action.ENTER_FULLSCREEN) {
+            mapTapHandler.run();
+        } else if (action == MapInteractionState.Action.RESTORE_AND_FOCUS) {
+            cityActivationHandler.run();
         }
     }
 

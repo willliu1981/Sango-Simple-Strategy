@@ -33,6 +33,7 @@ public final class TurnResolutionService {
     private final DeterministicEventRoller eventRoller;
     private final BattleResolutionService battleResolutionService;
     private final EnemyTurnService enemyTurnService;
+    private final RetreatResolutionService retreatResolutionService;
 
     public TurnResolutionService(GameDefinitionRepository definitionRepository) {
         this(
@@ -53,6 +54,7 @@ public final class TurnResolutionService {
         this.eventRoller = eventRoller;
         this.battleResolutionService = battleResolutionService;
         this.enemyTurnService = enemyTurnService;
+        this.retreatResolutionService = new RetreatResolutionService();
     }
 
     public TurnResolutionResult resolve(GameState currentState) {
@@ -69,12 +71,14 @@ public final class TurnResolutionService {
         StrategicMapDefinition mapDefinition = definitionRepository.requireMap(
             nextState.mapId
         );
+        Set<String> retreatArmyIdsAtTurnStart = retreatArmyIds(nextState);
 
         Set<String> foodShortageFactionIds = resolveMilitaryUpkeep(nextState, report);
         Set<String> floodedCityIds = resolveFloodSeason(nextState, report);
         resolveQuarterlyTax(nextState, report);
         resolveHarvest(nextState, report);
-        Set<String> changedOwnerCityIds = resolveArmyMovement(nextState, report);
+        Set<String> changedOwnerCityIds = resolveArmyMovement(nextState, mapDefinition, report);
+        retreatResolutionService.resolve(nextState, mapDefinition, retreatArmyIdsAtTurnStart, report);
         enemyTurnService.execute(nextState, mapDefinition, report);
         resolvePublicOrderNaturalRecovery(
             nextState,
@@ -176,7 +180,7 @@ public final class TurnResolutionService {
             int actualLoss = Math.min(cityState.morale, moraleLoss);
             cityState.morale -= actualLoss;
             cityState.moraleFraction = 0;
-            cityState.publicOrder = 0;
+            cityState.publicOrderRecoveryStreakMonths = 0;
             if (playerFaction && actualLoss > 0) {
                 report.add(new TurnEvent(TurnEventType.FOOD_SHORTAGE_MORALE,
                     factionId, cityState.cityId, null, actualLoss, cityState.morale));
@@ -196,14 +200,14 @@ public final class TurnResolutionService {
             }
         }
 
-        int remainingDeserters = Math.multiplyExact(shortage, 4);
-        int originalDeserters = remainingDeserters;
+        long remainingDeserters = (long) shortage * 4;
+        long originalDeserters = remainingDeserters;
 
         for (ArmyState armyState : gameState.armyStates) {
             if (!factionId.equals(armyState.factionId) || remainingDeserters <= 0) {
                 continue;
             }
-            int armyLoss = Math.min(armyState.troops / 5, remainingDeserters);
+            int armyLoss = (int) Math.min(armyState.troops / 5, remainingDeserters);
             armyState.troops -= armyLoss;
             remainingDeserters -= armyLoss;
         }
@@ -211,12 +215,12 @@ public final class TurnResolutionService {
             if (!factionId.equals(cityState.ownerFactionId) || remainingDeserters <= 0) {
                 continue;
             }
-            int cityLoss = Math.min(cityState.troops / 5, remainingDeserters);
+            int cityLoss = (int) Math.min(cityState.troops / 5, remainingDeserters);
             cityState.troops -= cityLoss;
             remainingDeserters -= cityLoss;
         }
         removeEmptyArmies(gameState);
-        return originalDeserters - remainingDeserters;
+        return Math.toIntExact(originalDeserters - remainingDeserters);
     }
 
     private void removeEmptyArmies(GameState gameState) {
@@ -343,12 +347,13 @@ public final class TurnResolutionService {
 
     private Set<String> resolveArmyMovement(
         GameState gameState,
+        StrategicMapDefinition mapDefinition,
         TurnResolutionReport report
     ) {
         Set<String> changedOwnerCityIds = new HashSet<>();
         ArmyState[] movementSnapshot = gameState.armyStates.clone();
         for (ArmyState armyState : movementSnapshot) {
-            if (!containsArmy(gameState, armyState.armyId)) {
+            if (armyState.isRetreating() || !containsArmy(gameState, armyState.armyId)) {
                 continue;
             }
             if (armyState.remainingTravelMonths > 0) {
@@ -370,7 +375,7 @@ public final class TurnResolutionService {
 
         Set<String> groupIds = new LinkedHashSet<>();
         for (ArmyState armyState : movementSnapshot) {
-            if (containsArmy(gameState, armyState.armyId)) {
+            if (!armyState.isRetreating() && containsArmy(gameState, armyState.armyId)) {
                 groupIds.add(effectiveGroupId(armyState));
             }
         }
@@ -380,11 +385,13 @@ public final class TurnResolutionService {
                 continue;
             }
             String targetCityId = groupArmies.get(0).targetCityId;
-            if (battleResolutionService.resolveArrival(gameState, groupArmies, report)) {
+            if (battleResolutionService.resolveArrival(gameState, groupArmies, mapDefinition, report)) {
                 changedOwnerCityIds.add(targetCityId);
             }
             for (ArmyState armyState : groupArmies) {
-                gameState.removeArmy(armyState.armyId);
+                if (containsArmy(gameState, armyState.armyId) && !armyState.isRetreating()) {
+                    gameState.removeArmy(armyState.armyId);
+                }
             }
         }
         return changedOwnerCityIds;
@@ -393,7 +400,7 @@ public final class TurnResolutionService {
     private List<ArmyState> findGroupArmies(GameState gameState, String groupId) {
         List<ArmyState> groupArmies = new ArrayList<>();
         for (ArmyState armyState : gameState.armyStates) {
-            if (groupId.equals(effectiveGroupId(armyState))) {
+            if (!armyState.isRetreating() && groupId.equals(effectiveGroupId(armyState))) {
                 groupArmies.add(armyState);
             }
         }
@@ -455,6 +462,16 @@ public final class TurnResolutionService {
             }
         }
         return false;
+    }
+
+    private Set<String> retreatArmyIds(GameState gameState) {
+        Set<String> ids = new LinkedHashSet<>();
+        for (ArmyState armyState : gameState.armyStates) {
+            if (armyState.isRetreating()) {
+                ids.add(armyState.armyId);
+            }
+        }
+        return ids;
     }
 
     private void resolveAnnualPopulation(GameState gameState, TurnResolutionReport report) {

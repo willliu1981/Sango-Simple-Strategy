@@ -65,7 +65,7 @@ public final class EnemyTurnService {
 
     private boolean tryMarch(GameState gameState, StrategicMapDefinition mapDefinition,
         FactionState factionState, TurnResolutionReport report) {
-        if (gameState.enemyAttackCountdown != 0 || gameState.hasArmyForFaction(factionState.factionId)
+        if (gameState.enemyAttackCountdown != 0
             || factionState.food < ExpeditionRules.FOOD_COST
             || FactionActionPointRules.remaining(gameState, factionState.factionId) < ExpeditionRules.ACTION_POINT_COST) {
             return false;

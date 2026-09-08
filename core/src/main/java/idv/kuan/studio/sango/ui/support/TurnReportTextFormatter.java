@@ -19,7 +19,7 @@ public final class TurnReportTextFormatter {
     private final NumberFormat numberFormat = NumberFormat.getIntegerInstance(Locale.TAIWAN);
 
     public String format(TurnResolutionReport report) {
-        if (report == null || report.isEmpty()) {
+        if (report == null) {
             return text("report_empty", "本月沒有特殊事件。");
         }
         StringBuilder reportBuilder = new StringBuilder();
@@ -133,6 +133,25 @@ public final class TurnReportTextFormatter {
                 optionalCityName(turnEvent.getCityId()),
                 numberFormat.format(turnEvent.getPrimaryValue())
             );
+            case ARMY_RETREAT_STARTED -> text("report_retreat_started",
+                "{0} 戰敗後，{2} 名生還士兵撤往 {1}，行程 {3} 個月，下月開始移動。",
+                optionalCityName(turnEvent.getCityId()), optionalCityName(turnEvent.getOtherCityId()),
+                numberFormat.format(turnEvent.getPrimaryValue()), turnEvent.getSecondaryValue());
+            case ARMY_RETREAT_ADVANCED -> text("report_retreat_advanced",
+                "撤退部隊 {2} 兵由 {0} 前往 {1}，此段道路尚需 {3} 個月。",
+                optionalCityName(turnEvent.getCityId()), optionalCityName(turnEvent.getOtherCityId()),
+                numberFormat.format(turnEvent.getPrimaryValue()), turnEvent.getSecondaryValue());
+            case ARMY_RETREAT_REROUTED -> text("report_retreat_rerouted",
+                "原撤退路線通往 {0}，現已失效；{2} 兵改撤往 {1}，新行程 {3} 個月。",
+                optionalCityName(turnEvent.getCityId()), optionalCityName(turnEvent.getOtherCityId()),
+                numberFormat.format(turnEvent.getPrimaryValue()), turnEvent.getSecondaryValue());
+            case ARMY_RETREAT_ARRIVED -> text("report_retreat_arrived",
+                "由 {1} 戰場撤回的 {2} 兵已抵達 {0}，併入守軍。",
+                optionalCityName(turnEvent.getCityId()), optionalCityName(turnEvent.getOtherCityId()),
+                numberFormat.format(turnEvent.getPrimaryValue()));
+            case ARMY_RETREAT_DISBANDED -> text("report_retreat_disbanded",
+                "{0} 一帶部隊無可撤往的安全我方城池，{1} 兵潰散。",
+                optionalCityName(turnEvent.getCityId()), numberFormat.format(turnEvent.getPrimaryValue()));
             case BATTLE_ATTACKER_WON -> text(
                 "report_event_attack_winner_named", "", factionName(turnEvent.getFactionId()),
                 optionalCityName(turnEvent.getCityId())
