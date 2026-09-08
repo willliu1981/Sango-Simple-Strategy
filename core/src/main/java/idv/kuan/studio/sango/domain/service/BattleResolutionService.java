@@ -115,12 +115,10 @@ public final class BattleResolutionService {
             throw new IllegalArgumentException("抵達軍隊不可為空。");
         }
         ArmyState firstArmy = armyStates.get(0);
-        String groupId = effectiveGroupId(firstArmy);
         for (ArmyState armyState : armyStates) {
-            if (armyState == null || !groupId.equals(effectiveGroupId(armyState))
-                || !firstArmy.factionId.equals(armyState.factionId)
+            if (armyState == null || !firstArmy.factionId.equals(armyState.factionId)
                 || !firstArmy.targetCityId.equals(armyState.targetCityId)) {
-                throw new IllegalArgumentException("聯合抵達軍隊必須屬於同一群組、勢力與目標。");
+                throw new IllegalArgumentException("聯合抵達軍隊必須屬於同一勢力與目標。");
             }
         }
     }
@@ -380,11 +378,6 @@ public final class BattleResolutionService {
             turnResolutionReport.add(new TurnEvent(TurnEventType.CAPITAL_RELOCATED,
                 defendingFactionId, playerFactionState.capitalCityId, capturedCityId, 0, 0));
         }
-    }
-
-    private String effectiveGroupId(ArmyState armyState) {
-        return armyState.expeditionGroupId == null ? armyState.armyId
-            : armyState.expeditionGroupId;
     }
 
     private int clamp(long value, int minimum, int maximum) {

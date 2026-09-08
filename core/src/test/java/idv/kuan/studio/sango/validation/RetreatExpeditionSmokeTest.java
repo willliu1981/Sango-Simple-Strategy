@@ -9,14 +9,17 @@ import com.badlogic.gdx.files.FileHandle;
 import idv.kuan.studio.sango.application.command.NewGameCommand;
 import idv.kuan.studio.sango.application.request.NewGameRequest;
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
+import idv.kuan.studio.sango.application.result.TurnResolutionResult;
 import idv.kuan.studio.sango.domain.definition.StrategicMapDefinition;
 import idv.kuan.studio.sango.domain.model.ArmyState;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
+import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.domain.service.BattleResolutionService;
 import idv.kuan.studio.sango.domain.service.RetreatResolutionService;
+import idv.kuan.studio.sango.domain.service.TurnResolutionService;
 import idv.kuan.studio.sango.repository.definition.AssetJsonGameDefinitionRepository;
 import idv.kuan.studio.sango.repository.save.GameStateMigrator;
 import idv.kuan.studio.sango.repository.save.LocalJsonSaveGameRepository;
@@ -30,6 +33,7 @@ public final class RetreatExpeditionSmokeTest {
         FileHandle temp = new FileHandle(Files.createTempDirectory("sango-retreat-test-").toFile());
         try {
             AssetJsonGameDefinitionRepository definitions = definitions(assets);
+            validateSameMonthArrivalsCombine(definitions, temp.child("combined"));
             GameState state = new NewGameCommand(definitions, new LocalJsonSaveGameRepository(temp))
                 .execute(1, new NewGameRequest("warlords_china", "cao_cao"));
             StrategicMapDefinition map = definitions.requireMap(state.mapId);
@@ -67,6 +71,34 @@ public final class RetreatExpeditionSmokeTest {
         } finally {
             temp.deleteDirectory();
         }
+    }
+
+    private static void validateSameMonthArrivalsCombine(
+        AssetJsonGameDefinitionRepository definitions, FileHandle saveDirectory
+    ) {
+        GameState state = new NewGameCommand(definitions, new LocalJsonSaveGameRepository(saveDirectory))
+            .execute(1, new NewGameRequest("warlords_china", "cao_cao"));
+        state.requirePlayerFactionState().food = 100_000;
+        state.enemyAttackCountdown = 99;
+        for (FactionState faction : state.factionStates) {
+            faction.aiActionPointsRemaining = 0;
+        }
+        CityState target = state.requireCityState("runan");
+        target.ownerFactionId = "yellow_turban";
+        target.troops = 2_000;
+        target.defense = 100;
+        ArmyState first = army(state, "chenliu", "runan", 400);
+        ArmyState second = army(state, "chenliu", "runan", 400);
+        state.addArmy(first);
+        state.addArmy(second);
+
+        TurnResolutionResult result = new TurnResolutionService(definitions).resolve(state);
+        GameState resolved = result.getGameState();
+        check(resolved.battleReports.length == 1, "同月同勢力同目標只產生一份戰報");
+        check(resolved.battleReports[0].attackerContributions.length == 2,
+            "分次下令的兩支抵達軍共同參戰並保留來源明細");
+        check(result.getReport().getBattleReportIds().size() == 1,
+            "本月結算只登記一場聯合作戰");
     }
 
     private static AssetJsonGameDefinitionRepository definitions(Path assets) {

@@ -2,8 +2,10 @@ package idv.kuan.studio.sango.domain.service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import idv.kuan.studio.sango.application.result.TurnEvent;
@@ -379,16 +381,23 @@ public final class TurnResolutionService {
                 groupIds.add(effectiveGroupId(armyState));
             }
         }
+        Map<String, List<ArmyState>> arrivalsByBattle = new LinkedHashMap<>();
         for (String groupId : groupIds) {
             List<ArmyState> groupArmies = findGroupArmies(gameState, groupId);
             if (groupArmies.isEmpty() || !allArrived(groupArmies)) {
                 continue;
             }
-            String targetCityId = groupArmies.get(0).targetCityId;
-            if (battleResolutionService.resolveArrival(gameState, groupArmies, mapDefinition, report)) {
+            ArmyState firstArmy = groupArmies.get(0);
+            String battleKey = firstArmy.factionId + "\u0000" + firstArmy.targetCityId;
+            arrivalsByBattle.computeIfAbsent(battleKey, ignored -> new ArrayList<>())
+                .addAll(groupArmies);
+        }
+        for (List<ArmyState> arrivingArmies : arrivalsByBattle.values()) {
+            String targetCityId = arrivingArmies.get(0).targetCityId;
+            if (battleResolutionService.resolveArrival(gameState, arrivingArmies, mapDefinition, report)) {
                 changedOwnerCityIds.add(targetCityId);
             }
-            for (ArmyState armyState : groupArmies) {
+            for (ArmyState armyState : arrivingArmies) {
                 if (containsArmy(gameState, armyState.armyId) && !armyState.isRetreating()) {
                     gameState.removeArmy(armyState.armyId);
                 }
