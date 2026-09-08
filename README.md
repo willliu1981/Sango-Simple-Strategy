@@ -6,6 +6,10 @@
 
 目前版本：**0.6.1 早期測試版**
 
+## 遊戲影片
+
+[▶ 觀看《簡易三國志》實際遊玩影片](https://youtu.be/RraldBojNZg)
+
 ## 下載遊戲
 
 請前往 [Releases 下載頁](https://github.com/willliu1981/Sango-Simple-Strategy/releases)，選擇適合裝置的附件：
