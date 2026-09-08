@@ -71,15 +71,17 @@
                     <label id="selected_city_route_label" fontSize="23" width="590" height="58"
                         align="left" textAlign="left" wrap="true" color="0.68,0.62,0.54,1">${text:map_route_placeholder}</label>
                     <row />
-                    <label fontKey="title" fontSize="30" width="590" height="40"
-                        color="0.86,0.68,0.37,1">${text:map_tactic_heading}</label>
-                    <row />
-                    <table width="590" height="62">
-                        <textButton id="tactic_balanced_button" fontSize="24" width="182" height="58">${text:button_tactic_balanced}</textButton>
-                        <textButton id="tactic_assault_button" fontSize="24" width="182" height="58"
-                            padLeft="14">${text:button_tactic_assault}</textButton>
-                        <textButton id="tactic_cautious_button" fontSize="24" width="182" height="58"
-                            padLeft="14">${text:button_tactic_cautious}</textButton>
+                    <table id="defense_policy_panel" width="590" height="106">
+                        <label fontKey="title" fontSize="30" width="590" height="40"
+                            color="0.86,0.68,0.37,1">${text:map_defense_policy_heading}</label>
+                        <row />
+                        <table width="590" height="62">
+                            <textButton id="defense_balanced_button" fontSize="24" width="182" height="58">${text:button_defense_balanced}</textButton>
+                            <textButton id="defense_aggressive_button" fontSize="24" width="182" height="58"
+                                padLeft="14">${text:button_defense_aggressive}</textButton>
+                            <textButton id="defense_hold_button" fontSize="24" width="182" height="58"
+                                padLeft="14">${text:button_defense_hold}</textButton>
+                        </table>
                     </table>
                     <row />
                     <table width="590" height="68" padTop="8">
@@ -151,6 +153,17 @@
             <row />
             <label fontSize="23" width="1170" height="42" wrap="true"
                 color="0.70,0.65,0.56,1">${text:dispatch_amount_hint}</label>
+            <row />
+            <table id="dispatch_tactic_panel" width="1170" height="72">
+                <label fontKey="title" fontSize="29" width="250" height="62"
+                    color="0.86,0.68,0.37,1">${text:dispatch_tactic_heading}</label>
+                <textButton id="dispatch_tactic_balanced_button" fontSize="24" width="280" height="58"
+                    padLeft="12">${text:button_tactic_balanced}</textButton>
+                <textButton id="dispatch_tactic_assault_button" fontSize="24" width="280" height="58"
+                    padLeft="12">${text:button_tactic_assault}</textButton>
+                <textButton id="dispatch_tactic_cautious_button" fontSize="24" width="280" height="58"
+                    padLeft="12">${text:button_tactic_cautious}</textButton>
+            </table>
             <row />
             <group id="dispatch_selected_origins_host" width="1170" height="128" touchChildrenOnly="true" />
             <row />

@@ -136,3 +136,16 @@ tasks.register('runRetreatExpeditionSmokeTest', JavaExec) {
 tasks.named('check') {
   dependsOn 'runRetreatExpeditionSmokeTest'
 }
+
+tasks.register('runDefenseIntelligenceSmokeTest', JavaExec) {
+  group = 'verification'
+  description = '驗證防守方針、情報隔離、期限、戰報與 schema 10。'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.DefenseIntelligenceSmokeTest')
+  args rootProject.file('assets').absolutePath
+}
+
+tasks.named('check') {
+  dependsOn 'runDefenseIntelligenceSmokeTest'
+}

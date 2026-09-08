@@ -17,11 +17,13 @@ import idv.kuan.studio.sango.domain.definition.ScenarioDefinition;
 import idv.kuan.studio.sango.domain.definition.StrategicMapDefinition;
 import idv.kuan.studio.sango.domain.model.ArmyState;
 import idv.kuan.studio.sango.domain.model.BattleReport;
+import idv.kuan.studio.sango.domain.model.CityIntelligenceSnapshot;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
+import idv.kuan.studio.sango.domain.rule.DefensePolicy;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
 import idv.kuan.studio.sango.domain.rule.FactionActionPointRules;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
@@ -230,6 +232,7 @@ public final class NewGameCommand {
         factionState.gold = factionDefinition.initialGold;
         factionState.food = factionDefinition.initialFood;
         factionState.active = active;
+        factionState.cityIntelligence = new CityIntelligenceSnapshot[0];
         return factionState;
     }
 
@@ -251,6 +254,7 @@ public final class NewGameCommand {
         cityState.training = cityDefinition.initialTraining;
         cityState.morale = cityDefinition.initialMorale;
         cityState.harvestModifierPercent = 100;
+        cityState.defensePolicy = DefensePolicy.BALANCED;
         cityState.scoutedUntilTurn = 0;
         return cityState;
     }

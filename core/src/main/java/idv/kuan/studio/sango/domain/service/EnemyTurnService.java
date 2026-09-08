@@ -1,5 +1,6 @@
 package idv.kuan.studio.sango.domain.service;
 
+import idv.kuan.studio.sango.application.command.ScoutCityCommand;
 import idv.kuan.studio.sango.application.result.TurnEvent;
 import idv.kuan.studio.sango.application.result.TurnEventType;
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
@@ -11,13 +12,14 @@ import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.domain.rule.DomesticActionFailureReason;
+import idv.kuan.studio.sango.domain.rule.DefensePolicy;
 import idv.kuan.studio.sango.domain.rule.DomesticActionRules;
 import idv.kuan.studio.sango.domain.rule.DomesticActionType;
 import idv.kuan.studio.sango.domain.rule.ExpeditionRules;
 import idv.kuan.studio.sango.domain.rule.FactionActionPointRules;
-import idv.kuan.studio.sango.domain.rule.MilitaryRules;
 import idv.kuan.studio.sango.domain.rule.OfficerCommandProfile;
 import idv.kuan.studio.sango.domain.rule.RecruitmentRules;
+import idv.kuan.studio.sango.domain.rule.StrategicActionFailureReason;
 
 /**
  * AI 使用與玩家相同的月額度、徵兵、訓練、資源及出征限制。
@@ -27,6 +29,8 @@ public final class EnemyTurnService {
     private static final int ASSEMBLY_MONTHS = 3;
     private static final int TARGET_GARRISON = 1_800;
     private final DomesticActionService domesticActionService = new DomesticActionService();
+    private final CityIntelligenceService intelligenceService = new CityIntelligenceService();
+    private final ScoutCityCommand scoutCityCommand = new ScoutCityCommand(null);
 
     public void execute(GameState gameState, StrategicMapDefinition mapDefinition, TurnResolutionReport report) {
         if (!gameState.isGameplayActive()) {
@@ -40,12 +44,16 @@ public final class EnemyTurnService {
             }
             int budget = FactionActionPointRules.remaining(gameState, factionState.factionId);
             int capacity = FactionActionPointRules.capacity(gameState, factionState.factionId);
+            adjustDefensePolicies(gameState, mapDefinition, factionState.factionId);
             if (gameState.enemyAttackCountdown > 0) {
                 report.add(new TurnEvent(TurnEventType.ENEMY_PREPARING, factionState.factionId,
                     factionState.capitalCityId, null, gameState.enemyAttackCountdown, 0));
             }
             for (int i = 0; i < budget; i++) {
                 if (tryMarch(gameState, mapDefinition, factionState, report)) {
+                    continue;
+                }
+                if (tryScout(gameState, mapDefinition, factionState)) {
                     continue;
                 }
                 if (!tryDomesticAction(gameState, factionState, report)) {
@@ -61,6 +69,33 @@ public final class EnemyTurnService {
         if (gameState.enemyAttackCountdown == 0) {
             gameState.enemyAttackCountdown = ASSEMBLY_MONTHS;
         }
+    }
+
+    private boolean tryScout(GameState gameState, StrategicMapDefinition mapDefinition,
+        FactionState factionState) {
+        if (factionState.gold < ScoutCityCommand.GOLD_COST
+            || FactionActionPointRules.remaining(gameState, factionState.factionId)
+                < ScoutCityCommand.ACTION_POINT_COST) {
+            return false;
+        }
+        for (CityState origin : gameState.findCitiesOwnedBy(factionState.factionId)) {
+            for (CityConnectionDefinition connection : mapDefinition.connections) {
+                String targetId = connectedCityId(origin.cityId, connection);
+                if (targetId == null) {
+                    continue;
+                }
+                CityState target = gameState.requireCityState(targetId);
+                if (factionState.factionId.equals(target.ownerFactionId)
+                    || intelligenceService.findSnapshot(gameState, factionState.factionId,
+                        targetId) != null) {
+                    continue;
+                }
+                return scoutCityCommand.executeInPlace(gameState, mapDefinition,
+                    factionState.factionId, origin.cityId, targetId)
+                    == StrategicActionFailureReason.NONE;
+            }
+        }
+        return false;
     }
 
     private boolean tryMarch(GameState gameState, StrategicMapDefinition mapDefinition,
@@ -169,7 +204,9 @@ public final class EnemyTurnService {
                     continue;
                 }
                 int dispatchTroops = ExpeditionRules.calculateDispatchTroops(originCity);
-                long score = (long) MilitaryRules.calculateDefenderStrength(targetCity) * 1_000
+                KnownCityView knownTarget = intelligenceService.knownView(
+                    gameState, factionId, targetCityId);
+                long score = estimatedDefenderStrength(knownTarget) * 1_000
                     / Math.max(1, dispatchTroops);
                 if (dispatchTroops < ExpeditionRules.MINIMUM_EXPEDITION) {
                     score += 1_000_000L;
@@ -181,6 +218,49 @@ public final class EnemyTurnService {
             }
         }
         return bestPlan;
+    }
+
+    private void adjustDefensePolicies(GameState gameState,
+        StrategicMapDefinition mapDefinition, String factionId) {
+        for (CityState city : gameState.findCitiesOwnedBy(factionId)) {
+            long knownThreat = 0;
+            for (CityConnectionDefinition connection : mapDefinition.connections) {
+                String targetId = connectedCityId(city.cityId, connection);
+                if (targetId == null) {
+                    continue;
+                }
+                CityState target = gameState.requireCityState(targetId);
+                if (!factionId.equals(target.ownerFactionId)) {
+                    knownThreat += intelligenceService.knownView(gameState, factionId,
+                        targetId).troops();
+                }
+            }
+            DefensePolicy desired = DefensePolicy.BALANCED;
+            if (knownThreat > 0 && (long) city.troops * 10 < knownThreat * 9) {
+                desired = DefensePolicy.HOLD;
+            } else if (knownThreat > 0 && city.troops >= knownThreat * 3 / 2
+                && city.training >= 60 && city.morale >= 60) {
+                desired = DefensePolicy.AGGRESSIVE;
+            }
+            city.defensePolicy = desired;
+        }
+    }
+
+    private long estimatedDefenderStrength(KnownCityView view) {
+        return Math.max(1L, (long) view.troops() * (100 + view.training())
+            * (150 + view.morale()) * (100 + view.defense() / 2)
+            * (view.defensePolicy() == null ? 100 : view.defensePolicy().getStrengthPercent())
+            / 200_000_000L);
+    }
+
+    private String connectedCityId(String cityId, CityConnectionDefinition connection) {
+        if (cityId.equals(connection.fromCityId)) {
+            return connection.toCityId;
+        }
+        if (cityId.equals(connection.toCityId)) {
+            return connection.fromCityId;
+        }
+        return null;
     }
 
     private record AttackPlan(CityState originCity, CityState targetCity) {

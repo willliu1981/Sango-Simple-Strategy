@@ -7,12 +7,16 @@ import idv.kuan.studio.sango.domain.rule.FactionActionPointRules;
 import idv.kuan.studio.sango.domain.rule.TroopQualityRules;
 import idv.kuan.studio.sango.domain.model.CampaignStatus;
 import idv.kuan.studio.sango.domain.model.CityState;
+import idv.kuan.studio.sango.domain.model.CityIntelligenceSnapshot;
+import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
+import idv.kuan.studio.sango.domain.rule.DefensePolicy;
+import idv.kuan.studio.sango.domain.service.CityIntelligenceService;
 
 /**
- * 逐版遷移 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9。僅遷移狀態結構，不替換舊劇本或憑空增加領地。
+ * 逐版遷移 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10。僅遷移狀態結構，不替換舊劇本或憑空增加領地。
  */
 @SuppressWarnings("deprecation")
 public final class GameStateMigrator {
@@ -41,6 +45,9 @@ public final class GameStateMigrator {
         }
         if (migratedState.schemaVersion == 8) {
             migrateSchemaEightToNine(migratedState);
+        }
+        if (migratedState.schemaVersion == 9) {
+            migrateSchemaNineToTen(migratedState);
         }
         if (migratedState.schemaVersion != SangoVersion.GAME_STATE_SCHEMA_VERSION) {
             throw new IllegalArgumentException(
@@ -168,6 +175,31 @@ public final class GameStateMigrator {
         gameState.schemaVersion = 9;
     }
 
+    private void migrateSchemaNineToTen(GameState gameState) {
+        for (FactionState factionState : gameState.factionStates) {
+            factionState.cityIntelligence = new CityIntelligenceSnapshot[0];
+        }
+        CityIntelligenceService intelligenceService = new CityIntelligenceService();
+        for (CityState cityState : gameState.cityStates) {
+            cityState.defensePolicy = DefensePolicy.BALANCED;
+            if (!gameState.playerFactionId.equals(cityState.ownerFactionId)
+                && cityState.scoutedUntilTurn >= gameState.currentTurn) {
+                intelligenceService.restoreLegacy(gameState, gameState.playerFactionId,
+                    cityState.cityId, cityState.scoutedUntilTurn);
+            }
+            cityState.scoutedUntilTurn = 0;
+        }
+        if (gameState.battleReports != null) {
+            for (BattleReport battleReport : gameState.battleReports) {
+                if (battleReport != null) {
+                    battleReport.defenderPolicy = null;
+                    battleReport.defenderPolicyRecorded = false;
+                }
+            }
+        }
+        gameState.schemaVersion = 10;
+    }
+
     private int migrateLegacyQuality(int scaledQuality) {
         return Math.min(100, Math.max(0,
             (scaledQuality + TroopQualityRules.SCALE - 1) / TroopQualityRules.SCALE));
@@ -179,6 +211,11 @@ public final class GameStateMigrator {
         }
         if (gameState.nextBattleSequence < 1) {
             gameState.nextBattleSequence = gameState.battleReports.length + 1;
+        }
+        for (FactionState factionState : gameState.factionStates) {
+            if (factionState.cityIntelligence == null) {
+                factionState.cityIntelligence = new CityIntelligenceSnapshot[0];
+            }
         }
         gameState.campaignStatus = null;
     }

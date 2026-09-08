@@ -116,6 +116,7 @@ public final class GameStateValidator {
 
         for (FactionState factionState : gameState.factionStates) {
             validateCapitalReference(factionState, cityStatesById);
+            validateIntelligence(factionState, factionIds, cityStatesById);
         }
 
         Set<String> armyIds = new HashSet<>();
@@ -183,6 +184,9 @@ public final class GameStateValidator {
         requireRange(factionState.aiActionPointsPerTurn, 0, 9, "factionState.aiActionPointsPerTurn");
         requireRange(factionState.aiActionPointsRemaining, 0, factionState.aiActionPointsPerTurn,
             "factionState.aiActionPointsRemaining");
+        if (factionState.cityIntelligence == null) {
+            throw new IllegalArgumentException("factionState.cityIntelligence 不可為 null。");
+        }
         if (factionState.active) {
             requireText(factionState.capitalCityId, "factionState.capitalCityId");
         }
@@ -217,6 +221,9 @@ public final class GameStateValidator {
             100,
             "cityState.harvestModifierPercent"
         );
+        if (cityState.defensePolicy == null) {
+            throw new IllegalArgumentException("cityState.defensePolicy 不可為 null。");
+        }
         requireNonNegative(cityState.scoutedUntilTurn, "cityState.scoutedUntilTurn");
     }
 
@@ -330,6 +337,9 @@ public final class GameStateValidator {
         if (battleReport.attackerTactic == null) {
             throw new IllegalArgumentException("battleReport.attackerTactic 不可為 null。");
         }
+        if (battleReport.defenderPolicyRecorded && battleReport.defenderPolicy == null) {
+            throw new IllegalArgumentException("已記錄的守方方針不可為 null。");
+        }
         if (battleReport.outcome == null) {
             throw new IllegalArgumentException("battleReport.outcome 不可為 null。");
         }
@@ -415,6 +425,43 @@ public final class GameStateValidator {
 
     private static String effectiveGroupId(ArmyState armyState) {
         return armyState.expeditionGroupId == null ? armyState.armyId : armyState.expeditionGroupId;
+    }
+
+    private static void validateIntelligence(FactionState factionState, Set<String> factionIds,
+        Map<String, CityState> cityStatesById) {
+        Set<String> cityIds = new HashSet<>();
+        for (CityIntelligenceSnapshot snapshot : factionState.cityIntelligence) {
+            if (snapshot == null) {
+                throw new IllegalArgumentException("CityIntelligenceSnapshot 不可為 null。");
+            }
+            requireText(snapshot.cityId, "cityIntelligence.cityId");
+            requireText(snapshot.ownerFactionId, "cityIntelligence.ownerFactionId");
+            requireCityReference(cityStatesById, snapshot.cityId, "cityIntelligence.cityId");
+            requireFactionReference(factionIds, snapshot.ownerFactionId,
+                "cityIntelligence.ownerFactionId");
+            if (!cityIds.add(snapshot.cityId)) {
+                throw new IllegalArgumentException("同一勢力的城池情報不可重複：" + snapshot.cityId);
+            }
+            if (snapshot.observedTurn < 1 || snapshot.validThroughTurn < snapshot.observedTurn) {
+                throw new IllegalArgumentException("城池情報回合範圍無效：" + snapshot.cityId);
+            }
+            if (snapshot.observedYear < 1 || snapshot.observedMonth < 1
+                || snapshot.observedMonth > 12) {
+                throw new IllegalArgumentException("城池情報年月無效：" + snapshot.cityId);
+            }
+            requireNonNegative(snapshot.troops, "cityIntelligence.troops");
+            requireNonNegative(snapshot.population, "cityIntelligence.population");
+            requireRange(snapshot.agriculture, 0, 100, "cityIntelligence.agriculture");
+            requireRange(snapshot.commerce, 0, 100, "cityIntelligence.commerce");
+            requireRange(snapshot.waterControl, 0, 100, "cityIntelligence.waterControl");
+            requireRange(snapshot.defense, 0, 100, "cityIntelligence.defense");
+            requireRange(snapshot.training, 0, 100, "cityIntelligence.training");
+            requireRange(snapshot.morale, 0, 100, "cityIntelligence.morale");
+            requireRange(snapshot.publicOrder, 0, 100, "cityIntelligence.publicOrder");
+            if (snapshot.defensePolicy == null) {
+                throw new IllegalArgumentException("城池情報的防守方針不可為 null。");
+            }
+        }
     }
 
     private static final class ArmyGroupValidation {

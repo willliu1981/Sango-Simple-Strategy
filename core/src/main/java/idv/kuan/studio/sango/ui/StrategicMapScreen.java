@@ -29,6 +29,7 @@ import idv.kuan.studio.libgdx.simpleui.SuiScreen;
 import idv.kuan.studio.libgdx.simpleui.builder.BuiltUI;
 import idv.kuan.studio.sango.application.command.ExpeditionOrder;
 import idv.kuan.studio.sango.application.command.LaunchExpeditionCommand;
+import idv.kuan.studio.sango.application.command.SetDefensePolicyCommand;
 import idv.kuan.studio.sango.application.result.StrategicActionResult;
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
 import idv.kuan.studio.sango.application.result.TurnResolutionResult;
@@ -49,12 +50,16 @@ import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
+import idv.kuan.studio.sango.domain.rule.DefensePolicy;
+import idv.kuan.studio.sango.domain.service.CityIntelligenceService;
+import idv.kuan.studio.sango.domain.service.KnownCityView;
 import idv.kuan.studio.sango.domain.rule.SeasonalEconomyRules;
 import idv.kuan.studio.sango.domain.rule.StrategicActionFailureReason;
 import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.ui.flow.MonthEndFlowController;
 import idv.kuan.studio.sango.ui.id.ScreenId;
 import idv.kuan.studio.sango.ui.support.ContextHelpOverlay;
+import idv.kuan.studio.sango.ui.support.DispatchPanelRules;
 import idv.kuan.studio.sango.ui.support.ScreenBackground;
 import idv.kuan.studio.sango.ui.support.MapTerrainBackground;
 import idv.kuan.studio.sango.ui.support.NationalOrderTextFormatter;
@@ -76,6 +81,8 @@ public final class StrategicMapScreen extends SuiScreen {
     private final MapTerrainBackground mapTerrainBackground = new MapTerrainBackground();
     private final NumberFormat numberFormat = NumberFormat.getIntegerInstance(Locale.TAIWAN);
     private final MonthEndFlowController monthEndFlowController = new MonthEndFlowController();
+    private final CityIntelligenceService intelligenceService = new CityIntelligenceService();
+    private final SetDefensePolicyCommand setDefensePolicyCommand = new SetDefensePolicyCommand();
 
     private Actor endMonthConfirmMask;
     private Actor battlePromptMask;
@@ -94,6 +101,7 @@ public final class StrategicMapScreen extends SuiScreen {
     private TransferOriginOrder pendingTransferOriginOrder = TransferOriginOrder.SHORTEST_TRAVEL;
     private final Map<String, Integer> pendingDispatchAmounts = new LinkedHashMap<>();
     private final List<String> pendingSelectedOriginCityIds = new ArrayList<>();
+    private BattleTactic pendingBattleTactic = BattleTactic.BALANCED;
 
     @Override
     protected BuiltUI buildUI(UIFactory uiFactory) {
@@ -267,7 +275,8 @@ public final class StrategicMapScreen extends SuiScreen {
         SangoUiStyles.applySecondaryButton(button("dispatch_help_button"));
         SangoUiStyles.applySecondaryButton(button("dispatch_cancel_button"));
         SangoUiStyles.applyPrimaryButton(button("dispatch_confirm_button"));
-        refreshTacticStyles();
+        refreshDefensePolicyStyles(null);
+        refreshDispatchTacticStyles();
     }
 
     private void bindActions() {
@@ -279,9 +288,12 @@ public final class StrategicMapScreen extends SuiScreen {
         ui.onClick("scout_city_button", this::scoutSelectedCity);
         ui.onClick("launch_expedition_button", this::requestDispatch);
         ui.onClick("view_city_battle_button", this::viewSelectedCityBattle);
-        ui.onClick("tactic_balanced_button", () -> selectTactic(BattleTactic.BALANCED));
-        ui.onClick("tactic_assault_button", () -> selectTactic(BattleTactic.ASSAULT));
-        ui.onClick("tactic_cautious_button", () -> selectTactic(BattleTactic.CAUTIOUS));
+        ui.onClick("defense_balanced_button", () -> selectDefensePolicy(DefensePolicy.BALANCED));
+        ui.onClick("defense_aggressive_button", () -> selectDefensePolicy(DefensePolicy.AGGRESSIVE));
+        ui.onClick("defense_hold_button", () -> selectDefensePolicy(DefensePolicy.HOLD));
+        ui.onClick("dispatch_tactic_balanced_button", () -> selectDispatchTactic(BattleTactic.BALANCED));
+        ui.onClick("dispatch_tactic_assault_button", () -> selectDispatchTactic(BattleTactic.ASSAULT));
+        ui.onClick("dispatch_tactic_cautious_button", () -> selectDispatchTactic(BattleTactic.CAUTIOUS));
         ui.onClick("map_settings_button", this::openSettings);
         ui.onClick("context_help_button", this::showMapHelp);
         ui.onClick("show_last_report_button", this::showLastTurnReport);
@@ -335,27 +347,54 @@ public final class StrategicMapScreen extends SuiScreen {
         refreshView();
     }
 
-    private void selectTactic(BattleTactic battleTactic) {
-        SangoServices.session().setSelectedBattleTactic(battleTactic);
-        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
-        refreshTacticStyles();
-        if (SangoServices.session().hasCurrentState()) {
-            refreshSelectedCityPanel(SangoServices.session().requireCurrentState());
+    private void selectDefensePolicy(DefensePolicy policy) {
+        GameState currentState = requireCurrentState();
+        if (currentState == null) {
+            return;
         }
+        String cityId = SangoServices.session().getSelectedCityId();
+        try {
+            GameState nextState = setDefensePolicyCommand.execute(
+                currentState, currentState.playerFactionId, cityId, policy);
+            SangoServices.session().setCurrentState(
+                SangoServices.session().getCurrentSaveSlot(), nextState);
+            setStatus(text("map_status_defense_policy_updated", "已更新此城的防守方針。"),
+                STATUS_SUCCESS_COLOR);
+        } catch (IllegalArgumentException exception) {
+            setStatus(text("map_status_defense_policy_unavailable", "只能設定我方城池的防守方針。"),
+                STATUS_ERROR_COLOR);
+        }
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
+        refreshView();
     }
 
-    private void refreshTacticStyles() {
-        applyTacticStyle("tactic_balanced_button", BattleTactic.BALANCED);
-        applyTacticStyle("tactic_assault_button", BattleTactic.ASSAULT);
-        applyTacticStyle("tactic_cautious_button", BattleTactic.CAUTIOUS);
+    private void refreshDefensePolicyStyles(DefensePolicy selected) {
+        applySelectionStyle("defense_balanced_button", selected == DefensePolicy.BALANCED);
+        applySelectionStyle("defense_aggressive_button", selected == DefensePolicy.AGGRESSIVE);
+        applySelectionStyle("defense_hold_button", selected == DefensePolicy.HOLD);
     }
 
-    private void applyTacticStyle(String actorId, BattleTactic battleTactic) {
-        TextButton tacticButton = button(actorId);
-        if (SangoServices.session().getSelectedBattleTactic() == battleTactic) {
-            SangoUiStyles.applySelectedButton(tacticButton);
+    private void selectDispatchTactic(BattleTactic tactic) {
+        pendingBattleTactic = tactic;
+        refreshDispatchTacticStyles();
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
+    }
+
+    private void refreshDispatchTacticStyles() {
+        applySelectionStyle("dispatch_tactic_balanced_button",
+            pendingBattleTactic == BattleTactic.BALANCED);
+        applySelectionStyle("dispatch_tactic_assault_button",
+            pendingBattleTactic == BattleTactic.ASSAULT);
+        applySelectionStyle("dispatch_tactic_cautious_button",
+            pendingBattleTactic == BattleTactic.CAUTIOUS);
+    }
+
+    private void applySelectionStyle(String actorId, boolean selected) {
+        TextButton target = button(actorId);
+        if (selected) {
+            SangoUiStyles.applySelectedButton(target);
         } else {
-            SangoUiStyles.applySecondaryButton(tacticButton);
+            SangoUiStyles.applySecondaryButton(target);
         }
     }
 
@@ -436,7 +475,7 @@ public final class StrategicMapScreen extends SuiScreen {
         if (shortage > 0) {
             resourceLabel.setText(text(
                 "map_resources_shortage_format",
-                "共用金 {0}｜共用糧 {1}｜本月軍糧 {2}｜缺糧警示：尚缺 {3}",
+                "金 {0}｜糧 {1}｜本月軍糧 {2}｜缺糧警示：尚缺 {3}",
                 numberFormat.format(factionState.gold),
                 numberFormat.format(factionState.food),
                 numberFormat.format(foodDemand),
@@ -447,7 +486,7 @@ public final class StrategicMapScreen extends SuiScreen {
         }
         resourceLabel.setText(text(
             "map_resources_format",
-            "共用金 {0}｜共用糧 {1}｜本月軍糧需求 {2}",
+            "金 {0}｜糧 {1}｜本月軍糧需求 {2}",
             numberFormat.format(factionState.gold),
             numberFormat.format(factionState.food),
             numberFormat.format(foodDemand)
@@ -571,8 +610,9 @@ public final class StrategicMapScreen extends SuiScreen {
         FactionDefinition ownerDefinition = SangoServices.definitions().requireFaction(
             selectedCityState.ownerFactionId
         );
-        boolean exactIntel = hasExactIntel(gameState, selectedCityState);
         boolean playerOwned = gameState.playerFactionId.equals(selectedCityState.ownerFactionId);
+        KnownCityView knownCity = intelligenceService.knownView(
+            gameState, gameState.playerFactionId, selectedCityState.cityId);
         List<CityState> dispatchOrigins = playerOwned
             ? orderedTransferOrigins(
                 gameState, selectedCityState.cityId, TransferOriginOrder.SHORTEST_TRAVEL
@@ -592,10 +632,10 @@ public final class StrategicMapScreen extends SuiScreen {
                 + localized(ownerDefinition.nameKey, ownerDefinition.id)
         );
         label("selected_city_intel_label").setText(
-            buildIntelligenceText(gameState, selectedCityState, exactIntel)
+            buildIntelligenceText(gameState, knownCity, playerOwned)
         );
         label("selected_city_stats_label").setText(
-            buildSelectedCityStats(selectedCityState, exactIntel)
+            buildSelectedCityStats(knownCity)
         );
         label("selected_city_route_label").setText(
             buildRouteText(gameState, selectedCityState, routeOriginCityState)
@@ -608,6 +648,13 @@ public final class StrategicMapScreen extends SuiScreen {
         setButtonEnabled(button("view_city_battle_button"), cityBattleCount > 0);
 
         boolean gameplayActive = gameState.gameplayStatus == GameplayStatus.ACTIVE;
+        Actor defensePolicyPanel = ui.getActor("defense_policy_panel");
+        defensePolicyPanel.setVisible(playerOwned);
+        defensePolicyPanel.setTouchable(playerOwned ? Touchable.enabled : Touchable.disabled);
+        refreshDefensePolicyStyles(playerOwned ? selectedCityState.defensePolicy : null);
+        setButtonEnabled(button("defense_balanced_button"), gameplayActive && playerOwned);
+        setButtonEnabled(button("defense_aggressive_button"), gameplayActive && playerOwned);
+        setButtonEnabled(button("defense_hold_button"), gameplayActive && playerOwned);
         setButtonEnabled(button("manage_city_button"), gameplayActive && playerOwned);
         setButtonEnabled(
             button("scout_city_button"),
@@ -633,41 +680,49 @@ public final class StrategicMapScreen extends SuiScreen {
 
     private String buildIntelligenceText(
         GameState gameState,
-        CityState cityState,
-        boolean exactIntel
+        KnownCityView city,
+        boolean playerOwned
     ) {
-        if (exactIntel) {
+        if (city.exact()) {
+            String source = playerOwned
+                ? text("map_intel_own_city", "本城即時資料")
+                : city.observationDateRecorded()
+                    ? text("map_intel_scout_date_format", "{0} 年 {1} 月偵察",
+                        city.observedYear(), city.observedMonth())
+                    : text("map_intel_legacy", "舊存檔情報");
             return text(
                 "map_intel_exact_format",
-                "兵力：{0}｜人口：{1}｜情報：已掌握",
-                numberFormat.format(cityState.troops),
-                numberFormat.format(cityState.population)
+                "兵力：{0}｜人口：{1}｜情報：{2}",
+                numberFormat.format(city.troops()),
+                numberFormat.format(city.population()),
+                source
             );
         }
-        int lowerBound = Math.max(0, cityState.troops * 75 / 100 / 100 * 100);
-        int upperBound = Math.max(100, (cityState.troops * 125 / 100 + 99) / 100 * 100);
+        int lowerBound = Math.max(0, city.troops() * 75 / 100 / 100 * 100);
+        int upperBound = Math.max(100, (city.troops() * 125 / 100 + 99) / 100 * 100);
         return text(
             "map_intel_estimate_format",
-            "兵力：約 {0}～{1}｜情報不足；偵察可取得三回合精確情報。",
+            "兵力：約 {0}～{1}｜情報不足；偵察可取得三個月快照（含當月）。",
             numberFormat.format(lowerBound),
             numberFormat.format(upperBound)
         );
     }
 
-    private String buildSelectedCityStats(CityState cityState, boolean exactIntel) {
-        if (!exactIntel) {
-            return text("map_stats_unknown", "城防、訓練、士氣與內政狀態尚未掌握。");
+    private String buildSelectedCityStats(KnownCityView city) {
+        if (!city.exact()) {
+            return text("map_stats_unknown", "城防、訓練、士氣、民心、內政與防守方針尚未掌握。");
         }
         return text(
             "map_stats_format",
-            "城防 {0}｜訓練 {1}｜士氣 {2}｜民心 {3}｜農業 {4}｜商業 {5}｜治水 {6}",
-            cityState.defense,
-            cityState.training,
-            cityState.morale,
-            cityState.publicOrder,
-            cityState.agriculture,
-            cityState.commerce,
-            cityState.waterControl
+            "城防 {0}｜訓練 {1}｜士氣 {2}｜民心 {3}　農業 {4}｜商業 {5}｜治水 {6}｜防守 {7}",
+            city.defense(),
+            city.training(),
+            city.morale(),
+            city.publicOrder(),
+            city.agriculture(),
+            city.commerce(),
+            city.waterControl(),
+            defensePolicyName(city.defensePolicy())
         );
     }
 
@@ -701,11 +756,6 @@ public final class StrategicMapScreen extends SuiScreen {
     private int travelMonths(GameState gameState, String originCityId, String targetCityId) {
         return Math.max(0, SangoServices.definitions().requireMap(gameState.mapId)
             .shortestTravelMonths(originCityId, targetCityId));
-    }
-
-    private boolean hasExactIntel(GameState gameState, CityState cityState) {
-        return gameState.playerFactionId.equals(cityState.ownerFactionId)
-            || cityState.scoutedUntilTurn >= gameState.currentTurn;
     }
 
     private CityState findAdjacentPlayerCity(GameState gameState, String targetCityId) {
@@ -874,6 +924,7 @@ public final class StrategicMapScreen extends SuiScreen {
         if (transfer) {
             pendingTransferOriginOrder = TransferOriginOrder.SHORTEST_TRAVEL;
         }
+        pendingBattleTactic = BattleTactic.BALANCED;
         List<CityState> candidates = transfer
             ? orderedTransferOrigins(currentState, targetCityId, pendingTransferOriginOrder)
             : findAdjacentPlayerCities(currentState, targetCityId);
@@ -900,6 +951,8 @@ public final class StrategicMapScreen extends SuiScreen {
         pendingOriginCityId = originCityState.cityId;
         pendingTargetCityId = targetCityId;
         pendingSelectedOriginCityIds.add(originCityState.cityId);
+        refreshDispatchTacticStyles();
+        updateDispatchTacticPanel(transfer);
         refreshDispatchDetails();
         openModal(expeditionDispatchMask);
         dispatchOriginsPane.setScrollY(0f);
@@ -912,6 +965,7 @@ public final class StrategicMapScreen extends SuiScreen {
             return;
         }
         boolean transfer = isPendingTransfer(currentState);
+        updateDispatchTacticPanel(transfer);
         List<CityState> candidates = pendingOriginCandidates(currentState);
         if (candidates.size() < 2) {
             return;
@@ -1017,6 +1071,13 @@ public final class StrategicMapScreen extends SuiScreen {
 
     private void adjustDispatchAmount(int delta) {
         setDispatchAmount(currentDispatchAmount() + delta);
+    }
+
+    private void updateDispatchTacticPanel(boolean transfer) {
+        Actor tacticPanel = ui.getActor("dispatch_tactic_panel");
+        boolean visible = DispatchPanelRules.showsTacticSelection(transfer);
+        tacticPanel.setVisible(visible);
+        tacticPanel.setTouchable(visible ? Touchable.enabled : Touchable.disabled);
     }
 
     private void setDispatchAmount(int amount) {
@@ -1207,7 +1268,7 @@ public final class StrategicMapScreen extends SuiScreen {
                     originCityId,
                     targetCityId,
                     pendingDispatchAmounts.get(originCityId),
-                    SangoServices.session().getSelectedBattleTactic()
+                    BattleTactic.BALANCED
                 );
             } else {
                 List<ExpeditionOrder> orders = new ArrayList<>();
@@ -1222,7 +1283,7 @@ public final class StrategicMapScreen extends SuiScreen {
                     currentState,
                     targetCityId,
                     orders,
-                    SangoServices.session().getSelectedBattleTactic()
+                    pendingBattleTactic
                 );
             }
             closeModals();
@@ -1244,7 +1305,7 @@ public final class StrategicMapScreen extends SuiScreen {
             SangoServices.session().setCurrentState(slotNumber, actionResult.getGameState());
             if (scouting) {
                 setStatus(
-                    text("map_status_scout_success", "偵察完成；精確情報可維持三個回合。"),
+                    text("map_status_scout_success", "偵察完成；情報快照維持三個月（含當月）。"),
                     STATUS_SUCCESS_COLOR
                 );
             } else {
@@ -1399,7 +1460,7 @@ public final class StrategicMapScreen extends SuiScreen {
             text("help_map_title", "戰略圖操作說明"),
             text(
                 "help_map_body",
-                "共用金與共用糧屬於整個勢力；行動力（AP）則限制本月可下達的命令。\n\n城池之間必須有道路才能偵察、出征或運兵；出征只能選與目標相鄰的我方城，運兵可選任何沿道路可達的我方城。\n\n使用＋、－縮放地圖，「全圖」重設視野，「定位」回到目前選取城；連按地圖空白處可進入或退出全螢幕。全螢幕時連按城池仍只會選取城池。\n\n敵方與中立城的兵力起初是估算值。由相鄰我方城偵察會消耗 1 AP，完成後可查看三回合精確情報。"
+                "金與糧由整個勢力共用；行動力（AP）則限制本月可下達的命令。\n\n城池之間必須有道路才能偵察、出征或運兵；出征只能選與目標相鄰的我方城，運兵可選任何沿道路可達的我方城。偵察消耗 1 AP 與 20 金，取得三個月且包含當月的快照；目標之後的變動不會自動更新。\n\n我方城可設定持續生效的防守方針；出征戰術只在派兵視窗選擇並套用本次攻擊。\n\n使用＋、－縮放地圖，「全圖」重設視野，「定位」回到目前選取城；連按地圖空白處可進入或退出全螢幕。全螢幕時連按城池仍只會選取城池。"
             )
         );
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);
@@ -1423,7 +1484,7 @@ public final class StrategicMapScreen extends SuiScreen {
                 text("help_expedition_title", "聯合出征說明"),
                 text(
                     "help_expedition_body",
-                    "對敵方或中立城出征時，可用前一座／後一座查看每座相鄰我方城，並逐城加入或移除本次出征。各城兵數會分別保留，可切回繼續調整。\n\n每座參戰城至少派 400 兵、保留 400 守軍，兵數以 100 遞增；每加入一城就消耗 1 AP 與 100 糧。\n\n清單會顯示總兵力與最慢路程；同一批部隊等到全部來源集結完成後，才會進入同一場戰鬥。"
+                    "對敵方或中立城出征時，可用前一座／後一座查看每座相鄰我方城，並逐城加入或移除本次出征。各城兵數會分別保留，可切回繼續調整。\n\n每次開啟派兵視窗預設穩健，可為本次出征改選強攻或保守；運兵不使用出征戰術。\n\n每座參戰城至少派 400 兵、保留 400 守軍，兵數以 100 遞增；每加入一城就消耗 1 AP 與 100 糧。\n\n清單會顯示總兵力與最慢路程；同一批部隊等到全部來源集結完成後，才會進入同一場戰鬥。"
                 )
             );
         }
@@ -1477,6 +1538,9 @@ public final class StrategicMapScreen extends SuiScreen {
     }
 
     private void setAllGameplayButtonsEnabled(boolean enabled) {
+        setButtonEnabled(button("defense_balanced_button"), enabled);
+        setButtonEnabled(button("defense_aggressive_button"), enabled);
+        setButtonEnabled(button("defense_hold_button"), enabled);
         setButtonEnabled(button("manage_city_button"), enabled);
         setButtonEnabled(button("scout_city_button"), enabled);
         setButtonEnabled(button("launch_expedition_button"), enabled);
@@ -1505,6 +1569,17 @@ public final class StrategicMapScreen extends SuiScreen {
     private String cityName(String cityId) {
         CityDefinition cityDefinition = SangoServices.definitions().requireCity(cityId);
         return localized(cityDefinition.nameKey, cityDefinition.id);
+    }
+
+    private String defensePolicyName(DefensePolicy policy) {
+        if (policy == null) {
+            return text("defense_policy_unknown", "未知");
+        }
+        return switch (policy) {
+            case BALANCED -> text("defense_policy_balanced", "均衡防守");
+            case AGGRESSIVE -> text("defense_policy_aggressive", "積極迎戰");
+            case HOLD -> text("defense_policy_hold", "固守城池");
+        };
     }
 
     private String localized(String entryName, String fallback) {

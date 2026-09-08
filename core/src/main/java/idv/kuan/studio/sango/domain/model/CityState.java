@@ -1,5 +1,7 @@
 package idv.kuan.studio.sango.domain.model;
 
+import idv.kuan.studio.sango.domain.rule.DefensePolicy;
+
 /**
  * 城池在目前戰局中的可變狀態。
  */
@@ -21,6 +23,10 @@ public final class CityState {
     public int trainingFraction;
     public int moraleFraction;
     public int harvestModifierPercent;
+    /** 遭受攻擊時採用的方針；易主時重設為均衡。 */
+    public DefensePolicy defensePolicy = DefensePolicy.BALANCED;
+    /** @deprecated schema 10 改由各勢力的情報快照保存，僅供舊 JSON 遷移。 */
+    @Deprecated
     public int scoutedUntilTurn;
 
     public CityState() {
@@ -43,6 +49,7 @@ public final class CityState {
         copiedState.trainingFraction = trainingFraction;
         copiedState.moraleFraction = moraleFraction;
         copiedState.harvestModifierPercent = harvestModifierPercent;
+        copiedState.defensePolicy = defensePolicy;
         copiedState.scoutedUntilTurn = scoutedUntilTurn;
         return copiedState;
     }

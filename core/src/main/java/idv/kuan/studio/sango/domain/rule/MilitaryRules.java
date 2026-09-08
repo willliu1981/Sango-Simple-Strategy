@@ -20,8 +20,9 @@ public final class MilitaryRules {
     public static int calculateDefenderStrength(CityState cityState) {
         // 城防沿用既有整數除法規則，避免悄悄改動奇數城防的加成。
         long strength = (long) cityState.troops * (100 + cityState.training)
-            * (150 + cityState.morale) * (100 + cityState.defense / 2);
-        return safeStrength(strength / 2_000_000L, cityState.troops);
+            * (150 + cityState.morale) * (100 + cityState.defense / 2)
+            * cityState.defensePolicy.getStrengthPercent();
+        return safeStrength(strength / 200_000_000L, cityState.troops);
     }
 
     public static int weightedQuality(

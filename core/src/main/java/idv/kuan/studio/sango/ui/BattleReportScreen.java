@@ -34,6 +34,7 @@ import idv.kuan.studio.sango.domain.model.BattleContribution;
 import idv.kuan.studio.sango.domain.model.BattleOutcome;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
+import idv.kuan.studio.sango.domain.rule.DefensePolicy;
 import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.ui.id.ScreenId;
 import idv.kuan.studio.sango.ui.support.ScreenBackground;
@@ -158,8 +159,11 @@ public final class BattleReportScreen extends SuiScreen {
                 + tacticName(battleReport.attackerTactic)
                 + text(
                     "battle_report_defense_format",
-                    "｜守方城防：{0}",
-                    battleReport.defenderDefense
+                    "｜守方城防：{0}｜防守方針：{1}",
+                    battleReport.defenderDefense,
+                    battleReport.defenderPolicyRecorded
+                        ? defensePolicyName(battleReport.defenderPolicy)
+                        : text("battle_report_defense_policy_legacy", "未記錄")
                 )
         );
 
@@ -446,6 +450,14 @@ public final class BattleReportScreen extends SuiScreen {
             case BALANCED -> text("button_tactic_balanced", "穩健");
             case ASSAULT -> text("button_tactic_assault", "強攻");
             case CAUTIOUS -> text("button_tactic_cautious", "保守");
+        };
+    }
+
+    private String defensePolicyName(DefensePolicy policy) {
+        return switch (policy) {
+            case BALANCED -> text("defense_policy_balanced", "均衡防守");
+            case AGGRESSIVE -> text("defense_policy_aggressive", "積極迎戰");
+            case HOLD -> text("defense_policy_hold", "固守城池");
         };
     }
 

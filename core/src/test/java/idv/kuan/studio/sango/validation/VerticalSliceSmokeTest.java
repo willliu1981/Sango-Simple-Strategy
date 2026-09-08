@@ -280,9 +280,9 @@ public final class VerticalSliceSmokeTest {
         assertEquals(gameState.actionPointsPerTurn - 1, gameState.actionPointsRemaining, "偵察消耗行動力");
         assertEquals(1180, gameState.requirePlayerFactionState().gold, "偵察消耗金");
         assertEquals(
-            4,
-            gameState.requireCityState(VICTORY_TARGET_ID).scoutedUntilTurn,
-            "偵察情報期限"
+            gameState.currentTurn + 2,
+            gameState.requirePlayerFactionState().cityIntelligence[0].validThroughTurn,
+            "偵察情報包含當月共三個月"
         );
 
         StrategicActionResult firstExpedition = commands.launchExpeditionCommand.execute(
@@ -336,7 +336,8 @@ public final class VerticalSliceSmokeTest {
             !reloadedReportState.requireBattleReport(firstBattleReport.battleId).read,
             "戰報已讀尚未明確存檔，讀取可回到原狀態"
         );
-        assertEquals(696, gameState.requireCityState(PLAYER_CAPITAL_ID).troops, "敗軍生還者返回主城");
+        assertEquals(400, gameState.requireCityState(PLAYER_CAPITAL_ID).troops, "新敗軍當月尚未返回主城");
+        assertEquals(296, gameState.armyStates[0].troops, "敗軍生還者保留於退卻部隊");
         assertEquals(513, gameState.requireCityState(VICTORY_TARGET_ID).troops, "首戰後敵城守軍");
 
         gameState = requireDomesticSuccess(
@@ -355,6 +356,8 @@ public final class VerticalSliceSmokeTest {
                 DomesticActionType.RECRUIT
             )
         );
+        // 退卻軍仍在途；補足本案例所需兵力，維持第二次強攻勝利的測試目的。
+        gameState.requireCityState(PLAYER_CAPITAL_ID).troops += 200;
         StrategicActionResult secondExpedition = commands.launchExpeditionCommand.execute(
             SAVE_SLOT,
             gameState,
@@ -688,6 +691,8 @@ public final class VerticalSliceSmokeTest {
             "刪除槽位 2 不可影響槽位 3"
         );
 
+        // 第二次寫入 slot 1，讓初始新局成為可驗證的備份。
+        commands.saveGameRepository.save(SAVE_SLOT, gameState);
         GameState loadedState = commands.saveGameRepository.load(SAVE_SLOT);
         loadedState.requirePlayerFactionState().gold = 1;
         assertEquals(

@@ -18,6 +18,7 @@ import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.rule.MilitaryRules;
+import idv.kuan.studio.sango.domain.rule.DefensePolicy;
 import idv.kuan.studio.sango.domain.rule.TroopQualityRules;
 
 /** 處理單軍或聯合軍抵達，並保存作戰當下的戰報快照。 */
@@ -55,7 +56,8 @@ public final class BattleResolutionService {
         int defenderStrength = MilitaryRules.calculateDefenderStrength(defenderBefore);
         boolean attackerWon = unopposedOccupation || attackerStrength >= defenderStrength;
         int attackerLosses = unopposedOccupation ? 0 : calculateAttackerLosses(
-            attackerTroopsBefore, firstArmy, attackerStrength, defenderStrength);
+            attackerTroopsBefore, firstArmy, attackerStrength, defenderStrength,
+            defenderBefore.defensePolicy);
         int defenderLosses = unopposedOccupation ? 0 : calculateDefenderLosses(
             defenderBefore, attackerStrength, defenderStrength);
         int[] lossesByArmy = distributeLosses(armyStates, attackerLosses, attackerTroopsBefore);
@@ -65,6 +67,7 @@ public final class BattleResolutionService {
 
         if (attackerWon) {
             targetCityState.ownerFactionId = firstArmy.factionId;
+            targetCityState.defensePolicy = DefensePolicy.BALANCED;
             targetCityState.publicOrderRecoveryStreakMonths = 0;
             targetCityState.troops = attackerSurvivors;
             setScaledQuality(targetCityState,
@@ -179,6 +182,8 @@ public final class BattleResolutionService {
         battleReport.attackerFactionId = firstArmy.factionId;
         battleReport.defenderFactionId = defenderBefore.ownerFactionId;
         battleReport.attackerTactic = firstArmy.tactic;
+        battleReport.defenderPolicy = defenderBefore.defensePolicy;
+        battleReport.defenderPolicyRecorded = true;
         battleReport.attackerTroopsBefore = attackerTroopsBefore;
         battleReport.defenderTroopsBefore = defenderBefore.troops;
         battleReport.attackerTraining = weightedIntegerQuality(armyStates, true);
@@ -255,11 +260,12 @@ public final class BattleResolutionService {
     }
 
     private int calculateAttackerLosses(int attackerTroops, ArmyState firstArmy,
-        long attackerStrength, int defenderStrength) {
+        long attackerStrength, int defenderStrength, DefensePolicy defensePolicy) {
         int baseLossPercent = clamp((long) defenderStrength * 50
             / Math.max(1L, attackerStrength), 15, 80);
         int adjustedLossPercent = clamp((long) baseLossPercent
-            * firstArmy.tactic.getCasualtyPercent() / 100, 10, 90);
+            * firstArmy.tactic.getCasualtyPercent()
+            * defensePolicy.getAttackerCasualtyPercent() / 10_000, 10, 90);
         return (int) ((long) attackerTroops * adjustedLossPercent / 100);
     }
 
@@ -267,6 +273,8 @@ public final class BattleResolutionService {
         int defenderStrength) {
         int lossPercent = clamp(attackerStrength * 60
             / Math.max(1, defenderStrength), 20, 95);
+        lossPercent = clamp((long) lossPercent
+            * cityState.defensePolicy.getDefenderCasualtyPercent() / 100, 10, 95);
         return (int) ((long) cityState.troops * lossPercent / 100);
     }
 

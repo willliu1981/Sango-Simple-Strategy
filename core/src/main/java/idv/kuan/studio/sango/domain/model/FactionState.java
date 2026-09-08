@@ -12,6 +12,8 @@ public final class FactionState {
     /** 只供非玩家勢力使用；玩家額度沿用 GameState 的既有快照欄位。 */
     public int aiActionPointsPerTurn;
     public int aiActionPointsRemaining;
+    /** 此勢力自行取得的城池情報；不同勢力不共用。 */
+    public CityIntelligenceSnapshot[] cityIntelligence = new CityIntelligenceSnapshot[0];
 
     public FactionState() {
     }
@@ -25,6 +27,13 @@ public final class FactionState {
         copiedState.active = active;
         copiedState.aiActionPointsPerTurn = aiActionPointsPerTurn;
         copiedState.aiActionPointsRemaining = aiActionPointsRemaining;
+        if (cityIntelligence != null) {
+            copiedState.cityIntelligence = new CityIntelligenceSnapshot[cityIntelligence.length];
+            for (int i = 0; i < cityIntelligence.length; i++) {
+                copiedState.cityIntelligence[i] = cityIntelligence[i] == null
+                    ? null : cityIntelligence[i].copy();
+            }
+        }
         return copiedState;
     }
 }

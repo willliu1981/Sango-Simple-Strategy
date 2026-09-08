@@ -61,7 +61,9 @@ public final class RetreatExpeditionSmokeTest {
             GameState legacy = state.copy();
             legacy.schemaVersion = 8;
             GameState migrated = new GameStateMigrator().migrate(legacy);
-            check(migrated.schemaVersion == 9, "schema 8 升級到 9");
+            check(migrated.schemaVersion
+                == idv.kuan.studio.sango.SangoVersion.GAME_STATE_SCHEMA_VERSION,
+                "schema 8 逐版升級到目前版本");
             for (ArmyState migratedArmy : migrated.armyStates) {
                 check(migratedArmy.retreatRouteCityIds == null && migratedArmy.retreatRouteIndex == 0,
                     "schema 8 軍隊取得空白退卻欄位");

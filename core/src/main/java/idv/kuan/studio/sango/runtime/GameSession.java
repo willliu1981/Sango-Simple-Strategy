@@ -4,7 +4,6 @@ import idv.kuan.studio.sango.application.result.TurnResolutionReport;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
-import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.ui.id.ScreenId;
 
 /**
@@ -14,7 +13,6 @@ public final class GameSession {
     private GameState currentState;
     private int currentSaveSlot;
     private String selectedCityId;
-    private BattleTactic selectedBattleTactic = BattleTactic.BALANCED;
     private TurnResolutionReport lastTurnReport;
     private String selectedBattleReportId;
     private ScreenId battleReportReturnScreen = ScreenId.STRATEGIC_MAP;
@@ -81,17 +79,6 @@ public final class GameSession {
         if (currentState != null) {
             currentState.strategicMapFocusedCityId = selectedCityId;
         }
-    }
-
-    public BattleTactic getSelectedBattleTactic() {
-        return selectedBattleTactic;
-    }
-
-    public void setSelectedBattleTactic(BattleTactic selectedBattleTactic) {
-        if (selectedBattleTactic == null) {
-            throw new IllegalArgumentException("selectedBattleTactic 不可為 null。");
-        }
-        this.selectedBattleTactic = selectedBattleTactic;
     }
 
     public TurnResolutionReport getLastTurnReport() {
@@ -186,7 +173,6 @@ public final class GameSession {
         currentState = null;
         currentSaveSlot = 0;
         selectedCityId = null;
-        selectedBattleTactic = BattleTactic.BALANCED;
         lastTurnReport = null;
         selectedBattleReportId = null;
         battleReportReturnScreen = ScreenId.STRATEGIC_MAP;
