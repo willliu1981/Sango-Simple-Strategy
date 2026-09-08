@@ -27,6 +27,7 @@ import idv.kuan.studio.sango.domain.rule.PopulationRules;
 import idv.kuan.studio.sango.domain.rule.PublicOrderRules;
 import idv.kuan.studio.sango.domain.rule.RecruitmentRules;
 import idv.kuan.studio.sango.domain.rule.TroopQualityRules;
+import idv.kuan.studio.sango.domain.service.CityIntelligenceService;
 import idv.kuan.studio.sango.domain.service.DomesticActionService;
 import idv.kuan.studio.sango.domain.service.EnemyTurnService;
 import idv.kuan.studio.sango.domain.service.TurnResolutionService;
@@ -394,10 +395,16 @@ public final class CampaignGrowthSmokeTest {
         EnemyTurnService enemy = new EnemyTurnService();
         enemy.execute(state, definitions.requireMap(state.mapId), new TurnResolutionReport(state.currentYear, state.currentMonth));
         check(aiCity.troops == priorTroops && state.requireFactionState(aiFaction).gold == priorGold, "AI 零 AP 不偷偷徵兵或訓練");
+        CityIntelligenceService intelligence = new CityIntelligenceService();
+        for (CityState city : state.cityStates) {
+            if (!aiFaction.equals(city.ownerFactionId)) {
+                intelligence.observe(state, aiFaction, city.cityId);
+            }
+        }
         FactionActionPointRules.refreshAll(state, false);
         TurnResolutionReport report = new TurnResolutionReport(state.currentYear, state.currentMonth);
         enemy.execute(state, definitions.requireMap(state.mapId), report);
-        check(aiCity.publicOrder > 50, "AI 低民心時透過共用內政流程安民");
+        check(aiCity.publicOrder > 50, "AI 已有情報時透過共用內政流程安民");
         int actionReports = 0;
         for (TurnEvent event : report.getEvents()) {
             if (event.getType() == TurnEventType.AI_ACTIONS_USED) {

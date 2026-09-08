@@ -43,16 +43,18 @@ tools/generate-prototype-audio.py
 
 生成腳本只使用 Python standard library，但輸出 OGG 時會呼叫開發機上的 `ffmpeg`／Vorbis encoder。Sango repository 不包含 `ffmpeg` binary；若重新產生或再散布工具鏈，應自行確認所使用 ffmpeg build 的授權設定與義務。
 
-## 預計加入的 Suno BGM
+## Suno BGM
 
-本 notice 發布時，`assets/audio/music/*.ogg` 仍是上述程序化 Prototype Audio；repository 尚未包含 Suno 生成的曲目。
+依開發者提供的來源資訊，本機目前使用的 BGM 為 Suno 免費方案生成並下載的音樂（Music generated with Suno），不是上述程序合成音樂。這些音檔尚未因此取得公開遊戲散布的額外授權確認。
 
-未來若將 Suno 生成 BGM 納入公開 source、release 或可下載遊戲，維護者必須先完成以下確認：
+遊戲以免費分享為目的，預計提供完整 APK 與 Windows ZIP，不另外提供獨立素材包。音檔若包含在成品裡，仍屬於隨遊戲散布。
 
-- 曲目是在 Suno Pro 或 Premier 訂閱有效期間生成，且經 Suno 核准的下載管道取得；保留曲目 ID、生成日期、訂閱層級與下載日期等內部佐證。
-- 不使用免費／Basic 方案生成的曲目。Suno 將該方案輸出限制為合法、個人且非商業使用；免費公開 Sango 不會自動解除這項限制。
+- Suno 免費方案限合法、個人及非商業用途。官方資料未明確確認將免費方案音檔隨免費遊戲提供下載的情況；不將此聲明解讀為已取得該用途的授權。
+- 保留曲目 ID、生成日期、方案與下載日期等來源紀錄；個別歌曲連結尚待補齊，不以 Suno 首頁代替歌曲來源證明。
 - 所有提交至 Suno 的音訊、歌詞、人聲與其他素材均具有足夠權利；不使用他人曲目、人聲或未經授權素材的延伸／Remix。
 - 公開說明可標示「Music generated with Suno」，但不得暗示 Suno 背書、合作或保證該曲目的權利狀態。
+
+官方來源：[Suno](https://suno.com/)、[服務條款](https://about.suno.com/terms)、[免費方案權利說明](https://help.suno.com/en/articles/9601601)。查閱日期：2026-09-08。
 
 Suno 的授權與付費權利不等於著作權保證、排他性保證或第三方不主張權利的保證。Sango 不主張對 AI 生成音訊中純由 AI 產出的部分具有當然的排他著作權；任何 AI BGM 都不因併入 Sango 而自動納入 Sango 原始碼的授權範圍。收到具體權利爭議、侵權通知或來源無法佐證時，維護者應優先下架或替換相關音檔。
 

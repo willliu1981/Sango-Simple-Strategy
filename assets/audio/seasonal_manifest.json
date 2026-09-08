@@ -1,0 +1,34 @@
+[
+  {
+    "source": "运筹帷幄_1_春風入城.mp3",
+    "asset": "audio/music/spring_wind_enters_city.mp3",
+    "title": "春風入城",
+    "season": "SPRING",
+    "sha256": "644421a82b23e2ad029f6818e6b53443e7c2497d4731dd3f622e5eb4c2854240",
+    "processing": "Byte-identical copy; filename and UI title only."
+  },
+  {
+    "source": "运筹帷幄_2_炎日運籌.mp3",
+    "asset": "audio/music/summer_counsel.mp3",
+    "title": "炎日運籌",
+    "season": "SUMMER",
+    "sha256": "aefec738dde2a02cf36b7e894eaca1063dbf2eae05c9daa33fd38d1092325628",
+    "processing": "Byte-identical copy; filename and UI title only."
+  },
+  {
+    "source": "运筹帷幄_3_暮秋望陣.mp3",
+    "asset": "audio/music/autumn_battlefield.mp3",
+    "title": "暮秋望陣",
+    "season": "AUTUMN",
+    "sha256": "dcaec72271b28bb8b6bedd3d22ff8f953ad758eb88b6130633b3e607fa3110d1",
+    "processing": "Byte-identical copy; filename and UI title only."
+  },
+  {
+    "source": "汉策图谋_1_寒夜圖謀.mp3",
+    "asset": "audio/music/winter_stratagem.mp3",
+    "title": "寒夜圖謀",
+    "season": "WINTER",
+    "sha256": "dd55f4e4d24fb0cb04e556102798cdd41422d6b1a8762b4ccad4a752eebece08",
+    "processing": "Byte-identical copy; filename and UI title only."
+  }
+]
