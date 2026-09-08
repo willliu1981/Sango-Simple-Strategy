@@ -72,6 +72,16 @@ construo {
     // Optional, defaults to project version
     version.set(project.version.toString())
 
+    // jdeps 會將 java.awt.peer 列為 java.desktop 的內部套件，直接交給
+    // jlink 會被誤認為模組名稱而導致 Windows runtime 無法建立。
+    jlink {
+        guessModulesFromJar.set(false)
+        modules.set([
+            'java.base', 'java.desktop', 'java.management', 'java.scripting',
+            'java.xml', 'jdk.unsupported'
+        ])
+    }
+
     targets.configure {
       create("linuxX64", Target.Linux) {
         architecture.set(Target.Architecture.X86_64)

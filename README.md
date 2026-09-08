@@ -4,7 +4,7 @@
 
 目前版本：`0.6.0` 早期開發版
 
-建議 GitHub repository 名稱：`sango-strategy`
+GitHub 專案：[Sango-Simple-Strategy](https://github.com/willliu1981/Sango-Simple-Strategy)
 
 ## 遊戲特色
 
@@ -24,21 +24,27 @@
 
 正式測試版應放在 GitHub repository 的 **Releases**，不要把 APK 或 Windows 成品直接提交進 Git history。
 
-每個版本建議提供：
+本遊戲以免費分享為目的。預計提供可直接遊玩的 Android APK 與 Windows ZIP，不另外提供獨立素材包。成品以 [Releases 下載頁](https://github.com/willliu1981/Sango-Simple-Strategy/releases) 實際發布的檔案為準。
+
+背景音樂使用 Suno 免費方案生成（Music generated with Suno），來源與限制見下方「音訊與素材」。下載頁文案見 [發布說明草稿](docs/release-notes-0.6.0.md)。
+
+請由上方 Releases 下載頁查看已發布的版本與附件。0.6.0 測試包的建議檔名如下，實際名稱以附件列表為準：
 
 ```text
-Sango-0.6.0-Android.apk
+Sango-0.6.0-Android-debug.apk
 Sango-0.6.0-Windows-x64.zip
 SHA256SUMS.txt
 ```
 
 ### Android
 
-1. 從 Releases 下載 `Sango-0.6.0-Android.apk`。
+1. 從 Releases 下載 `Sango-0.6.0-Android-debug.apk`。
 2. 在 Android 系統允許目前瀏覽器或檔案管理員「安裝未知應用程式」。
 3. 開啟 APK 完成安裝。
 
-公開版本必須使用固定且妥善保管的 release signing key。後續版本也必須使用相同簽章，否則 Android 無法直接覆蓋更新。不要公開 `.jks`、keystore 密碼或 signing properties。
+本次提供 debug 簽章測試版，可側載安裝。直接開啟 APK 通常只需允許安裝未知應用程式，不需要開啟開發者選項；透過 USB／ADB 安裝才需要開啟開發者選項與 USB 偵錯。
+
+更新安裝需要與舊版相同的簽章。若出現簽章不符，請先備份存檔再處理；移除應用程式可能會清除遊戲資料。未來正式 release 版應使用固定且妥善保管的 release signing key。
 
 ### Windows
 
@@ -46,15 +52,27 @@ SHA256SUMS.txt
 2. 將 ZIP 完整解壓縮到可寫入的資料夾。
 3. 執行資料夾內的 `Sango.exe`，不要直接從壓縮檔內啟動。
 
+ZIP 已內含 Java runtime，無須另外安裝 Java。保留解壓後的完整資料夾，不能只搬移 `Sango.exe`。
+
 Windows 存檔位於：
 
 ```text
-%USERPROFILE%\.sango\save\slot-1.json
-%USERPROFILE%\.sango\save\slot-2.json
-%USERPROFILE%\.sango\save\slot-3.json
+%USERPROFILE%\.sango\save\slot-01.json
+%USERPROFILE%\.sango\save\slot-02.json
+%USERPROFILE%\.sango\save\slot-03.json
 ```
 
+## 存檔與讀取
+
+- 內政、偵察、運兵、出征及閱讀戰報只更新當前戰局，不立即寫入存檔。
+- 讀取存檔會回到上次保存的狀態，不會先保存當前進度；可用來取消尚未保存的操作。
+- 新局建立、月份結算、手動存檔，以及從遊戲選單返回大廳或離開遊戲時會保存進度。
+- 地圖與內政畫面切換、應用程式暫停不會自動保存。強制關閉後，尚未保存的進度不會保留。
+- 月份結算已寫入存檔後，讀取同一槽無法回到結算前；需要保留較早進度時，先手動存到另一槽。
+
 ## 從原始碼執行
+
+GitHub 公開版本為排除素材的原始碼快照，不附音檔、圖片、字型 binary 或 `libs/simpleui-1.1.2.jar`。自行建置前需取得合法可用的對應資產與 SimpleUI 依賴，並放回專案要求的位置；僅下載原始碼無法直接建置完整遊戲。
 
 需求：
 
@@ -74,7 +92,7 @@ Windows 存檔位於：
 .\gradlew.bat :lwjgl3:run
 ```
 
-建立僅供本機測試的 debug APK：
+建立可側載的 debug 測試 APK：
 
 ```powershell
 .\gradlew.bat :android:assembleDebug
@@ -90,17 +108,15 @@ android/build/outputs/apk/debug/android-debug.apk
 
 ### Android APK
 
-目前專案沒有把 release signing key 寫入 Gradle。公開前請在 Android Studio 使用：
+本次使用 debug 建置，Gradle 會以 debug key 簽署：
 
-```text
-Build > Generate Signed Bundle / APK > APK > release
+```powershell
+.\gradlew.bat :android:assembleDebug
 ```
 
-建立並安全保存專用 keystore，產生簽章後的 release APK，再重新命名為：
+將 `android/build/outputs/apk/debug/android-debug.apk` 複製並命名為 `Sango-0.6.0-Android-debug.apk`，作為測試版 Release 附件。不要上傳 keystore、密碼或 signing properties。
 
-```text
-Sango-0.6.0-Android.apk
-```
+日後製作正式版時，再於 Android Studio 使用 `Build > Generate Signed Bundle / APK` 與固定 release key；正式版檔名使用 `Sango-0.6.0-Android.apk`，避免與 debug 測試包混淆。
 
 ### Windows x64 ZIP
 
@@ -124,8 +140,8 @@ Sango-0.6.0-Windows-x64.zip
 
 1. 將確認過的原始碼建立 `v0.6.0` tag。
 2. 在 GitHub repository 開啟 **Releases > Draft a new release**。
-3. 選擇 `v0.6.0`，標題填寫 `Sango 0.6.0`。
-4. 上傳簽章 APK、Windows x64 ZIP 與 `SHA256SUMS.txt`。
+3. 選擇 `v0.6.0`，標題填寫 `Sango 0.6.0 測試版`，勾選 Pre-release。
+4. 上傳 `Sango-0.6.0-Android-debug.apk`、`Sango-0.6.0-Windows-x64.zip` 與 `SHA256SUMS.txt`。
 5. 在 release notes 說明新增內容、已知問題、存檔相容性與安裝方式。
 6. 實機確認下載、解壓縮、安裝、啟動、讀檔與更新流程後再 Publish。
 
@@ -133,12 +149,17 @@ GitHub 自動提供的 `Source code (zip)` 只是原始碼快照，不是可執�
 
 ## 音訊與素材
 
+- 依開發者提供的來源資訊，目前 BGM 使用 [Suno](https://suno.com/) 免費方案生成並下載。本遊戲旨在免費分享，並未因標示來源而取得額外授權。
+- Suno 免費方案限合法、個人及非商業用途；官方說明未明確確認將這些曲目隨免費遊戲提供下載的情況。目前未取得針對此用途的額外授權確認。
+- 不另外提供獨立素材包。音樂、圖像及字型不因收錄於遊戲或公開原始碼而取得可供他人獨立取用、販售或再散布的授權。
 - 音檔與圖資不納入一般原始碼 commit；正式成品是否包含素材，取決於發布版本的打包內容。
 - 將 Suno 或其他來源的 BGM 放進 APK／ZIP 仍屬於散布，免費提供不會自動取得使用或再散布權。
 - 發布前應保留每首曲目的生成帳號、方案、日期、曲目 ID、下載紀錄與當時適用條款。
 - 收到具體權利爭議或無法證明來源時，應先下架或替換相關素材。
 
 更多依賴與素材聲明請見 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
+官方依據：[Suno 服務條款](https://about.suno.com/terms)、[免費方案權利說明](https://help.suno.com/en/articles/9601601)。條款查閱日期：2026-09-08。本段為來源與用途聲明，不代表 Suno 背書或已核准本遊戲的散布用途。
 
 ## 授權與發布狀態
 
