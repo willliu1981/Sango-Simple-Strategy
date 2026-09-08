@@ -8,7 +8,7 @@
         <entry name="report_retreat_disbanded" value="{0} 一帶部隊無可撤往的安全我方城池，{1} 兵潰散。" />
         <entry name="map_army_retreat_summary" value="{0} {1} 兵・士氣 {2}｜撤往 {3}（尚需 {4} 個月）" />
         <entry name="world_battle_heading" value="天下戰報" />
-        <entry name="world_battle_description" value="只列戰鬥事件；我方相關優先，同類依月份由新到舊排列。已讀戰報仍可點開。" />
+        <entry name="world_battle_description" value="只顯示最近一次戰報；各城池可查看此城最近一次戰報。已讀後仍可查看。" />
         <entry name="world_battle_player" value="我方戰事" />
         <entry name="world_battle_other" value="其他勢力" />
         <entry name="world_battle_read" value="已讀" />

@@ -44,6 +44,7 @@ import idv.kuan.studio.sango.domain.definition.ScenarioDefinition;
 import idv.kuan.studio.sango.domain.definition.StrategicMapDefinition;
 import idv.kuan.studio.sango.domain.model.ArmyState;
 import idv.kuan.studio.sango.domain.model.BattleReport;
+import idv.kuan.studio.sango.ui.support.BattleReportCatalog;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
@@ -445,7 +446,7 @@ public final class StrategicMapScreen extends SuiScreen {
             button("show_last_report_button"),
             lastTurnReport != null
         );
-        int unreadBattleCount = gameState.countUnreadBattleReports();
+        int unreadBattleCount = (int) BattleReportCatalog.world(gameState).stream().filter(report -> !report.read).count();
         button("show_unread_battle_button").setText(
             text("button_world_battle_reports_format", "天下戰報（未讀{0}）", unreadBattleCount)
         );
@@ -538,7 +539,7 @@ public final class StrategicMapScreen extends SuiScreen {
     }
 
     private void refreshUnreadBattleLabel(GameState gameState) {
-        int unreadBattleCount = gameState.countUnreadBattleReports();
+        int unreadBattleCount = (int) BattleReportCatalog.latestCities(gameState).stream().filter(report -> !report.read).count();
         label("map_unread_battle_label").setText(
             unreadBattleCount > 0
                 ? text(
@@ -557,14 +558,21 @@ public final class StrategicMapScreen extends SuiScreen {
     ) {
         Map<String, String> captionsByCityId = new LinkedHashMap<>();
         Map<String, MapNodeTone> tonesByCityId = new LinkedHashMap<>();
+        java.util.Set<String> factionCityIds = new java.util.HashSet<>();
+        String selectedOwner = gameState.requireCityState(selectedCityId).ownerFactionId;
         Map<String, Integer> unreadBattlesByCityId = new LinkedHashMap<>();
-        for (BattleReport battleReport : gameState.battleReports) {
+        for (BattleReport battleReport : BattleReportCatalog.latestCities(gameState)) {
             if (!battleReport.read) {
                 unreadBattlesByCityId.merge(battleReport.targetCityId, 1, Integer::sum);
             }
         }
         for (MapCityNodeDefinition nodeDefinition : mapDefinition.nodes) {
             CityState cityState = gameState.requireCityState(nodeDefinition.cityId);
+            if (!gameState.neutralFactionId.equals(selectedOwner)
+                && !gameState.playerFactionId.equals(selectedOwner)
+                && selectedOwner.equals(cityState.ownerFactionId)) {
+                factionCityIds.add(cityState.cityId);
+            }
             MapNodeTone nodeTone = toneForOwner(gameState, cityState.ownerFactionId);
             FactionDefinition ownerDefinition = SangoServices.definitions().requireFaction(cityState.ownerFactionId);
             String marker = localized(ownerDefinition.nameKey, ownerDefinition.id);
@@ -588,6 +596,7 @@ public final class StrategicMapScreen extends SuiScreen {
             captionsByCityId,
             tonesByCityId,
             unreadBattlesByCityId,
+            factionCityIds,
             selectedCityId
         );
         resizeMapWidget();
@@ -641,7 +650,7 @@ public final class StrategicMapScreen extends SuiScreen {
             buildRouteText(gameState, selectedCityState, routeOriginCityState)
         );
 
-        int cityBattleCount = gameState.countBattleReportsForCity(selectedCityState.cityId);
+        int cityBattleCount = BattleReportCatalog.city(gameState, selectedCityState.cityId).size();
         button("view_city_battle_button").setText(
             text("button_city_battles_format", "查看此城戰報（{0}）", cityBattleCount)
         );

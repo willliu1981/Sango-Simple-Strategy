@@ -315,6 +315,9 @@ public final class BattleReportScreen extends SuiScreen {
     }
 
     private void refreshNextButton(BattleReport currentReport) {
+        ScreenId returnScreen = SangoServices.session().getBattleReportReturnScreen();
+        boolean latestOnly = returnScreen == ScreenId.STRATEGIC_MAP || returnScreen == ScreenId.WORLD_BATTLE_REPORT;
+        button("battle_report_next_button").setVisible(!latestOnly);
         GameState gameState = SangoServices.session().requireCurrentState();
         List<BattleReport> monthReports = findScopedReports(gameState);
         BattleReport nextReport = findNextReport(gameState, currentReport);
@@ -365,12 +368,7 @@ public final class BattleReportScreen extends SuiScreen {
         }
         if (SangoServices.session().getBattleReportReturnScreen() == ScreenId.STRATEGIC_MAP) {
             BattleReport selectedReport = requireSelectedReport();
-            List<BattleReport> cityReports = gameState.findBattleReportsForCity(selectedReport.targetCityId);
-            List<BattleReport> newestFirst = new ArrayList<>(cityReports.size());
-            for (int index = cityReports.size() - 1; index >= 0; index--) {
-                newestFirst.add(cityReports.get(index));
-            }
-            return newestFirst;
+            return BattleReportCatalog.city(gameState, selectedReport.targetCityId);
         }
         if (SangoServices.session().getBattleReportReturnScreen() != ScreenId.MONTH_REPORT
             || SangoServices.session().getLastTurnReport() == null) {

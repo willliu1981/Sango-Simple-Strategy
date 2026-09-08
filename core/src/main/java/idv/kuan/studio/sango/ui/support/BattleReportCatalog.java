@@ -1,7 +1,6 @@
 package idv.kuan.studio.sango.ui.support;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
@@ -13,17 +12,30 @@ public final class BattleReportCatalog {
     private BattleReportCatalog() { }
 
     public static List<BattleReport> world(GameState state) {
-        List<BattleReport> reports = new ArrayList<>();
+        BattleReport latest = null;
         if (state.battleReports != null) {
             for (BattleReport report : state.battleReports) {
-                if (report != null) reports.add(report);
+                if (report != null && (latest == null || report.resolvedTurn >= latest.resolvedTurn)) {
+                    latest = report;
+                }
             }
         }
-        reports.sort(Comparator
-            .comparing((BattleReport report) -> !report.involvesFaction(state.playerFactionId))
-            .thenComparing(Comparator.comparingInt((BattleReport report) -> report.resolvedTurn).reversed())
-            .thenComparing(report -> report.battleId));
-        return reports;
+        return latest == null ? List.of() : List.of(latest);
+    }
+
+    public static List<BattleReport> city(GameState state, String cityId) {
+        BattleReport latest = state.findLatestBattleReportForCity(cityId);
+        return latest == null ? List.of() : List.of(latest);
+    }
+
+    public static List<BattleReport> latestCities(GameState state) {
+        java.util.Map<String, BattleReport> latest = new java.util.LinkedHashMap<>();
+        if (state.battleReports != null) {
+            for (BattleReport report : state.battleReports) {
+                if (report != null) latest.put(report.targetCityId, report);
+            }
+        }
+        return new ArrayList<>(latest.values());
     }
 
     public static List<BattleReport> playerMonth(GameState state, TurnResolutionReport month) {

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.function.Consumer;
 
 import com.badlogic.gdx.Input;
@@ -48,6 +50,9 @@ public final class StrategicMapWidget extends WidgetGroup {
     private final Map<String, MapNodeTone> tonesByCityId = new LinkedHashMap<>();
     private final Map<String, Integer> unreadBattlesByCityId = new LinkedHashMap<>();
     private final Map<String, TextButton> buttonsByCityId = new LinkedHashMap<>();
+    private final Set<String> factionCityIds = new HashSet<>();
+    private Drawable factionOutline;
+    private Drawable selectedOutline;
     private final List<Image> roadImages = new ArrayList<>();
     private final List<ClickListener> nodeClickListeners = new ArrayList<>();
     private final Map<Integer, PointerPosition> pointers = new LinkedHashMap<>();
@@ -91,10 +96,11 @@ public final class StrategicMapWidget extends WidgetGroup {
         Map<String, String> captionsByCityId,
         Map<String, MapNodeTone> tonesByCityId,
         Map<String, Integer> unreadBattlesByCityId,
+        Set<String> factionCityIds,
         String selectedCityId
     ) {
         if (mapDefinition == null || captionsByCityId == null
-            || tonesByCityId == null || unreadBattlesByCityId == null) {
+            || tonesByCityId == null || unreadBattlesByCityId == null || factionCityIds == null) {
             throw new IllegalArgumentException("地圖顯示資料不可為 null。");
         }
         if (this.mapDefinition != mapDefinition) {
@@ -108,6 +114,8 @@ public final class StrategicMapWidget extends WidgetGroup {
         this.unreadBattlesByCityId.clear();
         this.unreadBattlesByCityId.putAll(unreadBattlesByCityId);
         this.selectedCityId = selectedCityId;
+        this.factionCityIds.clear();
+        this.factionCityIds.addAll(factionCityIds);
         rebuildChildren();
         invalidate();
     }
@@ -166,6 +174,7 @@ public final class StrategicMapWidget extends WidgetGroup {
         if (clipBegin(0f, 0f, getWidth(), getHeight())) {
             drawTerrain(batch, parentAlpha);
             drawChildren(batch, parentAlpha);
+            drawCityOutlines(batch, parentAlpha);
             batch.flush();
             clipEnd();
         }
@@ -189,6 +198,30 @@ public final class StrategicMapWidget extends WidgetGroup {
         batch.setPackedColor(originalPackedColor);
     }
 
+    private void drawCityOutlines(Batch batch, float parentAlpha) {
+        if (selectedOutline == null || factionOutline == null) return;
+        float originalPackedColor = batch.getPackedColor();
+        batch.setColor(getColor().r, getColor().g, getColor().b, getColor().a * parentAlpha);
+        // Draw separately from the buttons so unread blinking never dims the faction outline.
+        for (Map.Entry<String, TextButton> entry : buttonsByCityId.entrySet()) {
+            boolean selected = entry.getKey().equals(selectedCityId);
+            if (!selected && !factionCityIds.contains(entry.getKey())) continue;
+            TextButton button = entry.getValue();
+            Drawable outline = selected ? selectedOutline : factionOutline;
+            float thickness = selected ? 4f : 2f;
+            float gap = selected ? 3f : 2f;
+            float x = button.getX() - gap - thickness;
+            float y = button.getY() - gap - thickness;
+            float width = button.getWidth() + 2f * (gap + thickness);
+            float height = button.getHeight() + 2f * (gap + thickness);
+            outline.draw(batch, x, y, width, thickness);
+            outline.draw(batch, x, y + height - thickness, width, thickness);
+            outline.draw(batch, x, y + thickness, thickness, height - 2f * thickness);
+            outline.draw(batch, x + width - thickness, y + thickness, thickness, height - 2f * thickness);
+        }
+        batch.setPackedColor(originalPackedColor);
+    }
+
     @Override
     public Actor hit(float localX, float localY, boolean touchable) {
         // 裁切不只限繪圖；視窗外節點也不能攔截右側面板或底部按鈕。
@@ -199,6 +232,10 @@ public final class StrategicMapWidget extends WidgetGroup {
     }
 
     private void rebuildChildren() {
+        if (factionOutline == null) {
+            factionOutline = SangoUiStyles.createMapOutlineDrawable(false);
+            selectedOutline = SangoUiStyles.createMapOutlineDrawable(true);
+        }
         clearChildren();
         buttonsByCityId.clear();
         roadImages.clear();

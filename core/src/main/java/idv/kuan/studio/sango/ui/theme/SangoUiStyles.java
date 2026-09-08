@@ -90,6 +90,12 @@ public final class SangoUiStyles {
         return drawable(Sui.resources.manager().getSkin(), MAP_LINE);
     }
 
+    public static Drawable createMapOutlineDrawable(boolean selected) {
+        return drawable(Sui.resources.manager().getSkin(), selected
+            ? new Color(1f, 0.96f, 0.76f, 1f)
+            : new Color(0.95f, 0.73f, 0.30f, 1f));
+    }
+
     private static void apply(
         TextButton button,
         Color upColor,
