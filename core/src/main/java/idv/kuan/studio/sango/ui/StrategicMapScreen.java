@@ -118,7 +118,7 @@ public final class StrategicMapScreen extends SuiScreen {
             label("map_font_probe").getStyle().font,
             this::selectCity,
             () -> setMapFullscreen(true),
-            this::restoreMapAndFocusCity
+            () -> setMapFullscreen(false)
         );
         mapHost.addActor(strategicMapWidget);
         resizeMapWidget();
@@ -221,11 +221,6 @@ public final class StrategicMapScreen extends SuiScreen {
         }
         // The widget fills its current host during validation, after parent layout.
         strategicMapWidget.invalidate();
-    }
-
-    private void restoreMapAndFocusCity() {
-        setMapFullscreen(false);
-        strategicMapWidget.focusSelectedCity();
     }
 
     private void setMapFullscreen(boolean fullscreen) {
@@ -1404,7 +1399,7 @@ public final class StrategicMapScreen extends SuiScreen {
             text("help_map_title", "戰略圖操作說明"),
             text(
                 "help_map_body",
-                "共用金與共用糧屬於整個勢力；行動力（AP）則限制本月可下達的命令。\n\n城池之間必須有道路才能偵察、出征或運兵；出征只能選與目標相鄰的我方城，運兵可選任何沿道路可達的我方城。\n\n使用＋、－縮放地圖，「全圖」重設視野，「定位」回到目前選取城；連按地圖可切換全螢幕。\n\n敵方與中立城的兵力起初是估算值。由相鄰我方城偵察會消耗 1 AP，完成後可查看三回合精確情報。"
+                "共用金與共用糧屬於整個勢力；行動力（AP）則限制本月可下達的命令。\n\n城池之間必須有道路才能偵察、出征或運兵；出征只能選與目標相鄰的我方城，運兵可選任何沿道路可達的我方城。\n\n使用＋、－縮放地圖，「全圖」重設視野，「定位」回到目前選取城；連按地圖空白處可進入或退出全螢幕。全螢幕時連按城池仍只會選取城池。\n\n敵方與中立城的兵力起初是估算值。由相鄰我方城偵察會消耗 1 AP，完成後可查看三回合精確情報。"
             )
         );
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);

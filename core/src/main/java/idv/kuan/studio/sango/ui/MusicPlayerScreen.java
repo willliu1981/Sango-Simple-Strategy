@@ -6,9 +6,11 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import idv.kuan.studio.libgdx.simpleui.Sui;
 import idv.kuan.studio.libgdx.simpleui.SuiScreen;
@@ -41,7 +43,16 @@ public final class MusicPlayerScreen extends SuiScreen {
         background.attach(stage, "picture/lobby/sango_lobby_background.png");
         for (int i = 0; i < tracks.length; i++) {
             int trackIndex = i;
-            ui.onClick("music_track_" + i + "_button", () -> selectTrack(trackIndex));
+            button("music_track_" + i + "_button").addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    if (trackIndex == selectedIndex && getTapCount() == 2) {
+                        restartSelectedTrack();
+                    } else {
+                        selectTrack(trackIndex);
+                    }
+                }
+            });
         }
         SangoUiStyles.applySecondaryButton(button("music_previous_button"));
         SangoUiStyles.applyPrimaryButton(button("music_play_pause_button"));
@@ -65,6 +76,7 @@ public final class MusicPlayerScreen extends SuiScreen {
     @Override
     protected void afterShow() {
         selectTrack(selectedIndex);
+        restartSelectedTrack();
     }
 
     @Override
@@ -94,6 +106,11 @@ public final class MusicPlayerScreen extends SuiScreen {
                 SangoUiStyles.applySecondaryButton(trackButton);
             }
         }
+        refreshView();
+    }
+
+    private void restartSelectedTrack() {
+        SangoServices.audio().restartMusicPlayerTrack();
         refreshView();
     }
 

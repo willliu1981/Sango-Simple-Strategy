@@ -47,7 +47,7 @@
         <entry name="dispatch_status_insufficient_food_format" value="糧不足：本次需 {0} 糧，目前只有 {1}。" />
         <entry name="dispatch_status_army_active" value="我方已有部隊行軍中，需等待其抵達。" />
         <entry name="help_map_title" value="戰略圖操作說明" />
-        <entry name="help_map_body" value="共用金與共用糧屬於整個勢力；行動力（AP）限制本月可下達的命令。\n\n偵察與出征的目標必須和至少一座我方城有直接道路連接；運兵則可沿道路前往我方城池。偵察非我方城消耗 1 AP 與 20 金，提供三回合精確情報，不消耗軍糧。\n\n使用＋、－縮放，「全圖」重設視野，「定位」回到選取城。快速點兩下地圖進入全螢幕；全螢幕時單擊城池只選取；雙擊城池返回並聚焦；點擊空白處不返回。\n\n勢力月報記錄我方收支、缺糧、災害與戰事；天下戰報只列各地戰鬥，我方戰事優先。" />
+        <entry name="help_map_body" value="共用金與共用糧屬於整個勢力；行動力（AP）限制本月可下達的命令。\n\n偵察與出征的目標必須和至少一座我方城有直接道路連接；運兵則可沿道路前往我方城池。偵察非我方城消耗 1 AP 與 20 金，提供三回合精確情報，不消耗軍糧。\n\n使用＋、－縮放，「全圖」重設視野，「定位」回到選取城。快速點兩下地圖空白處可進入或退出全螢幕；全螢幕時單擊或雙擊城池都只會選取城池。\n\n勢力月報記錄我方收支、缺糧、災害與戰事；天下戰報只列各地戰鬥，我方戰事優先。" />
         <entry name="help_city_title" value="內政操作說明" />
         <entry name="help_city_body" value="金、糧是全勢力共用資源；人口屬於本城。農業提高秋收，商業提高季末商稅，治水降低夏季洪災風險與損失，城防影響守城；訓練與士氣影響作戰表現。\n\n安民可提高民心，最高到 95。民心至少 95，且沒有缺糧、洪災或易主時，月底累計一個穩定月；連續第 3 個合格月底起，每月自然提高 1 點，最高 100。不合格時累計歸零，不代表直接扣除民心。\n\n缺軍糧會造成逃兵，並依缺口比例降低駐軍與行軍部隊士氣。缺一半軍糧扣 10 點，完全缺糧扣 20 點；士氣最低 0。補足軍糧不會立即回復已失去的士氣。" />
         <entry name="help_recruit_title" value="徵兵說明" />
@@ -434,8 +434,8 @@
         <entry name="return_lobby_confirm_description" value="目前進度將先保存。確定離開戰略／內政畫面並返回 Lobby？" description="return_lobby_confirm_description" />
         <entry name="settings_save_before_exit_failed" value="保存失敗，已取消返回或退出。" description="settings_save_before_exit_failed" />
         <entry name="gameplay_guide_title" value="玩法說明" description="gameplay_guide_title" />
-        <entry name="gameplay_guide_description" value="主要內政、軍事與資源規則；所有消耗均以畫面當下顯示為準。" description="gameplay_guide_description" />
-        <entry name="gameplay_guide_content" value="【經營勢力】\n金糧由全勢力共用。每月分配行動力，在內政、徵兵與軍事之間取捨；未使用的行動力不保留。商業帶來季末稅金，農業帶來九月秋收，治水降低六月災害風險。\n\n【維持軍隊】\n駐軍與行軍部隊都需要軍糧，訓練與士氣共同影響戰力。缺糧會造成逃兵與士氣下降，也會中斷民心自然恢復的穩定月份。軍糧完全不足時，當月士氣最多下降 20 點。\n\n【民心與成長】\n安民最高提升至 95。之後連續三個合格月底，可從 95 自然提升到 96，再逐月升至 100；缺糧、洪災、易主或民心低於 95 都會使穩定月份歸零。缺糧本身不直接扣民心。\n\n【戰略與協同】\n偵察與出征依城市間直接道路判定。可以選擇多座我方城市共同攻打一城，各城分別出兵與支付費用，等待全員抵達後一起作戰；我方城池之間也可運兵增援。資源足夠時可以同時多路派兵。戰敗後生還者需要時間撤退，退路中斷可能造成潰散。\n\n【閱讀報告】\n勢力月報整理我方收支、缺糧損失、民心、災害與參戰結果。天下戰報只列各勢力的戰鬥，我方相關優先；兩個入口查看的是同一份戰報。\n\n【操作提示】\n戰略圖、內政與派兵視窗的操作說明，只解釋當前畫面的內容。徵兵、運兵與出征的數量、成本及限制，請在各自操作處查看。" description="gameplay_guide_content" />
+        <entry name="gameplay_guide_description" value="從每月流程開始，快速掌握經營、軍事、情報與存檔。" description="gameplay_guide_description" />
+        <entry name="gameplay_guide_content" value="【遊戲目標】\n選擇一方勢力，在期限內完成劇本指定的攻城目標。目標達成或失敗後仍可繼續自由征戰；失去所有城池則無法再推進月份。\n\n【每月怎麼玩】\n先在戰略地圖查看城池、道路、目標與共用資源，再進入我方城池執行內政或徵兵；需要時可偵察敵城、運兵增援或出征。安排完成後按「結束月份」，統一結算收入、軍糧、行軍、戰鬥、災害與敵軍行動。未使用的行動力不會保留。\n\n【資源與城池】\n金與糧由全勢力共用，人口、城防、訓練、士氣與民心則屬於各城。農業提高九月秋收，商業提高季末稅金，治水降低六月洪災風險，城防強化守城。徵兵會消耗人口與資源；訓練和士氣會影響部隊戰力。\n\n【軍糧與民心】\n駐軍和行軍部隊每月都需要軍糧。缺糧會造成逃兵與士氣下降，也會中斷高民心的自然恢復。安民可直接提升民心至 95；維持民心、供糧與城市安全，之後可逐步自然提升至 100。\n\n【情報與道路】\n敵方與中立城的兵力起初只顯示估算值。從相鄰我方城偵察可取得三回合精確情報。偵察與出征需要直接道路；運兵只能在我方城池間沿安全道路行動，距離會影響抵達月份。\n\n【出征與戰報】\n可由一城或多城派兵攻打同一目標；同勢力部隊在同月抵達時會合併作戰。戰敗生還者需要沿安全道路撤退。勢力月報整理我方收支、缺糧、災害與戰事；天下戰報集中顯示各地戰鬥。\n\n【存檔與反悔】\n一般內政、偵察、運兵與出征不會立即存檔；想取消尚未保存的操作，可讀取存檔回到上次保存狀態。建立新局、月份結算、手動存檔，以及從遊戲選單返回大廳或離開遊戲時會保存。\n\n【操作提示】\n各主要畫面的「操作說明」會補充當前功能、成本與限制；實際消耗以確認畫面顯示為準。" description="gameplay_guide_content" />
         <entry name="button_back_to_settings" value="返回設定" description="button_back_to_settings" />
         <entry name="city_status_player_eliminated" value="我方已失去全部城池，不能再下達命令或推進月份。" description="city_status_player_eliminated" />
         <entry name="scenario_china_name" value="漢末群雄・全國征戰" description="scenario_china_name" />

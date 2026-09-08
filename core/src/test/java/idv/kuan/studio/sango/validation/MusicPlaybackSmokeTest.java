@@ -61,6 +61,10 @@ public final class MusicPlaybackSmokeTest {
         controller.update(1f, true, 0.8f);
         check(loader.count(MusicTrack.SPRING) == 1 && spring.playCalls == 1 && spring.position == 30f,
             "同季切畫面不重建或從頭播放");
+        controller.restartRequestedTrack();
+        controller.update(0f, true, 0.8f);
+        check(loader.count(MusicTrack.SPRING) == 1 && spring.playCalls == 1 && close(spring.position, 0f),
+            "顯式重播同曲時沿用串流並回到開頭");
         controller.request(MusicTrack.SUMMER);
         controller.update(0f, true, 0.8f);
         check(controller.activeStreamCount() == 2 && close(spring.volume, 0.56f), "換季不硬切舊曲");

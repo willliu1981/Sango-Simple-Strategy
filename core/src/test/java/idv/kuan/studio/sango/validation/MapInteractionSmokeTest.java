@@ -15,10 +15,11 @@ public final class MapInteractionSmokeTest {
     public static void main(String[] args) {
         MapInteractionState taps = new MapInteractionState();
         check(taps.tap("pingyuan", true, 1000, 10, 10) == Action.NONE, "Single city tap stays full");
-        check(taps.tap("pingyuan", true, 1200, 12, 12) == Action.RESTORE_AND_FOCUS,
-            "Same-city double tap restores and focuses");
+        check(taps.tap("pingyuan", true, 1200, 12, 12) == Action.NONE,
+            "Same-city double tap stays full and only selects");
         check(taps.tap(null, true, 2000, 10, 10) == Action.NONE, "Blank single tap stays full");
-        check(taps.tap(null, true, 2200, 10, 10) == Action.NONE, "Blank double tap stays full");
+        check(taps.tap(null, true, 2200, 10, 10) == Action.EXIT_FULLSCREEN,
+            "Blank double tap restores without focusing");
         taps.tap("pingyuan", true, 3000, 10, 10);
         check(taps.tap("beihai", true, 3100, 10, 10) == Action.NONE, "Different cities do not activate");
         taps.reset();

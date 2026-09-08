@@ -4,7 +4,7 @@ import java.util.Objects;
 
 /** Tap history survives node rebuilding; drag and mode changes clear it. */
 public final class MapInteractionState {
-    public enum Action { NONE, ENTER_FULLSCREEN, RESTORE_AND_FOCUS }
+    public enum Action { NONE, ENTER_FULLSCREEN, EXIT_FULLSCREEN }
 
     private static final long DOUBLE_TAP_MILLIS = 350L;
     private static final float MAXIMUM_TAP_DISTANCE = 36f;
@@ -25,7 +25,7 @@ public final class MapInteractionState {
         if (doubleTap) {
             reset();
             return fullscreen
-                ? (cityId == null ? Action.NONE : Action.RESTORE_AND_FOCUS)
+                ? (cityId == null ? Action.EXIT_FULLSCREEN : Action.NONE)
                 : Action.ENTER_FULLSCREEN;
         }
         pending = true;

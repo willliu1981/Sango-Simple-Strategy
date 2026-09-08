@@ -40,7 +40,7 @@ public final class StrategicMapWidget extends WidgetGroup {
     private final BitmapFont nodeFont;
     private final Consumer<String> citySelectionHandler;
     private final Runnable mapTapHandler;
-    private final Runnable cityActivationHandler;
+    private final Runnable mapRestoreHandler;
     private final MapInteractionState interaction = new MapInteractionState();
     private boolean fullscreen;
     private final MapCameraState camera = new MapCameraState();
@@ -72,15 +72,15 @@ public final class StrategicMapWidget extends WidgetGroup {
     }
 
     public StrategicMapWidget(BitmapFont nodeFont, Consumer<String> citySelectionHandler,
-        Runnable mapTapHandler, Runnable cityActivationHandler) {
+        Runnable mapTapHandler, Runnable mapRestoreHandler) {
         if (nodeFont == null || citySelectionHandler == null || mapTapHandler == null
-            || cityActivationHandler == null) {
+            || mapRestoreHandler == null) {
             throw new IllegalArgumentException("地圖字型、選城與點擊處理不可為 null。");
         }
         this.nodeFont = nodeFont;
         this.citySelectionHandler = citySelectionHandler;
         this.mapTapHandler = mapTapHandler;
-        this.cityActivationHandler = cityActivationHandler;
+        this.mapRestoreHandler = mapRestoreHandler;
         setFillParent(true);
         setTouchable(Touchable.enabled);
         addCaptureListener(createNavigationListener());
@@ -382,8 +382,8 @@ public final class StrategicMapWidget extends WidgetGroup {
         }
         if (action == MapInteractionState.Action.ENTER_FULLSCREEN) {
             mapTapHandler.run();
-        } else if (action == MapInteractionState.Action.RESTORE_AND_FOCUS) {
-            cityActivationHandler.run();
+        } else if (action == MapInteractionState.Action.EXIT_FULLSCREEN) {
+            mapRestoreHandler.run();
         }
     }
 

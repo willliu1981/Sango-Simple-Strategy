@@ -32,6 +32,7 @@ public final class GameplayGuideScreen extends SuiScreen {
     private Group scrollHost;
     private Table scrollContent;
     private ScrollPane scrollPane;
+    private Label contentLabel;
 
     @Override
     protected BuiltUI buildUI(UIFactory uiFactory) {
@@ -47,7 +48,7 @@ public final class GameplayGuideScreen extends SuiScreen {
     protected void onUIBuilt(BuiltUI builtUI) {
         screenBackground.attach(stage, BACKGROUND_PATH);
         scrollHost = ui.getActor("gameplay_guide_scroll_host", Group.class);
-        Label contentLabel = label("gameplay_guide_content_label");
+        contentLabel = label("gameplay_guide_content_label");
         contentLabel.remove();
         contentLabel.setAlignment(Align.topLeft);
         scrollContent = new Table();
@@ -70,7 +71,7 @@ public final class GameplayGuideScreen extends SuiScreen {
     @Override
     protected void afterShow() {
         ScreenMusic.play(ScreenId.SETTINGS);
-        label("gameplay_guide_content_label").setText(
+        contentLabel.setText(
             text("gameplay_guide_content", "治水可降低六月洪災風險與秋收損失。")
                 .replace("\\n", "\n")
         );
@@ -108,13 +109,16 @@ public final class GameplayGuideScreen extends SuiScreen {
     }
 
     private void resizeScrollPane() {
-        if (scrollHost == null || scrollPane == null) {
+        if (scrollHost == null || scrollPane == null || contentLabel == null) {
             return;
         }
         float contentWidth = Math.max(1f, scrollHost.getWidth() - 28f);
         scrollPane.setBounds(0f, 0f, scrollHost.getWidth(), scrollHost.getHeight());
-        scrollContent.getCell(label("gameplay_guide_content_label")).width(contentWidth);
+        contentLabel.setWidth(contentWidth);
+        contentLabel.invalidateHierarchy();
+        scrollContent.getCell(contentLabel).width(contentWidth);
         scrollContent.invalidateHierarchy();
+        scrollContent.pack();
         scrollPane.validate();
     }
 

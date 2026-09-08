@@ -44,6 +44,17 @@ public final class SangoAudioService {
         }
     }
 
+    public void restartMusicPlayerTrack() {
+        if (!galleryActive) {
+            return;
+        }
+        completedGalleryTrack = null;
+        galleryCompletionPending = false;
+        playback.setUserPaused(false);
+        playback.restartRequestedTrack();
+        playback.retryRequestedTrack();
+    }
+
     public void exitMusicPlayer(MusicTrack restoreTrack) {
         galleryActive = false;
         completedGalleryTrack = null;

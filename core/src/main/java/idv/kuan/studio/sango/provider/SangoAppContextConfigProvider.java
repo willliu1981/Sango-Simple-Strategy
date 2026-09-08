@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
+import idv.kuan.studio.libgdx.simpleui.context.config.ApplicationContextConfigBuilder;
 import idv.kuan.studio.libgdx.simpleui.context.config.ApplicationContextConfiguration;
 import idv.kuan.studio.libgdx.simpleui.context.provider.ApplicationContextConfigProvider;
 import idv.kuan.studio.libgdx.simpleui.resource.FontChars;
@@ -32,6 +33,13 @@ public final class SangoAppContextConfigProvider implements ApplicationContextCo
     private static final float DESIGN_HEIGHT = 1080f;
     private static final String DEFAULT_FONT_PATH = "font/SourceHanSansCN-Regular.otf";
     private static final String TITLE_FONT_PATH = "font/SourceHanSansCN-Heavy.otf";
+
+    @Override
+    public ApplicationContextConfiguration createConfiguration() {
+        return buildConfiguration(
+            new ConfigBuilder(ApplicationContextConfigBuilder.begin())
+        );
+    }
 
     @Override
     public ApplicationContextConfiguration buildConfiguration(ConfigBuilder configBuilder) {
