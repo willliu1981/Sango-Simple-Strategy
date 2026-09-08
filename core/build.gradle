@@ -139,7 +139,7 @@ tasks.named('check') {
 
 tasks.register('runDefenseIntelligenceSmokeTest', JavaExec) {
   group = 'verification'
-  description = '驗證防守方針、情報隔離、期限、戰報與 schema 10。'
+  description = '驗證防守方針、情報隔離、期限、戰報與目前 schema。'
   dependsOn testClasses
   classpath = sourceSets.test.runtimeClasspath
   mainClass.set('idv.kuan.studio.sango.validation.DefenseIntelligenceSmokeTest')
@@ -148,4 +148,17 @@ tasks.register('runDefenseIntelligenceSmokeTest', JavaExec) {
 
 tasks.named('check') {
   dependsOn 'runDefenseIntelligenceSmokeTest'
+}
+
+tasks.register('runRpsTacticSmokeTest', JavaExec) {
+  group = 'verification'
+  description = 'Verify the nine tactic matchups, mixed armies, AI intelligence and old saves.'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.RpsTacticSmokeTest')
+  args rootProject.file('assets').absolutePath
+}
+
+tasks.named('check') {
+  dependsOn 'runRpsTacticSmokeTest'
 }

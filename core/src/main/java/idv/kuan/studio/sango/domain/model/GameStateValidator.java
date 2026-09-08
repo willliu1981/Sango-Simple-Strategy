@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.Set;
 
 import idv.kuan.studio.sango.SangoVersion;
+import idv.kuan.studio.sango.domain.rule.BattleTactic;
+import idv.kuan.studio.sango.domain.rule.DefensePolicy;
+import idv.kuan.studio.sango.domain.rule.MilitaryRules;
 import idv.kuan.studio.sango.domain.rule.NationalActionPointRules;
 import idv.kuan.studio.sango.domain.rule.TroopQualityRules;
 
@@ -221,8 +224,8 @@ public final class GameStateValidator {
             100,
             "cityState.harvestModifierPercent"
         );
-        if (cityState.defensePolicy == null) {
-            throw new IllegalArgumentException("cityState.defensePolicy 不可為 null。");
+        if (cityState.defensePolicy == null || !cityState.defensePolicy.isActive()) {
+            throw new IllegalArgumentException("cityState.defensePolicy 必須是目前有效方針。");
         }
         requireNonNegative(cityState.scoutedUntilTurn, "cityState.scoutedUntilTurn");
     }
@@ -281,8 +284,8 @@ public final class GameStateValidator {
         requireRange(armyState.morale, 0, 100, "armyState.morale");
         validateQualityFraction(armyState.training, armyState.trainingFraction, "armyState.trainingFraction");
         validateQualityFraction(armyState.morale, armyState.moraleFraction, "armyState.moraleFraction");
-        if (armyState.tactic == null) {
-            throw new IllegalArgumentException("armyState.tactic 不可為 null。");
+        if (armyState.tactic == null || !armyState.tactic.isActive()) {
+            throw new IllegalArgumentException("armyState.tactic 必須是目前有效戰術。");
         }
     }
 
@@ -337,6 +340,9 @@ public final class GameStateValidator {
         if (battleReport.attackerTactic == null) {
             throw new IllegalArgumentException("battleReport.attackerTactic 不可為 null。");
         }
+        if (battleReport.battleRulesVersion != 0 && battleReport.battleRulesVersion != 2) {
+            throw new IllegalArgumentException("battleReport.battleRulesVersion 只支援 0 或 2。");
+        }
         if (battleReport.defenderPolicyRecorded && battleReport.defenderPolicy == null) {
             throw new IllegalArgumentException("已記錄的守方方針不可為 null。");
         }
@@ -345,6 +351,15 @@ public final class GameStateValidator {
         }
         if (battleReport.attackerContributions == null) {
             throw new IllegalArgumentException("battleReport.attackerContributions 不可為 null。");
+        }
+        if (battleReport.attackerStrength < 0) {
+            throw new IllegalArgumentException("battleReport.attackerStrength 不可小於 0。");
+        }
+        requireNonNegative(battleReport.defenderBaseStrength,
+            "battleReport.defenderBaseStrength");
+        requireNonNegative(battleReport.defenderStrength, "battleReport.defenderStrength");
+        if (battleReport.battleRulesVersion == 2) {
+            validateCurrentBattleSnapshot(battleReport);
         }
         requireNonNegative(battleReport.attackerTroopsBefore, "battleReport.attackerTroopsBefore");
         requireNonNegative(battleReport.defenderTroopsBefore, "battleReport.defenderTroopsBefore");
@@ -376,6 +391,28 @@ public final class GameStateValidator {
         validateBattleContributions(battleReport, factionIds, cityStatesById);
     }
 
+    private static void validateCurrentBattleSnapshot(BattleReport battleReport) {
+        if (!battleReport.attackerTactic.isActive()
+            || !battleReport.defenderPolicyRecorded
+            || battleReport.defenderPolicy == null
+            || !battleReport.defenderPolicy.isActive()) {
+            throw new IllegalArgumentException("目前戰報必須保存有效戰術與防守方針。");
+        }
+        if (battleReport.attackerContributions.length == 0) {
+            throw new IllegalArgumentException("目前戰報必須保存攻方來源戰力快照。");
+        }
+        if (battleReport.attackerTactic
+            != battleReport.attackerContributions[0].attackerTactic) {
+            throw new IllegalArgumentException("戰報摘要戰術必須等於第一個攻方來源戰術。");
+        }
+        int expectedDefenderBaseStrength = MilitaryRules.calculateDefenderStrength(
+            battleReport.defenderTroopsBefore, battleReport.defenderTraining,
+            battleReport.defenderMorale, battleReport.defenderDefense);
+        if (battleReport.defenderBaseStrength != expectedDefenderBaseStrength) {
+            throw new IllegalArgumentException("戰報守方基礎戰力快照不一致。");
+        }
+    }
+
     private static void validateBattleContributions(
         BattleReport battleReport,
         Set<String> factionIds,
@@ -388,6 +425,9 @@ public final class GameStateValidator {
         long troopsBefore = 0;
         long losses = 0;
         long survivors = 0;
+        long totalBaseStrength = 0;
+        long totalEffectiveStrength = 0;
+        long counteredBaseStrength = 0;
         for (BattleContribution contribution : battleReport.attackerContributions) {
             if (contribution == null) {
                 throw new IllegalArgumentException("BattleContribution 不可為 null。");
@@ -408,7 +448,20 @@ public final class GameStateValidator {
             requireNonNegative(contribution.survivors, "battleContribution.survivors");
             requireRange(contribution.training, 0, 100, "battleContribution.training");
             requireRange(contribution.morale, 0, 100, "battleContribution.morale");
+            requireNonNegative(contribution.baseStrength, "battleContribution.baseStrength");
             requireNonNegative(contribution.strength, "battleContribution.strength");
+            if (battleReport.battleRulesVersion == 2) {
+                validateCurrentContribution(battleReport, contribution);
+                totalBaseStrength = saturatingAdd(totalBaseStrength,
+                    contribution.baseStrength);
+                totalEffectiveStrength = saturatingAdd(totalEffectiveStrength,
+                    contribution.strength);
+                if (battleReport.outcome != BattleOutcome.UNOPPOSED_OCCUPATION
+                    && battleReport.defenderPolicy.defeats(contribution.attackerTactic)) {
+                    counteredBaseStrength = saturatingAdd(counteredBaseStrength,
+                        contribution.baseStrength);
+                }
+            }
             if ((long) contribution.losses + contribution.survivors != contribution.troopsBefore) {
                 throw new IllegalArgumentException("BattleContribution 傷亡不守恆。");
             }
@@ -420,6 +473,38 @@ public final class GameStateValidator {
             || losses != battleReport.attackerLosses
             || survivors != battleReport.attackerSurvivors) {
             throw new IllegalArgumentException("BattleContribution 合計與戰報攻方總數不一致。");
+        }
+        if (battleReport.battleRulesVersion == 2) {
+            int expectedDefenderPercent = battleReport.outcome
+                == BattleOutcome.UNOPPOSED_OCCUPATION ? 100
+                : MilitaryRules.defenderMatchupPercent(
+                    counteredBaseStrength, totalBaseStrength);
+            int expectedDefenderStrength = MilitaryRules.applyMatchupPercent(
+                battleReport.defenderBaseStrength, expectedDefenderPercent);
+            if (battleReport.attackerStrength != totalEffectiveStrength
+                || battleReport.defenderMatchupPercent != expectedDefenderPercent
+                || battleReport.defenderStrength != expectedDefenderStrength) {
+                throw new IllegalArgumentException("目前戰報的相剋戰力快照不一致。");
+            }
+        }
+    }
+
+    private static void validateCurrentContribution(BattleReport battleReport,
+        BattleContribution contribution) {
+        if (contribution.attackerTactic == null || !contribution.attackerTactic.isActive()) {
+            throw new IllegalArgumentException("目前 BattleContribution 必須保存有效戰術。");
+        }
+        int expectedBaseStrength = MilitaryRules.calculateAttackerStrength(
+            contribution.troopsBefore, contribution.training, contribution.morale);
+        int expectedMatchupPercent = battleReport.outcome
+            == BattleOutcome.UNOPPOSED_OCCUPATION ? 100
+            : MilitaryRules.attackerMatchupPercent(contribution.attackerTactic,
+                battleReport.defenderPolicy);
+        int expectedStrength = MilitaryRules.applyMatchupPercent(
+            expectedBaseStrength, expectedMatchupPercent);
+        if (contribution.baseStrength != expectedBaseStrength
+            || contribution.strength != expectedStrength) {
+            throw new IllegalArgumentException("目前 BattleContribution 戰力快照不一致。");
         }
     }
 
@@ -458,8 +543,8 @@ public final class GameStateValidator {
             requireRange(snapshot.training, 0, 100, "cityIntelligence.training");
             requireRange(snapshot.morale, 0, 100, "cityIntelligence.morale");
             requireRange(snapshot.publicOrder, 0, 100, "cityIntelligence.publicOrder");
-            if (snapshot.defensePolicy == null) {
-                throw new IllegalArgumentException("城池情報的防守方針不可為 null。");
+            if (snapshot.defensePolicy == null || !snapshot.defensePolicy.isActive()) {
+                throw new IllegalArgumentException("城池情報必須保存目前有效的防守方針。");
             }
         }
     }
@@ -532,6 +617,10 @@ public final class GameStateValidator {
         if (value < 0) {
             throw new IllegalArgumentException(fieldName + " 不可小於 0。");
         }
+    }
+
+    private static long saturatingAdd(long left, long right) {
+        return Long.MAX_VALUE - left < right ? Long.MAX_VALUE : left + right;
     }
 
     private static void requireRange(int value, int minimum, int maximum, String fieldName) {

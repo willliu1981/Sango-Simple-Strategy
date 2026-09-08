@@ -327,7 +327,7 @@ public final class CampaignGrowthSmokeTest {
         check(new GameStateMigrator().migrate(loaded).requireCapitalCityState().trainingFraction == 0,
             "目前 schema 重讀保留整數素質");
         GameState launched = new LaunchExpeditionCommand(definitions)
-            .execute(2, loaded, city.cityId, "runan", BattleTactic.BALANCED).getGameState();
+            .execute(2, loaded, city.cityId, "runan", BattleTactic.FEINT).getGameState();
         check(launched.armyStates[0].trainingFraction == 0 && launched.armyStates[0].moraleFraction == 0,
             "出征軍保存原城整數素質");
         saves.save(2, launched);

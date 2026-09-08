@@ -18,7 +18,7 @@ public final class SetDefensePolicyCommand {
         if (!factionId.equals(city.ownerFactionId)) {
             throw new IllegalArgumentException("只能設定己方城池的防守方針。");
         }
-        city.defensePolicy = policy;
+        city.defensePolicy = policy.normalized();
         nextState.lastActionCode = "SET_DEFENSE_POLICY";
         GameStateValidator.validate(nextState);
         return nextState;

@@ -254,7 +254,7 @@ public final class NewGameCommand {
         cityState.training = cityDefinition.initialTraining;
         cityState.morale = cityDefinition.initialMorale;
         cityState.harvestModifierPercent = 100;
-        cityState.defensePolicy = DefensePolicy.BALANCED;
+        cityState.defensePolicy = DefensePolicy.HOLD;
         cityState.scoutedUntilTurn = 0;
         return cityState;
     }

@@ -76,11 +76,11 @@
                             color="0.86,0.68,0.37,1">${text:map_defense_policy_heading}</label>
                         <row />
                         <table width="590" height="62">
-                            <textButton id="defense_balanced_button" fontSize="24" width="182" height="58">${text:button_defense_balanced}</textButton>
-                            <textButton id="defense_aggressive_button" fontSize="24" width="182" height="58"
-                                padLeft="14">${text:button_defense_aggressive}</textButton>
+                            <textButton id="defense_assault_button" fontSize="24" width="182" height="58">${text:tactic_assault}</textButton>
+                            <textButton id="defense_feint_button" fontSize="24" width="182" height="58"
+                                padLeft="14">${text:tactic_feint}</textButton>
                             <textButton id="defense_hold_button" fontSize="24" width="182" height="58"
-                                padLeft="14">${text:button_defense_hold}</textButton>
+                                padLeft="14">${text:tactic_hold}</textButton>
                         </table>
                     </table>
                     <row />
@@ -157,12 +157,12 @@
             <table id="dispatch_tactic_panel" width="1170" height="72">
                 <label fontKey="title" fontSize="29" width="250" height="62"
                     color="0.86,0.68,0.37,1">${text:dispatch_tactic_heading}</label>
-                <textButton id="dispatch_tactic_balanced_button" fontSize="24" width="280" height="58"
-                    padLeft="12">${text:button_tactic_balanced}</textButton>
                 <textButton id="dispatch_tactic_assault_button" fontSize="24" width="280" height="58"
-                    padLeft="12">${text:button_tactic_assault}</textButton>
-                <textButton id="dispatch_tactic_cautious_button" fontSize="24" width="280" height="58"
-                    padLeft="12">${text:button_tactic_cautious}</textButton>
+                    padLeft="12">${text:tactic_assault}</textButton>
+                <textButton id="dispatch_tactic_feint_button" fontSize="24" width="280" height="58"
+                    padLeft="12">${text:tactic_feint}</textButton>
+                <textButton id="dispatch_tactic_hold_button" fontSize="24" width="280" height="58"
+                    padLeft="12">${text:tactic_hold}</textButton>
             </table>
             <row />
             <group id="dispatch_selected_origins_host" width="1170" height="128" touchChildrenOnly="true" />

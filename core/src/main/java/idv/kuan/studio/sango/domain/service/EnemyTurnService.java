@@ -128,7 +128,11 @@ public final class EnemyTurnService {
         armyState.morale = originCity.morale;
         armyState.trainingFraction = originCity.trainingFraction;
         armyState.moraleFraction = originCity.moraleFraction;
-        armyState.tactic = BattleTactic.BALANCED;
+        KnownCityView knownTarget = intelligenceService.knownView(
+            gameState, factionState.factionId, targetCity.cityId);
+        armyState.tactic = chooseAttackTactic(
+            gameState, factionState.factionId, originCity.cityId,
+            targetCity.cityId, knownTarget);
         originCity.troops -= dispatchedTroops;
         factionState.food -= ExpeditionRules.FOOD_COST;
         FactionActionPointRules.spend(gameState, factionState.factionId, ExpeditionRules.ACTION_POINT_COST);
@@ -235,12 +239,12 @@ public final class EnemyTurnService {
                         targetId).troops();
                 }
             }
-            DefensePolicy desired = DefensePolicy.BALANCED;
+            DefensePolicy desired = DefensePolicy.FEINT;
             if (knownThreat > 0 && (long) city.troops * 10 < knownThreat * 9) {
                 desired = DefensePolicy.HOLD;
             } else if (knownThreat > 0 && city.troops >= knownThreat * 3 / 2
                 && city.training >= 60 && city.morale >= 60) {
-                desired = DefensePolicy.AGGRESSIVE;
+                desired = DefensePolicy.ASSAULT;
             }
             city.defensePolicy = desired;
         }
@@ -249,8 +253,18 @@ public final class EnemyTurnService {
     private long estimatedDefenderStrength(KnownCityView view) {
         return Math.max(1L, (long) view.troops() * (100 + view.training())
             * (150 + view.morale()) * (100 + view.defense() / 2)
-            * (view.defensePolicy() == null ? 100 : view.defensePolicy().getStrengthPercent())
-            / 200_000_000L);
+            / 2_000_000L);
+    }
+
+    private BattleTactic chooseAttackTactic(GameState gameState, String factionId,
+        String originCityId, String targetCityId, KnownCityView knownTarget) {
+        if (knownTarget.exact() && knownTarget.defensePolicy() != null) {
+            return BattleTactic.counterTo(knownTarget.defensePolicy());
+        }
+        BattleTactic[] activeTactics = BattleTactic.activeValues();
+        int choice = Math.floorMod((factionId + "|" + originCityId + "|"
+            + targetCityId + "|" + gameState.currentTurn).hashCode(), activeTactics.length);
+        return activeTactics[choice];
     }
 
     private String connectedCityId(String cityId, CityConnectionDefinition connection) {

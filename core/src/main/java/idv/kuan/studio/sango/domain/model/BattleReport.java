@@ -7,6 +7,8 @@ import idv.kuan.studio.sango.domain.rule.DefensePolicy;
  * 可持久化的單場戰鬥紀錄。
  */
 public final class BattleReport {
+    /** 0 為舊戰報，2 為目前相剋規則（包含無抵抗佔領）。 */
+    public int battleRulesVersion;
     public String battleId;
     public int resolvedTurn;
     public int resolvedYear;
@@ -28,6 +30,11 @@ public final class BattleReport {
     public int defenderMorale;
     /** 舊戰報沒有士氣快照，不能用目前城市資料偽造歷史數值。 */
     public boolean moraleRecorded;
+    /** schema 11 起的戰力快照，不依賴日後城池狀態回算。 */
+    public long attackerStrength;
+    public int defenderBaseStrength;
+    public int defenderStrength;
+    public int defenderMatchupPercent;
     public int attackerLosses;
     public int defenderLosses;
     public int attackerSurvivors;
@@ -44,6 +51,7 @@ public final class BattleReport {
 
     public BattleReport copy() {
         BattleReport copiedReport = new BattleReport();
+        copiedReport.battleRulesVersion = battleRulesVersion;
         copiedReport.battleId = battleId;
         copiedReport.resolvedTurn = resolvedTurn;
         copiedReport.resolvedYear = resolvedYear;
@@ -63,6 +71,10 @@ public final class BattleReport {
         copiedReport.attackerMorale = attackerMorale;
         copiedReport.defenderMorale = defenderMorale;
         copiedReport.moraleRecorded = moraleRecorded;
+        copiedReport.attackerStrength = attackerStrength;
+        copiedReport.defenderBaseStrength = defenderBaseStrength;
+        copiedReport.defenderStrength = defenderStrength;
+        copiedReport.defenderMatchupPercent = defenderMatchupPercent;
         copiedReport.attackerLosses = attackerLosses;
         copiedReport.defenderLosses = defenderLosses;
         copiedReport.attackerSurvivors = attackerSurvivors;

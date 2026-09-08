@@ -137,19 +137,19 @@ public final class DefenseIntelligenceSmokeTest {
 
         CityState strengthCity = state.requireCityState(own.cityId).copy();
         strengthCity.troops = 2_000;
-        strengthCity.defensePolicy = DefensePolicy.BALANCED;
-        int balanced = MilitaryRules.calculateDefenderStrength(strengthCity);
-        strengthCity.defensePolicy = DefensePolicy.AGGRESSIVE;
-        int aggressive = MilitaryRules.calculateDefenderStrength(strengthCity);
+        strengthCity.defensePolicy = DefensePolicy.FEINT;
+        int feint = MilitaryRules.calculateDefenderStrength(strengthCity);
+        strengthCity.defensePolicy = DefensePolicy.ASSAULT;
+        int assault = MilitaryRules.calculateDefenderStrength(strengthCity);
         strengthCity.defensePolicy = DefensePolicy.HOLD;
         int hold = MilitaryRules.calculateDefenderStrength(strengthCity);
-        check(aggressive == balanced * 90 / 100 && hold == balanced * 115 / 100,
-            "防守方針套用守城戰力倍率");
-        check(DefensePolicy.AGGRESSIVE.getAttackerCasualtyPercent() == 125
-            && DefensePolicy.AGGRESSIVE.getDefenderCasualtyPercent() == 120
-            && DefensePolicy.HOLD.getAttackerCasualtyPercent() == 75
-            && DefensePolicy.HOLD.getDefenderCasualtyPercent() == 80,
-            "防守方針傷亡倍率集中且正確");
+        check(assault == feint && hold == feint,
+            "三種防守方針不再各自夾帶基礎戰力倍率");
+        check(MilitaryRules.attackerMatchupPercent(BattleTactic.FEINT,
+            DefensePolicy.ASSAULT) == 110
+            && MilitaryRules.defenderMatchupPercent(BattleTactic.FEINT,
+                DefensePolicy.ASSAULT) == 100,
+            "防守方針改由共用相剋規則計算");
 
         StrategicMapDefinition map = definitions.requireMap(state.mapId);
         CityConnectionDefinition edge = findForeignEdge(state, map, state.playerFactionId);
@@ -158,7 +158,7 @@ public final class DefenseIntelligenceSmokeTest {
         String targetId = originId.equals(edge.fromCityId) ? edge.toCityId : edge.fromCityId;
         CityState target = state.requireCityState(targetId);
         target.troops = 1;
-        target.defensePolicy = DefensePolicy.AGGRESSIVE;
+        target.defensePolicy = DefensePolicy.ASSAULT;
         ArmyState army = new ArmyState();
         army.armyId = "test-army";
         army.expeditionGroupId = army.armyId;
@@ -169,15 +169,15 @@ public final class DefenseIntelligenceSmokeTest {
         army.troops = 10_000;
         army.training = 100;
         army.morale = 100;
-        army.tactic = BattleTactic.BALANCED;
+        army.tactic = BattleTactic.FEINT;
         TurnResolutionReport report = new TurnResolutionReport(state.currentYear, state.currentMonth);
         new BattleResolutionService().resolveArrival(state, army, map, report);
         BattleReport battle = state.battleReports[state.battleReports.length - 1];
         check(battle.defenderPolicyRecorded
-            && battle.defenderPolicy == DefensePolicy.AGGRESSIVE,
+            && battle.defenderPolicy == DefensePolicy.ASSAULT,
             "戰報保存交戰當下守方方針");
-        check(state.requireCityState(targetId).defensePolicy == DefensePolicy.BALANCED,
-            "城池易主後防守方針重設均衡");
+        check(state.requireCityState(targetId).defensePolicy == DefensePolicy.HOLD,
+            "城池易主後防守方針重設固守");
     }
 
     private static void validateMigration(GameState initial) {
@@ -197,9 +197,9 @@ public final class DefenseIntelligenceSmokeTest {
         target.scoutedUntilTurn = legacyValidThrough;
         GameState migrated = new GameStateMigrator().migrate(legacy);
         check(migrated.schemaVersion == SangoVersion.GAME_STATE_SCHEMA_VERSION,
-            "schema 9 可遷移為 schema 10");
-        check(migrated.requireCityState(target.cityId).defensePolicy == DefensePolicy.BALANCED,
-            "舊城池補上均衡方針");
+            "schema 9 可遷移為目前版本");
+        check(migrated.requireCityState(target.cityId).defensePolicy == DefensePolicy.FEINT,
+            "舊城池的均衡方針轉為誘敵");
         CityIntelligenceSnapshot snapshot = new CityIntelligenceService().findSnapshot(
             migrated, migrated.playerFactionId, target.cityId);
         check(snapshot != null && snapshot.validThroughTurn == legacyValidThrough

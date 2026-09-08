@@ -17,6 +17,7 @@ import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
+import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.domain.rule.MilitaryRules;
 import idv.kuan.studio.sango.domain.rule.DefensePolicy;
 import idv.kuan.studio.sango.domain.rule.TroopQualityRules;
@@ -52,22 +53,25 @@ public final class BattleResolutionService {
         boolean capturedDefendingCapital = isDefendingCapital(
             gameState, defendingFactionId, targetCityState.cityId);
         boolean unopposedOccupation = defenderBefore.troops == 0;
-        long attackerStrength = totalStrength(armyStates);
-        int defenderStrength = MilitaryRules.calculateDefenderStrength(defenderBefore);
-        boolean attackerWon = unopposedOccupation || attackerStrength >= defenderStrength;
+        StrengthSnapshot strengthSnapshot = calculateStrengths(
+            armyStates, defenderBefore, unopposedOccupation);
+        boolean attackerWon = unopposedOccupation
+            || strengthSnapshot.attackerStrength >= strengthSnapshot.defenderStrength;
         int attackerLosses = unopposedOccupation ? 0 : calculateAttackerLosses(
-            attackerTroopsBefore, firstArmy, attackerStrength, defenderStrength,
-            defenderBefore.defensePolicy);
+            attackerTroopsBefore, strengthSnapshot.attackerStrength,
+            strengthSnapshot.defenderStrength);
         int defenderLosses = unopposedOccupation ? 0 : calculateDefenderLosses(
-            defenderBefore, attackerStrength, defenderStrength);
+            defenderBefore.troops, strengthSnapshot.attackerStrength,
+            strengthSnapshot.defenderStrength);
         int[] lossesByArmy = distributeLosses(armyStates, attackerLosses, attackerTroopsBefore);
-        BattleContribution[] contributions = createContributions(armyStates, lossesByArmy);
+        BattleContribution[] contributions = createContributions(
+            armyStates, lossesByArmy, strengthSnapshot);
         int attackerSurvivors = attackerTroopsBefore - attackerLosses;
         int defenderSurvivors = defenderBefore.troops - defenderLosses;
 
         if (attackerWon) {
             targetCityState.ownerFactionId = firstArmy.factionId;
-            targetCityState.defensePolicy = DefensePolicy.BALANCED;
+            targetCityState.defensePolicy = DefensePolicy.HOLD;
             targetCityState.publicOrderRecoveryStreakMonths = 0;
             targetCityState.troops = attackerSurvivors;
             setScaledQuality(targetCityState,
@@ -103,7 +107,7 @@ public final class BattleResolutionService {
 
         BattleReport battleReport = createBattleReport(gameState, firstArmy, armyStates,
             contributions, defenderBefore, attackerTroopsBefore, attackerLosses,
-            defenderLosses, attackerWon, unopposedOccupation);
+            defenderLosses, attackerWon, unopposedOccupation, strengthSnapshot);
         gameState.addBattleReport(battleReport);
         turnResolutionReport.addBattleReportId(battleReport.battleId);
         if (attackerWon) {
@@ -149,7 +153,7 @@ public final class BattleResolutionService {
     }
 
     private BattleContribution[] createContributions(List<ArmyState> armyStates,
-        int[] lossesByArmy) {
+        int[] lossesByArmy, StrengthSnapshot strengthSnapshot) {
         BattleContribution[] contributions = new BattleContribution[armyStates.size()];
         for (int i = 0; i < armyStates.size(); i++) {
             ArmyState armyState = armyStates.get(i);
@@ -162,7 +166,9 @@ public final class BattleResolutionService {
             contribution.survivors = armyState.troops - lossesByArmy[i];
             contribution.training = armyState.training;
             contribution.morale = armyState.morale;
-            contribution.strength = MilitaryRules.calculateAttackerStrength(armyState);
+            contribution.attackerTactic = armyState.tactic.normalized();
+            contribution.baseStrength = strengthSnapshot.attackerBaseStrengths[i];
+            contribution.strength = strengthSnapshot.attackerStrengths[i];
             contributions[i] = contribution;
         }
         return contributions;
@@ -171,8 +177,10 @@ public final class BattleResolutionService {
     private BattleReport createBattleReport(GameState gameState, ArmyState firstArmy,
         List<ArmyState> armyStates, BattleContribution[] contributions,
         CityState defenderBefore, int attackerTroopsBefore, int attackerLosses,
-        int defenderLosses, boolean attackerWon, boolean unopposedOccupation) {
+        int defenderLosses, boolean attackerWon, boolean unopposedOccupation,
+        StrengthSnapshot strengthSnapshot) {
         BattleReport battleReport = new BattleReport();
+        battleReport.battleRulesVersion = 2;
         battleReport.battleId = gameState.allocateBattleReportId();
         battleReport.resolvedTurn = gameState.currentTurn;
         battleReport.resolvedYear = gameState.currentYear;
@@ -181,8 +189,8 @@ public final class BattleResolutionService {
         battleReport.targetCityId = firstArmy.targetCityId;
         battleReport.attackerFactionId = firstArmy.factionId;
         battleReport.defenderFactionId = defenderBefore.ownerFactionId;
-        battleReport.attackerTactic = firstArmy.tactic;
-        battleReport.defenderPolicy = defenderBefore.defensePolicy;
+        battleReport.attackerTactic = firstArmy.tactic.normalized();
+        battleReport.defenderPolicy = defenderBefore.defensePolicy.normalized();
         battleReport.defenderPolicyRecorded = true;
         battleReport.attackerTroopsBefore = attackerTroopsBefore;
         battleReport.defenderTroopsBefore = defenderBefore.troops;
@@ -192,6 +200,10 @@ public final class BattleResolutionService {
         battleReport.attackerMorale = weightedIntegerQuality(armyStates, false);
         battleReport.defenderMorale = defenderBefore.morale;
         battleReport.moraleRecorded = true;
+        battleReport.attackerStrength = strengthSnapshot.attackerStrength;
+        battleReport.defenderBaseStrength = strengthSnapshot.defenderBaseStrength;
+        battleReport.defenderStrength = strengthSnapshot.defenderStrength;
+        battleReport.defenderMatchupPercent = strengthSnapshot.defenderMatchupPercent;
         battleReport.attackerLosses = attackerLosses;
         battleReport.defenderLosses = defenderLosses;
         battleReport.attackerSurvivors = attackerTroopsBefore - attackerLosses;
@@ -225,12 +237,40 @@ public final class BattleResolutionService {
         return total;
     }
 
-    private long totalStrength(List<ArmyState> armyStates) {
-        long total = 0;
-        for (ArmyState armyState : armyStates) {
-            total = Math.addExact(total, MilitaryRules.calculateAttackerStrength(armyState));
+    private StrengthSnapshot calculateStrengths(List<ArmyState> armyStates,
+        CityState defenderBefore, boolean unopposedOccupation) {
+        int[] attackerBaseStrengths = new int[armyStates.size()];
+        int[] attackerStrengths = new int[armyStates.size()];
+        long totalAttackerBaseStrength = 0;
+        long attackerStrength = 0;
+        long counteredAttackerBaseStrength = 0;
+        DefensePolicy defenderPolicy = defenderBefore.defensePolicy.normalized();
+        for (int i = 0; i < armyStates.size(); i++) {
+            ArmyState armyState = armyStates.get(i);
+            BattleTactic tactic = armyState.tactic.normalized();
+            int baseStrength = MilitaryRules.calculateAttackerStrength(armyState);
+            int matchupPercent = unopposedOccupation ? 100
+                : MilitaryRules.attackerMatchupPercent(tactic, defenderPolicy);
+            int effectiveStrength = MilitaryRules.applyMatchupPercent(
+                baseStrength, matchupPercent);
+            attackerBaseStrengths[i] = baseStrength;
+            attackerStrengths[i] = effectiveStrength;
+            totalAttackerBaseStrength = saturatingAdd(totalAttackerBaseStrength, baseStrength);
+            attackerStrength = saturatingAdd(attackerStrength, effectiveStrength);
+            if (!unopposedOccupation && defenderPolicy.defeats(tactic)) {
+                counteredAttackerBaseStrength = saturatingAdd(
+                    counteredAttackerBaseStrength, baseStrength);
+            }
         }
-        return total;
+        int defenderBaseStrength = MilitaryRules.calculateDefenderStrength(defenderBefore);
+        int defenderMatchupPercent = unopposedOccupation ? 100
+            : MilitaryRules.defenderMatchupPercent(counteredAttackerBaseStrength,
+                totalAttackerBaseStrength);
+        int defenderStrength = MilitaryRules.applyMatchupPercent(
+            defenderBaseStrength, defenderMatchupPercent);
+        return new StrengthSnapshot(attackerBaseStrengths, attackerStrengths,
+            attackerStrength, defenderBaseStrength, defenderStrength,
+            defenderMatchupPercent);
     }
 
     private int[] distributeLosses(List<ArmyState> armyStates, int totalLosses,
@@ -259,23 +299,18 @@ public final class BattleResolutionService {
         return losses;
     }
 
-    private int calculateAttackerLosses(int attackerTroops, ArmyState firstArmy,
-        long attackerStrength, int defenderStrength, DefensePolicy defensePolicy) {
-        int baseLossPercent = clamp((long) defenderStrength * 50
-            / Math.max(1L, attackerStrength), 15, 80);
-        int adjustedLossPercent = clamp((long) baseLossPercent
-            * firstArmy.tactic.getCasualtyPercent()
-            * defensePolicy.getAttackerCasualtyPercent() / 10_000, 10, 90);
-        return (int) ((long) attackerTroops * adjustedLossPercent / 100);
+    private int calculateAttackerLosses(int attackerTroops,
+        long attackerStrength, int defenderStrength) {
+        int lossPercent = clamp(scaledRatio(defenderStrength, 50,
+            Math.max(1L, attackerStrength)), 15, 80);
+        return (int) ((long) attackerTroops * lossPercent / 100);
     }
 
-    private int calculateDefenderLosses(CityState cityState, long attackerStrength,
+    private int calculateDefenderLosses(int defenderTroops, long attackerStrength,
         int defenderStrength) {
-        int lossPercent = clamp(attackerStrength * 60
-            / Math.max(1, defenderStrength), 20, 95);
-        lossPercent = clamp((long) lossPercent
-            * cityState.defensePolicy.getDefenderCasualtyPercent() / 100, 10, 95);
-        return (int) ((long) cityState.troops * lossPercent / 100);
+        int lossPercent = clamp(scaledRatio(attackerStrength, 60,
+            Math.max(1, defenderStrength)), 20, 95);
+        return (int) ((long) defenderTroops * lossPercent / 100);
     }
 
     private void refreshFactionCapital(GameState gameState, String factionId,
@@ -390,5 +425,51 @@ public final class BattleResolutionService {
 
     private int clamp(long value, int minimum, int maximum) {
         return (int) Math.max(minimum, Math.min(maximum, value));
+    }
+
+    private long saturatingAdd(long left, long right) {
+        return Long.MAX_VALUE - left < right ? Long.MAX_VALUE : left + right;
+    }
+
+    /** 以整數安全地計算 floor(numerator * scale / denominator)。 */
+    private long scaledRatio(long numerator, int scale, long denominator) {
+        if (numerator <= 0 || scale <= 0) {
+            return 0;
+        }
+        long whole = numerator / denominator;
+        if (whole > Long.MAX_VALUE / scale) {
+            return Long.MAX_VALUE;
+        }
+        long result = whole * scale;
+        long remainder = numerator % denominator;
+        for (int candidate = scale - 1; candidate >= 1; candidate--) {
+            long threshold = denominator / scale * candidate
+                + (denominator % scale * candidate + scale - 1) / scale;
+            if (remainder >= threshold) {
+                return Long.MAX_VALUE - result < candidate
+                    ? Long.MAX_VALUE : result + candidate;
+            }
+        }
+        return result;
+    }
+
+    private static final class StrengthSnapshot {
+        private final int[] attackerBaseStrengths;
+        private final int[] attackerStrengths;
+        private final long attackerStrength;
+        private final int defenderBaseStrength;
+        private final int defenderStrength;
+        private final int defenderMatchupPercent;
+
+        private StrengthSnapshot(int[] attackerBaseStrengths, int[] attackerStrengths,
+            long attackerStrength, int defenderBaseStrength, int defenderStrength,
+            int defenderMatchupPercent) {
+            this.attackerBaseStrengths = attackerBaseStrengths;
+            this.attackerStrengths = attackerStrengths;
+            this.attackerStrength = attackerStrength;
+            this.defenderBaseStrength = defenderBaseStrength;
+            this.defenderStrength = defenderStrength;
+            this.defenderMatchupPercent = defenderMatchupPercent;
+        }
     }
 }

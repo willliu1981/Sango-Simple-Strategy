@@ -23,7 +23,7 @@ public final class ArmyState {
     /** 百萬分之一點；與整數素質一起保存，不因讀檔而丟失。 */
     public int trainingFraction;
     public int moraleFraction;
-    public BattleTactic tactic;
+    public BattleTactic tactic = BattleTactic.HOLD;
 
     public ArmyState() {
     }

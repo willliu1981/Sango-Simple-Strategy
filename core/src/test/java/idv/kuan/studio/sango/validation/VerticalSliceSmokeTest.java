@@ -290,7 +290,7 @@ public final class VerticalSliceSmokeTest {
             gameState,
             PLAYER_CAPITAL_ID,
             VICTORY_TARGET_ID,
-            BattleTactic.BALANCED
+            BattleTactic.FEINT
         );
         assertTrue(firstExpedition.isSuccessful(), "第一次出征應成功建立軍隊");
         assertEquals(800, firstExpedition.getDispatchedTroops(), "第一次派出兵力");
@@ -337,8 +337,10 @@ public final class VerticalSliceSmokeTest {
             "戰報已讀尚未明確存檔，讀取可回到原狀態"
         );
         assertEquals(400, gameState.requireCityState(PLAYER_CAPITAL_ID).troops, "新敗軍當月尚未返回主城");
-        assertEquals(296, gameState.armyStates[0].troops, "敗軍生還者保留於退卻部隊");
-        assertEquals(513, gameState.requireCityState(VICTORY_TARGET_ID).troops, "首戰後敵城守軍");
+        assertEquals(240, gameState.armyStates[0].troops,
+            "誘敵受固守克制後，敗軍生還者保留於退卻部隊");
+        assertEquals(551, gameState.requireCityState(VICTORY_TARGET_ID).troops,
+            "首戰後固守敵城守軍");
 
         gameState = requireDomesticSuccess(
             commands.domesticActionCommand.execute(

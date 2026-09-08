@@ -35,6 +35,7 @@ import idv.kuan.studio.sango.domain.model.BattleOutcome;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.domain.rule.DefensePolicy;
+import idv.kuan.studio.sango.domain.rule.MilitaryRules;
 import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.ui.id.ScreenId;
 import idv.kuan.studio.sango.ui.support.ScreenBackground;
@@ -156,13 +157,13 @@ public final class BattleReportScreen extends SuiScreen {
         );
         label("battle_report_tactic_label").setText(
             text("battle_report_tactic_prefix", "攻方戰術：")
-                + tacticName(battleReport.attackerTactic)
+                + reportTacticName(battleReport)
                 + text(
                     "battle_report_defense_format",
                     "｜守方城防：{0}｜防守方針：{1}",
                     battleReport.defenderDefense,
                     battleReport.defenderPolicyRecorded
-                        ? defensePolicyName(battleReport.defenderPolicy)
+                        ? defensePolicyName(battleReport.defenderPolicy, battleReport.battleRulesVersion)
                         : text("battle_report_defense_policy_legacy", "未記錄")
                 )
         );
@@ -381,6 +382,12 @@ public final class BattleReportScreen extends SuiScreen {
         BattleReport report = requireSelectedReport();
         if (report.attackerContributions == null || report.attackerContributions.length == 0) return;
         StringBuilder content = new StringBuilder();
+        if (report.battleRulesVersion >= 2 && report.outcome != BattleOutcome.UNOPPOSED_OCCUPATION) {
+            content.append(text("battle_matchup_strength",
+                "相剋後戰力：攻方 {0}｜守方 {1}（守方加成 {2}%）",
+                numberFormat.format(report.attackerStrength),
+                numberFormat.format(report.defenderStrength), report.defenderMatchupPercent - 100));
+        }
         for (BattleContribution contribution : report.attackerContributions) {
             if (content.length() > 0) content.append("\n\n");
             content.append(text("battle_contribution_row",
@@ -389,6 +396,12 @@ public final class BattleReportScreen extends SuiScreen {
                 numberFormat.format(contribution.troopsBefore), numberFormat.format(contribution.losses),
                 numberFormat.format(contribution.survivors), contribution.training, contribution.morale)
                 .replace("\\n", "\n"));
+            if (report.battleRulesVersion >= 2 && contribution.attackerTactic != null) {
+                content.append("\n").append(text("battle_contribution_tactic",
+                    "戰術：{0}｜{1}",
+                    tacticName(contribution.attackerTactic),
+                    contributionMatchupName(report, contribution)));
+            }
         }
         Label body = new Label(content, label("battle_report_training_label").getStyle());
         body.setWrap(true);
@@ -443,19 +456,49 @@ public final class BattleReportScreen extends SuiScreen {
         return text(factionDefinition.nameKey, factionDefinition.id);
     }
 
+    private String reportTacticName(BattleReport report) {
+        if (report.battleRulesVersion >= 2 && report.attackerContributions != null) {
+            for (BattleContribution contribution : report.attackerContributions) {
+                if (contribution.attackerTactic != report.attackerTactic) {
+                    return text("battle_tactic_mixed", "混合戰術");
+                }
+            }
+        }
+        return tacticName(report.attackerTactic);
+    }
+
+    private String contributionMatchupName(BattleReport report, BattleContribution contribution) {
+        if (report.outcome == BattleOutcome.UNOPPOSED_OCCUPATION) {
+            return text("battle_matchup_unopposed", "空城，不計相剋");
+        }
+        BattleTactic attack = contribution.attackerTactic;
+        DefensePolicy defense = report.defenderPolicy;
+        if (attack.name().equals(defense.name())) {
+            return text("battle_matchup_equal", "同種，無加成");
+        }
+        boolean attackWins = MilitaryRules.attackerMatchupPercent(attack, defense) > 100;
+        return attackWins ? text("battle_matchup_attack", "克制守方，戰力加成 10%")
+            : text("battle_matchup_defense", "被守方克制");
+    }
+
     private String tacticName(BattleTactic battleTactic) {
         return switch (battleTactic) {
             case BALANCED -> text("button_tactic_balanced", "穩健");
-            case ASSAULT -> text("button_tactic_assault", "強攻");
+            case ASSAULT -> text("tactic_assault", "強攻");
+            case FEINT -> text("tactic_feint", "誘敵");
+            case HOLD -> text("tactic_hold", "固守");
             case CAUTIOUS -> text("button_tactic_cautious", "保守");
         };
     }
 
-    private String defensePolicyName(DefensePolicy policy) {
+    private String defensePolicyName(DefensePolicy policy, int rulesVersion) {
         return switch (policy) {
             case BALANCED -> text("defense_policy_balanced", "均衡防守");
             case AGGRESSIVE -> text("defense_policy_aggressive", "積極迎戰");
-            case HOLD -> text("defense_policy_hold", "固守城池");
+            case HOLD -> rulesVersion >= 2 ? text("tactic_hold", "固守")
+                : text("defense_policy_hold", "固守城池");
+            case ASSAULT -> text("tactic_assault", "強攻");
+            case FEINT -> text("tactic_feint", "誘敵");
         };
     }
 

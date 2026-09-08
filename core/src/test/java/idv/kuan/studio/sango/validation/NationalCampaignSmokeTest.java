@@ -37,6 +37,7 @@ import idv.kuan.studio.sango.domain.model.GameStateValidator;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
+import idv.kuan.studio.sango.domain.rule.DefensePolicy;
 import idv.kuan.studio.sango.domain.rule.DomesticActionType;
 import idv.kuan.studio.sango.domain.rule.NationalActionPointRules;
 import idv.kuan.studio.sango.domain.rule.MilitaryRules;
@@ -181,7 +182,7 @@ public final class NationalCampaignSmokeTest {
             "訓練與士氣皆滿時不浪費資源");
         nextState.requireCapitalCityState().morale = 0;
         nextState.requireCapitalCityState().moraleFraction = 0;
-        StrategicActionResult expedition = launchCommand.execute(1, nextState, "chenliu", "runan", BattleTactic.BALANCED);
+        StrategicActionResult expedition = launchCommand.execute(1, nextState, "chenliu", "runan", BattleTactic.FEINT);
         check(expedition.isSuccessful(), "零士氣仍能出征");
         check(expedition.getGameState().armyStates[0].morale == 0, "出征不可將零士氣重設為 50");
         check(saves.load(1).armyStates.length == 0, "出征後尚未存檔，讀取可回到操作前");
@@ -195,7 +196,13 @@ public final class NationalCampaignSmokeTest {
         armyState.morale = 100;
         check(MilitaryRules.calculateAttackerStrength(armyState) == 1875, "士氣 100 = 基準 1.25 倍");
         armyState.tactic = BattleTactic.ASSAULT;
-        check(MilitaryRules.calculateAttackerStrength(armyState) == 2250, "強攻戰力 1.2 倍");
+        check(MilitaryRules.calculateAttackerStrength(armyState) == 1875,
+            "戰術不再直接改變基礎戰力");
+        check(MilitaryRules.applyMatchupPercent(
+            MilitaryRules.calculateAttackerStrength(armyState),
+            MilitaryRules.attackerMatchupPercent(BattleTactic.ASSAULT,
+                DefensePolicy.HOLD)) == 2062,
+            "強攻克制固守時才取得 10% 戰力加成");
         CityState cityState = new CityState();
         cityState.troops = 1000;
         cityState.training = 50;
@@ -335,7 +342,7 @@ public final class NationalCampaignSmokeTest {
         check(!gameState.hasArmyForFaction("cao_cao"), "已滅亡勢力的在途軍隊解散");
         GameStateValidator.validate(gameState);
         GameState eliminatedState = gameState;
-        check(!launchCommand.execute(1, eliminatedState, "chenliu", "runan", BattleTactic.BALANCED).isSuccessful(),
+        check(!launchCommand.execute(1, eliminatedState, "chenliu", "runan", BattleTactic.FEINT).isSuccessful(),
             "滅亡狀態拒絕出征");
         expectRuntimeFailure(() -> turnService.resolve(eliminatedState), "滅亡狀態拒絕推進月份");
     }
@@ -446,7 +453,7 @@ public final class NationalCampaignSmokeTest {
         armyState.troops = troops;
         armyState.training = training;
         armyState.morale = morale;
-        armyState.tactic = BattleTactic.BALANCED;
+        armyState.tactic = BattleTactic.FEINT;
         armyState.remainingTravelMonths = 1;
         return armyState;
     }

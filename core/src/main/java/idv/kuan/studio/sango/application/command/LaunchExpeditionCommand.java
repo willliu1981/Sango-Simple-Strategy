@@ -58,12 +58,13 @@ public final class LaunchExpeditionCommand {
         int amount,
         BattleTactic battleTactic
     ) {
+        BattleTactic normalizedTactic = normalizeTactic(battleTactic);
         StrategicActionFailureReason failureReason = evaluate(
             currentState,
             originCityId,
             targetCityId,
             amount,
-            battleTactic
+            normalizedTactic
         );
         if (failureReason != StrategicActionFailureReason.NONE) {
             return StrategicActionResult.failure("EXPEDITION", failureReason);
@@ -72,6 +73,7 @@ public final class LaunchExpeditionCommand {
         GameState nextState = currentState.copy();
         FactionState playerFactionState = nextState.requirePlayerFactionState();
         CityState originCityState = nextState.requireCityState(originCityId);
+        CityState targetCityState = nextState.requireCityState(targetCityId);
         StrategicMapDefinition mapDefinition = definitionRepository.requireMap(nextState.mapId);
         int travelMonths = mapDefinition.shortestTravelMonths(originCityId, targetCityId);
         int dispatchedTroops = amount;
@@ -89,7 +91,8 @@ public final class LaunchExpeditionCommand {
             targetCityId,
             travelMonths,
             dispatchedTroops,
-            battleTactic
+            nextState.playerFactionId.equals(targetCityState.ownerFactionId)
+                ? BattleTactic.HOLD : normalizedTactic
         );
         nextState.addArmy(armyState);
         nextState.lastActionCode = "LAUNCH_EXPEDITION";
@@ -109,11 +112,12 @@ public final class LaunchExpeditionCommand {
         List<ExpeditionOrder> orders,
         BattleTactic tactic
     ) {
+        BattleTactic normalizedTactic = normalizeTactic(tactic);
         StrategicActionFailureReason failureReason = evaluateJoint(
             state,
             targetCityId,
             orders,
-            tactic
+            normalizedTactic
         );
         if (failureReason != StrategicActionFailureReason.NONE) {
             return StrategicActionResult.failure("EXPEDITION", failureReason);
@@ -141,7 +145,7 @@ public final class LaunchExpeditionCommand {
                 targetCityId,
                 travelMonths,
                 order.troops(),
-                tactic
+                normalizedTactic
             );
             originCityState.troops -= order.troops();
             totalTroops = Math.addExact(totalTroops, order.troops());
@@ -281,5 +285,12 @@ public final class LaunchExpeditionCommand {
         armyState.moraleFraction = originCityState.moraleFraction;
         armyState.tactic = tactic;
         return armyState;
+    }
+
+    private BattleTactic normalizeTactic(BattleTactic tactic) {
+        if (tactic == null) {
+            throw new IllegalArgumentException("battleTactic 不可為 null。");
+        }
+        return tactic.normalized();
     }
 }

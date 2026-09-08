@@ -102,7 +102,7 @@ public final class StrategicMapScreen extends SuiScreen {
     private TransferOriginOrder pendingTransferOriginOrder = TransferOriginOrder.SHORTEST_TRAVEL;
     private final Map<String, Integer> pendingDispatchAmounts = new LinkedHashMap<>();
     private final List<String> pendingSelectedOriginCityIds = new ArrayList<>();
-    private BattleTactic pendingBattleTactic = BattleTactic.BALANCED;
+    private BattleTactic pendingBattleTactic = BattleTactic.FEINT;
 
     @Override
     protected BuiltUI buildUI(UIFactory uiFactory) {
@@ -289,12 +289,12 @@ public final class StrategicMapScreen extends SuiScreen {
         ui.onClick("scout_city_button", this::scoutSelectedCity);
         ui.onClick("launch_expedition_button", this::requestDispatch);
         ui.onClick("view_city_battle_button", this::viewSelectedCityBattle);
-        ui.onClick("defense_balanced_button", () -> selectDefensePolicy(DefensePolicy.BALANCED));
-        ui.onClick("defense_aggressive_button", () -> selectDefensePolicy(DefensePolicy.AGGRESSIVE));
+        ui.onClick("defense_feint_button", () -> selectDefensePolicy(DefensePolicy.FEINT));
+        ui.onClick("defense_assault_button", () -> selectDefensePolicy(DefensePolicy.ASSAULT));
         ui.onClick("defense_hold_button", () -> selectDefensePolicy(DefensePolicy.HOLD));
-        ui.onClick("dispatch_tactic_balanced_button", () -> selectDispatchTactic(BattleTactic.BALANCED));
+        ui.onClick("dispatch_tactic_feint_button", () -> selectDispatchTactic(BattleTactic.FEINT));
         ui.onClick("dispatch_tactic_assault_button", () -> selectDispatchTactic(BattleTactic.ASSAULT));
-        ui.onClick("dispatch_tactic_cautious_button", () -> selectDispatchTactic(BattleTactic.CAUTIOUS));
+        ui.onClick("dispatch_tactic_hold_button", () -> selectDispatchTactic(BattleTactic.HOLD));
         ui.onClick("map_settings_button", this::openSettings);
         ui.onClick("context_help_button", this::showMapHelp);
         ui.onClick("show_last_report_button", this::showLastTurnReport);
@@ -370,8 +370,8 @@ public final class StrategicMapScreen extends SuiScreen {
     }
 
     private void refreshDefensePolicyStyles(DefensePolicy selected) {
-        applySelectionStyle("defense_balanced_button", selected == DefensePolicy.BALANCED);
-        applySelectionStyle("defense_aggressive_button", selected == DefensePolicy.AGGRESSIVE);
+        applySelectionStyle("defense_feint_button", selected == DefensePolicy.FEINT);
+        applySelectionStyle("defense_assault_button", selected == DefensePolicy.ASSAULT);
         applySelectionStyle("defense_hold_button", selected == DefensePolicy.HOLD);
     }
 
@@ -382,12 +382,12 @@ public final class StrategicMapScreen extends SuiScreen {
     }
 
     private void refreshDispatchTacticStyles() {
-        applySelectionStyle("dispatch_tactic_balanced_button",
-            pendingBattleTactic == BattleTactic.BALANCED);
+        applySelectionStyle("dispatch_tactic_feint_button",
+            pendingBattleTactic == BattleTactic.FEINT);
         applySelectionStyle("dispatch_tactic_assault_button",
             pendingBattleTactic == BattleTactic.ASSAULT);
-        applySelectionStyle("dispatch_tactic_cautious_button",
-            pendingBattleTactic == BattleTactic.CAUTIOUS);
+        applySelectionStyle("dispatch_tactic_hold_button",
+            pendingBattleTactic == BattleTactic.HOLD);
     }
 
     private void applySelectionStyle(String actorId, boolean selected) {
@@ -661,8 +661,8 @@ public final class StrategicMapScreen extends SuiScreen {
         defensePolicyPanel.setVisible(playerOwned);
         defensePolicyPanel.setTouchable(playerOwned ? Touchable.enabled : Touchable.disabled);
         refreshDefensePolicyStyles(playerOwned ? selectedCityState.defensePolicy : null);
-        setButtonEnabled(button("defense_balanced_button"), gameplayActive && playerOwned);
-        setButtonEnabled(button("defense_aggressive_button"), gameplayActive && playerOwned);
+        setButtonEnabled(button("defense_feint_button"), gameplayActive && playerOwned);
+        setButtonEnabled(button("defense_assault_button"), gameplayActive && playerOwned);
         setButtonEnabled(button("defense_hold_button"), gameplayActive && playerOwned);
         setButtonEnabled(button("manage_city_button"), gameplayActive && playerOwned);
         setButtonEnabled(
@@ -933,7 +933,7 @@ public final class StrategicMapScreen extends SuiScreen {
         if (transfer) {
             pendingTransferOriginOrder = TransferOriginOrder.SHORTEST_TRAVEL;
         }
-        pendingBattleTactic = BattleTactic.BALANCED;
+        pendingBattleTactic = BattleTactic.FEINT;
         List<CityState> candidates = transfer
             ? orderedTransferOrigins(currentState, targetCityId, pendingTransferOriginOrder)
             : findAdjacentPlayerCities(currentState, targetCityId);
@@ -1277,7 +1277,7 @@ public final class StrategicMapScreen extends SuiScreen {
                     originCityId,
                     targetCityId,
                     pendingDispatchAmounts.get(originCityId),
-                    BattleTactic.BALANCED
+                    BattleTactic.HOLD
                 );
             } else {
                 List<ExpeditionOrder> orders = new ArrayList<>();
@@ -1547,8 +1547,8 @@ public final class StrategicMapScreen extends SuiScreen {
     }
 
     private void setAllGameplayButtonsEnabled(boolean enabled) {
-        setButtonEnabled(button("defense_balanced_button"), enabled);
-        setButtonEnabled(button("defense_aggressive_button"), enabled);
+        setButtonEnabled(button("defense_feint_button"), enabled);
+        setButtonEnabled(button("defense_assault_button"), enabled);
         setButtonEnabled(button("defense_hold_button"), enabled);
         setButtonEnabled(button("manage_city_button"), enabled);
         setButtonEnabled(button("scout_city_button"), enabled);
@@ -1585,9 +1585,9 @@ public final class StrategicMapScreen extends SuiScreen {
             return text("defense_policy_unknown", "未知");
         }
         return switch (policy) {
-            case BALANCED -> text("defense_policy_balanced", "均衡防守");
-            case AGGRESSIVE -> text("defense_policy_aggressive", "積極迎戰");
-            case HOLD -> text("defense_policy_hold", "固守城池");
+            case BALANCED, FEINT -> text("tactic_feint", "誘敵");
+            case AGGRESSIVE, ASSAULT -> text("tactic_assault", "強攻");
+            case HOLD -> text("tactic_hold", "固守");
         };
     }
 

@@ -23,8 +23,8 @@ public final class CityState {
     public int trainingFraction;
     public int moraleFraction;
     public int harvestModifierPercent;
-    /** 遭受攻擊時採用的方針；易主時重設為均衡。 */
-    public DefensePolicy defensePolicy = DefensePolicy.BALANCED;
+    /** 遭受攻擊時採用的方針；易主時重設為固守。 */
+    public DefensePolicy defensePolicy = DefensePolicy.HOLD;
     /** @deprecated schema 10 改由各勢力的情報快照保存，僅供舊 JSON 遷移。 */
     @Deprecated
     public int scoutedUntilTurn;

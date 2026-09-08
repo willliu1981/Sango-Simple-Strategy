@@ -194,7 +194,7 @@ public final class NationalActionPointSmokeTest {
         gameState.requireCityState("runan").troops = 0;
         gameState.requireCityState("runan").publicOrder = 5;
         StrategicActionResult launchResult = new LaunchExpeditionCommand(definitions)
-            .execute(1, gameState, "chenliu", "runan", BattleTactic.BALANCED);
+            .execute(1, gameState, "chenliu", "runan", BattleTactic.FEINT);
         check(launchResult.isSuccessful(), "可向低民心空城出征");
         GameState nextState = new TurnResolutionService(definitions).resolve(launchResult.getGameState()).getGameState();
         NationalActionPointRules.PublicOrderSummary summary = NationalActionPointRules.summarizePlayer(nextState);

@@ -16,7 +16,8 @@ import idv.kuan.studio.sango.domain.rule.DefensePolicy;
 import idv.kuan.studio.sango.domain.service.CityIntelligenceService;
 
 /**
- * 逐版遷移 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10。僅遷移狀態結構，不替換舊劇本或憑空增加領地。
+ * 逐版遷移 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11。
+ * 僅遷移狀態結構，不替換舊劇本、刷新情報或回算既有戰報。
  */
 @SuppressWarnings("deprecation")
 public final class GameStateMigrator {
@@ -48,6 +49,9 @@ public final class GameStateMigrator {
         }
         if (migratedState.schemaVersion == 9) {
             migrateSchemaNineToTen(migratedState);
+        }
+        if (migratedState.schemaVersion == 10) {
+            migrateSchemaTenToEleven(migratedState);
         }
         if (migratedState.schemaVersion != SangoVersion.GAME_STATE_SCHEMA_VERSION) {
             throw new IllegalArgumentException(
@@ -198,6 +202,50 @@ public final class GameStateMigrator {
             }
         }
         gameState.schemaVersion = 10;
+    }
+
+    private void migrateSchemaTenToEleven(GameState gameState) {
+        if (gameState.armyStates != null) {
+            for (ArmyState armyState : gameState.armyStates) {
+                if (armyState != null) {
+                    if (armyState.tactic != null) {
+                        armyState.tactic = armyState.tactic.normalized();
+                    }
+                }
+            }
+        }
+        if (gameState.cityStates != null) {
+            for (CityState cityState : gameState.cityStates) {
+                if (cityState != null) {
+                    if (cityState.defensePolicy != null) {
+                        cityState.defensePolicy = cityState.defensePolicy.normalized();
+                    }
+                }
+            }
+        }
+        if (gameState.factionStates != null) {
+            for (FactionState factionState : gameState.factionStates) {
+                if (factionState == null || factionState.cityIntelligence == null) {
+                    continue;
+                }
+                for (CityIntelligenceSnapshot snapshot : factionState.cityIntelligence) {
+                    if (snapshot != null) {
+                        if (snapshot.defensePolicy != null) {
+                            snapshot.defensePolicy = snapshot.defensePolicy.normalized();
+                        }
+                    }
+                }
+            }
+        }
+        if (gameState.battleReports != null) {
+            for (BattleReport battleReport : gameState.battleReports) {
+                if (battleReport != null) {
+                    // 歷史戰報保留原 enum、結果與舊 strength；新欄位的 0 代表 legacy。
+                    battleReport.battleRulesVersion = 0;
+                }
+            }
+        }
+        gameState.schemaVersion = 11;
     }
 
     private int migrateLegacyQuality(int scaledQuality) {

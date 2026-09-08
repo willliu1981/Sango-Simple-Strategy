@@ -122,7 +122,7 @@ public final class RetreatExpeditionSmokeTest {
         army.troops = troops;
         army.training = 20;
         army.morale = 20;
-        army.tactic = BattleTactic.BALANCED;
+        army.tactic = BattleTactic.FEINT;
         return army;
     }
 
