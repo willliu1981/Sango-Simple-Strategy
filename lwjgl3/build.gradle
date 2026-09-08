@@ -70,7 +70,7 @@ construo {
     // human-readable name, used for example in the `.app` name for macOS
     humanName.set(appName)
     // Optional, defaults to project version
-    version.set("0.5.0")
+    version.set(project.version.toString())
 
     targets.configure {
       create("linuxX64", Target.Linux) {

@@ -359,6 +359,15 @@ public final class BattleReportScreen extends SuiScreen {
         if (SangoServices.session().getBattleReportReturnScreen() == ScreenId.WORLD_BATTLE_REPORT) {
             return BattleReportCatalog.world(gameState);
         }
+        if (SangoServices.session().getBattleReportReturnScreen() == ScreenId.STRATEGIC_MAP) {
+            BattleReport selectedReport = requireSelectedReport();
+            List<BattleReport> cityReports = gameState.findBattleReportsForCity(selectedReport.targetCityId);
+            List<BattleReport> newestFirst = new ArrayList<>(cityReports.size());
+            for (int index = cityReports.size() - 1; index >= 0; index--) {
+                newestFirst.add(cityReports.get(index));
+            }
+            return newestFirst;
+        }
         if (SangoServices.session().getBattleReportReturnScreen() != ScreenId.MONTH_REPORT
             || SangoServices.session().getLastTurnReport() == null) {
             return List.of();

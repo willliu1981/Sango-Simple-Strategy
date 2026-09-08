@@ -585,7 +585,11 @@ public final class StrategicMapScreen extends SuiScreen {
         List<CityState> dispatchOrigins = playerOwned
             ? findTransferPlayerCities(gameState, selectedCityState.cityId)
             : findAdjacentPlayerCities(gameState, selectedCityState.cityId);
-        CityState originCityState = findBestDispatchOrigin(dispatchOrigins);
+        CityState dispatchOriginCityState = findBestDispatchOrigin(dispatchOrigins);
+        CityState scoutOriginCityState = playerOwned
+            ? null : findAdjacentPlayerCityForScout(gameState, selectedCityState.cityId);
+        CityState routeOriginCityState = scoutOriginCityState == null
+            ? dispatchOriginCityState : scoutOriginCityState;
 
         label("selected_city_name_label").setText(cityName(selectedCityState.cityId));
         label("selected_city_owner_label").setText(
@@ -599,7 +603,7 @@ public final class StrategicMapScreen extends SuiScreen {
             buildSelectedCityStats(selectedCityState, exactIntel)
         );
         label("selected_city_route_label").setText(
-            buildRouteText(gameState, selectedCityState, originCityState)
+            buildRouteText(gameState, selectedCityState, routeOriginCityState)
         );
 
         int cityBattleCount = gameState.countBattleReportsForCity(selectedCityState.cityId);
@@ -612,20 +616,20 @@ public final class StrategicMapScreen extends SuiScreen {
         setButtonEnabled(button("manage_city_button"), gameplayActive && playerOwned);
         setButtonEnabled(
             button("scout_city_button"),
-            gameplayActive && !playerOwned && originCityState != null
+            gameplayActive && !playerOwned && scoutOriginCityState != null
                 && gameState.actionPointsRemaining >= 1
         );
 
-        int dispatchTroops = originCityState == null
+        int dispatchTroops = dispatchOriginCityState == null
             ? 0
-            : SangoServices.launchExpeditionCommand().calculateDispatchTroops(originCityState);
+            : SangoServices.launchExpeditionCommand().calculateDispatchTroops(dispatchOriginCityState);
         button("launch_expedition_button").setText(
             playerOwned
                 ? text("button_transfer_troops", "運兵")
                 : text("button_launch_expedition", "出征")
         );
         boolean expeditionEnabled = gameplayActive
-            && originCityState != null
+            && dispatchOriginCityState != null
             && dispatchTroops >= LaunchExpeditionCommand.MINIMUM_EXPEDITION
             && gameState.actionPointsRemaining >= 1
             && gameState.requirePlayerFactionState().food >= LaunchExpeditionCommand.FOOD_COST;
@@ -710,6 +714,16 @@ public final class StrategicMapScreen extends SuiScreen {
 
     private CityState findAdjacentPlayerCity(GameState gameState, String targetCityId) {
         return findBestDispatchOrigin(findAdjacentPlayerCities(gameState, targetCityId));
+    }
+
+    private CityState findAdjacentPlayerCityForScout(GameState gameState, String targetCityId) {
+        StrategicMapDefinition mapDefinition = SangoServices.definitions().requireMap(gameState.mapId);
+        for (CityState playerCity : gameState.findCitiesOwnedBy(gameState.playerFactionId)) {
+            if (mapDefinition.findConnection(playerCity.cityId, targetCityId) != null) {
+                return playerCity;
+            }
+        }
+        return null;
     }
 
     private CityState findBestDispatchOrigin(List<CityState> candidates) {
@@ -819,7 +833,7 @@ public final class StrategicMapScreen extends SuiScreen {
             ? findTransferPlayerCities(currentState, targetCityId) : new ArrayList<>();
         CityState originCityState = transfer
             ? (transferOrigins.isEmpty() ? null : transferOrigins.get(0))
-            : findAdjacentPlayerCity(currentState, targetCityId);
+            : findAdjacentPlayerCityForScout(currentState, targetCityId);
         if (originCityState == null) {
             setStatus(text("map_status_not_adjacent", "沒有可執行偵察的相鄰我方城池。"), STATUS_ERROR_COLOR);
             return;

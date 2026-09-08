@@ -1,292 +1,160 @@
-# Sango
+# Sango - 簡易三國志
 
-Java 17 + LibGDX 的輕量三國策略遊戲原型。UI 沿用 StudyRoutine 已驗證的 SimpleUI 1.1.2、XML 畫面定義、i18n 與 Screen registry；Domain、Application、Repository、存檔與遊戲資產維持 Sango 自己的邊界。
+`Sango` 是一款以漢末群雄割據為背景的回合制區域戰略遊戲。玩家需要經營城池、維持軍糧與民心、調動部隊，並在有限時間內完成劇本目標。
 
-`0.4.0` 集中完善 `0.3.0` 的戰爭回饋與遊戲流程：戰鬥不再只是一行月底文字，讀取存檔正式可用，劇本目標失敗後也不會鎖死戰局。
+目前版本：`0.6.0` 早期開發版
 
-```text
-Lobby
-→ 建立新局／繼續遊戲／讀取三個存檔槽
-→ 六城區域戰略地圖
-→ 選城內政、偵察、選擇戰術與出征
-→ 確認結束本月
-→ 軍糧、季節經濟、行軍、戰鬥與敵軍 AI 結算
-→ 月報與可持久化戰報
-→ 目標達成／失敗後進入自由征戰
-```
+建議 GitHub repository 名稱：`sango-strategy`
 
-## 0.4.0 已完成
+## 遊戲特色
 
-### 戰報與地圖戰事提示
+- 42 座城池的全國戰略地圖，可拖曳、縮放及快速定位。
+- 劉備、曹操、袁紹、孫策等勢力與電腦控制的敵對勢力。
+- 城池內政：農業、商業、治水、訓練、徵兵與安民。
+- 共用金、糧與每月軍糧需求，缺糧會造成逃兵及其他負面影響。
+- 偵察、運兵、出征、行軍時間與安全道路判定。
+- 多路部隊可同時行動；同勢力、同目標、同月份抵達時合併為聯合作戰。
+- 戰敗撤退、天下戰報、勢力月報與分城參戰明細。
+- 三個存檔槽，個別保存所選城池與地圖視角。
+- 支援 Windows 與 Android。
 
-- 每場戰鬥建立可保存的 `BattleReport`，記錄雙方兵力、訓練、城防、戰術、傷亡、勝方與城池控制權。
-- 戰報有獨立畫面，不再只依賴月底報告中的單行文字。
-- 若玩家在地圖或內政畫面結束本月，且當前選取／管理的城池發生戰鬥，會先詢問是否立即觀看。
-- 選擇稍後觀看時，戰報保留為未讀。
-- 非當前城池的未讀戰報會顯示在戰略地圖節點上，節點以「戰事 N」與脈衝效果提示。
-- 地圖可查看所選城池的未讀戰報，也可直接開啟第一份未讀戰報。
-- 戰報已讀狀態會寫回目前存檔；重新啟動後不會遺失。
+完整規則請見 [遊戲玩法說明](docs/gameplay.md)。
 
-### 劇本目標與自由征戰
+## 下載與安裝
 
-`0.3.0` 將期限失敗與主城失守視為整局終止，現在已改為分離兩種狀態：
+正式測試版應放在 GitHub repository 的 **Releases**，不要把 APK 或 Windows 成品直接提交進 Git history。
+
+每個版本建議提供：
 
 ```text
-ScenarioObjectiveStatus
-- IN_PROGRESS
-- ACHIEVED
-- FAILED
-
-GameplayStatus
-- ACTIVE
-- ELIMINATED
+Sango-0.6.0-Android.apk
+Sango-0.6.0-Windows-x64.zip
+SHA256SUMS.txt
 ```
 
-- 十二個月內攻下指定城池仍是原型劇本目標。
-- 期限到期只會將目標標記為失敗，玩家仍可內政、結束月份、偵察與出征。
-- 達成原目標後也可繼續自由征戰。
-- 原首都失守但仍擁有其他城池時，會遷移首都並繼續遊戲。
-- 只有失去全部城池時才進入 `ELIMINATED`，此時停止下達新命令。
+### Android
 
-### 三槽存讀檔
+1. 從 Releases 下載 `Sango-0.6.0-Android.apk`。
+2. 在 Android 系統允許目前瀏覽器或檔案管理員「安裝未知應用程式」。
+3. 開啟 APK 完成安裝。
 
-- Lobby 的「讀取存檔」已正式啟用。
-- 新增三個存檔槽，顯示勢力、首都、年月、回合、城池數、目標狀態與保存時間。
-- 「繼續遊戲」讀取最後使用且仍有效的槽位；若該槽位失效，會尋找其他有效槽位。
-- 新局可指定寫入槽位，覆寫既有進度前必須確認。
-- 存讀檔畫面支援：讀取、另存、覆寫確認與刪除確認。
-- 主要檔案損壞時，槽位會標示可使用 `.tmp` 或 `.backup.json` 的復原候選。
+公開版本必須使用固定且妥善保管的 release signing key。後續版本也必須使用相同簽章，否則 Android 無法直接覆蓋更新。不要公開 `.jks`、keystore 密碼或 signing properties。
 
-### 月底流程與設定
+### Windows
 
-- 戰略地圖與城池內政都提供「結束本月」。
-- 結束前會顯示確認視窗、目前年月與剩餘行動力；未使用行動力不會保留。
-- 地圖與內政共用 `MonthEndFlowController`，避免兩套結算流程分歧。
-- 月份結算後開啟獨立月報畫面；若當前城池發生戰鬥，先顯示觀看戰報提示。
-- 地圖與內政的直接「返回 Lobby」已移除。
-- 新增全域設定／暫停畫面，集中提供：
-  - 背景音樂開關與音量。
-  - 遊戲音效開關與音量。
-  - 儲存遊戲。
-  - 保存並返回 Lobby。
-  - 保存並退出遊戲。
-- Desktop `ESC`／Android Back：
-  - 城池內政返回戰略地圖。
-  - 戰略地圖開啟設定。
-  - Dialog／戰報／月報優先關閉或返回上一層。
+1. 從 Releases 下載 `Sango-0.6.0-Windows-x64.zip`。
+2. 將 ZIP 完整解壓縮到可寫入的資料夾。
+3. 執行資料夾內的 `Sango.exe`，不要直接從壓縮檔內啟動。
 
-### BGM 與音效
+Windows 存檔位於：
 
-- Lobby 與 Strategy 各有一首可循環 OGG BGM。
-- 加入介面、確認、取消、命令成功／失敗、保存、月底、戰鬥、攻城與目標結果音效。
-- `SangoAudioService` 集中快取、播放與釋放 LibGDX `Music`／`Sound`，Screen 不直接管理音訊生命週期。
-- Android／Desktop pause、resume、dispose 已接入共用 Application lifecycle。
-- 音樂與音效開關、音量會保存於 `SangoPreferences`。
-- 音訊由 `tools/generate-prototype-audio.py` 以基本波形、五聲音階與程序節奏原創合成，不含第三方遊戲、影視或商業曲目取樣。
-- 這批素材定位為功能驗證用 Prototype Audio，不等同正式商業配樂或專業 Foley。
+```text
+%USERPROFILE%\.sango\save\slot-1.json
+%USERPROFILE%\.sango\save\slot-2.json
+%USERPROFILE%\.sango\save\slot-3.json
+```
 
-### 預計加入的 Suno BGM、公開散布與權利
+## 從原始碼執行
 
-目前 repository 內的 BGM 與音效仍是程序化 Prototype Audio。後續若以 Suno 生成的 BGM 取代 `assets/audio/music/*.ogg`，只有在下列條件均已確認時，才可將音檔納入公開 source、release 或可下載遊戲：
+需求：
 
-- 曲目必須在 Suno Pro 或 Premier 訂閱有效期間生成，並經 Suno 核准的下載管道取得；應保留曲目 ID、生成日期、訂閱層級與下載日期等內部佐證。
-- 不可使用免費／Basic 方案生成的曲目。Suno 對該方案的限制是合法、個人且非商業使用；遊戲免費或 repository 不收費，不能單獨證明公開散布與該限制相容。
-- 不可使用未取得權利的上傳音訊、歌詞、人聲、他人作品的延伸／Remix，或足以導向特定真人歌手、樂團或既有作品的提示與素材。
-- BGM 不隨 Sango 原始碼的授權自動取得額外使用權；其使用與再散布仍受 Suno 條款及可能存在的第三方權利約束。
+- JDK 17
+- Android SDK 34（僅 Android 建置需要）
+- 專案要求的本機中文字型資產
 
-Suno 的付費權利是服務條款上的使用授權，不保證音檔具備著作權、唯一性或不會與他人輸出相似。依臺灣智慧財產局的說明，AI 生成內容是否受著作權保護，仍取決於人類實際創意投入與個案事實。若收到具體侵權通知或權利來源無法確認，維護者應先下架或替換相關 BGM。本段是公開風險與使用政策說明，不構成法律意見；正式發行前應再次核對當時有效的 Suno 條款，必要時諮詢音樂著作權專業律師。
-
-## 第一次執行前：準備中文字型
-
-Source ZIP 不重複攜帶 StudyRoutine 已有的兩個大型 Source Han Sans 字型二進位檔。Windows PowerShell：
+準備本機資產：
 
 ```powershell
-.\tools\prepare-local-fonts.ps1 -StudyRoutineSource "C:\path\to\StudyRoutineCurated-source.zip"
+.\tools\prepare-local-assets-0.6.0.ps1 -SourceProject "<原 Sango 專案路徑>"
 ```
 
-參數也可指向解壓後的 StudyRoutine 專案目錄。若 `StudyRoutineCurated-source.zip` 位於 Sango 專案上一層，可直接執行：
+執行 Windows 桌面版：
 
 ```powershell
-.\tools\prepare-local-fonts.ps1
+.\gradlew.bat :lwjgl3:run
 ```
 
-腳本會準備：
-
-```text
-assets/font/SourceHanSansCN-Regular.otf
-assets/font/SourceHanSansCN-Heavy.otf
-```
-
-先驗證字型：
+建立僅供本機測試的 debug APK：
 
 ```powershell
-.\gradlew.bat verifyRequiredLocalFonts
+.\gradlew.bat :android:assembleDebug
 ```
 
-## 執行與驗證
+輸出位置：
 
-Desktop：
+```text
+android/build/outputs/apk/debug/android-debug.apk
+```
+
+## 製作可發布檔案
+
+### Android APK
+
+目前專案沒有把 release signing key 寫入 Gradle。公開前請在 Android Studio 使用：
+
+```text
+Build > Generate Signed Bundle / APK > APK > release
+```
+
+建立並安全保存專用 keystore，產生簽章後的 release APK，再重新命名為：
+
+```text
+Sango-0.6.0-Android.apk
+```
+
+### Windows x64 ZIP
 
 ```powershell
-.\gradlew.bat lwjgl3:run
+.\gradlew.bat :lwjgl3:packageWinX64
 ```
 
-Android Debug APK：
-
-```powershell
-.\gradlew.bat android:assembleDebug
-```
-
-完整核心驗證：
-
-```powershell
-.\gradlew.bat --stop
-.\gradlew.bat clean core:check core:compileJava lwjgl3:dist
-```
-
-單獨執行 Vertical Slice smoke test：
-
-```powershell
-.\gradlew.bat core:runVerticalSliceSmokeTest
-```
-
-## 原型規則
-
-### 時間與月底順序
-
-- 1 回合＝1 個月。
-- 每月 3 點行動力。
-- 成功的內政、偵察與出征命令各消耗 1 點行動力。
-- 結束本月後依固定順序處理：
+Construo 會在下列目錄產生可直接上傳的 ZIP，內含 Windows 執行檔與必要 Java runtime：
 
 ```text
-1. 全勢力軍糧與缺糧逃兵
-2. 六月洪災
-3. 季末商稅
-4. 九月秋收
-5. 已在途軍隊移動與抵達戰鬥
-6. 敵方 AI 集結、補兵或建立新軍隊
-7. 劇本期限判定
-8. 月份與回合推進
-9. 行動力恢復並自動存檔
+lwjgl3/build/construo/dist/
 ```
 
-### 內政
-
-| 命令 | 當下成本 | 當下效果 | 延後效果 |
-|---|---:|---:|---:|
-| 開墾 | 金 50 | 農業 +5 | 9 月秋收增加 |
-| 商業開發 | 金 50 | 商業 +5 | 每季末商稅增加 |
-| 治水 | 金 80 | 治水 +5 | 洪災機率與秋收損失下降 |
-| 修築城防 | 金 100 | 城防 +5 | 守城強度提高 |
-| 徵兵 | 金 100、糧 100、人口 200 | 兵力 +200 | 每月軍糧支出提高 |
-| 訓練 | 金 50 | 訓練 +5 | 守軍與之後派出的軍隊更強 |
-
-目前能力值上限為 100。固定數值仍是 Prototype Parameter，尚未移至獨立 Rule Definition JSON。
-
-### 季節經濟與戰爭
-
-- 商稅：3、6、9、12 月月底結算。
-- 汛期：6 月月底依治水值進行 deterministic flood roll。
-- 秋收：9 月月底結算。
-- 每月依勢力守軍與行軍部隊總兵力支出軍糧。
-- 地圖共有 6 座城與 6 條雙向道路。
-- 偵察／出征只能針對與我方城池直接相鄰的非我方城池。
-- 出征消耗糧 100，必須至少保留 400 守軍並至少派出 400 兵；單次最多派出 1,000 兵。
-- 每個勢力目前同時只能有一支行軍部隊。
-- 戰鬥採簡化 Auto-resolve，由兵力、訓練、城防與戰術共同決定結果及損失。
-
-## 存檔位置與相容性
-
-Desktop 預設位置：
+上傳前將成品統一命名為：
 
 ```text
-%USERPROFILE%\.sango\save\
+Sango-0.6.0-Windows-x64.zip
 ```
 
-Android 使用 App private local storage：
+## 發布到 GitHub Releases
 
-```text
-save/
-```
+1. 將確認過的原始碼建立 `v0.6.0` tag。
+2. 在 GitHub repository 開啟 **Releases > Draft a new release**。
+3. 選擇 `v0.6.0`，標題填寫 `Sango 0.6.0`。
+4. 上傳簽章 APK、Windows x64 ZIP 與 `SHA256SUMS.txt`。
+5. 在 release notes 說明新增內容、已知問題、存檔相容性與安裝方式。
+6. 實機確認下載、解壓縮、安裝、啟動、讀檔與更新流程後再 Publish。
 
-三個槽位各可能包含：
+GitHub 自動提供的 `Source code (zip)` 只是原始碼快照，不是可執行的 Windows 版本；玩家應下載你另外上傳的 `Sango-0.6.0-Windows-x64.zip`。
 
-```text
-slot-01.json
-slot-01.tmp
-slot-01.backup.json
-slot-01.corrupt.json
+## 音訊與素材
 
-slot-02.*
-slot-03.*
-```
+- 音檔與圖資不納入一般原始碼 commit；正式成品是否包含素材，取決於發布版本的打包內容。
+- 將 Suno 或其他來源的 BGM 放進 APK／ZIP 仍屬於散布，免費提供不會自動取得使用或再散布權。
+- 發布前應保留每首曲目的生成帳號、方案、日期、曲目 ID、下載紀錄與當時適用條款。
+- 收到具體權利爭議或無法證明來源時，應先下架或替換相關素材。
 
-正常完成寫入後 `.tmp` 會被移除。Repository 讀取順序為：
+更多依賴與素材聲明請見 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
-```text
-primary → tmp → backup
-```
+## 授權與發布狀態
 
-`0.4.0` 使用：
+本 repository 目前尚未提供專案層級的 `LICENSE`，因此公開 repository 不等於允許他人任意複製、修改或再散布原始碼。
 
-```text
-SaveGameDocument.schemaVersion = 1
-GameState.schemaVersion = 3
-```
+正式公開前仍需完成：
 
-`0.3.0` 的 `GameState.schemaVersion = 2` 可在讀取時自動遷移至 schema 3；下一次保存會正式寫回新格式。`0.2.0` 的 schema 1 仍不支援自動遷移。詳見 [`docs/UPGRADE_0.3.0_TO_0.4.0.md`](docs/UPGRADE_0.3.0_TO_0.4.0.md)。
+- 決定 Sango 自有程式碼採用的授權條款。
+- 確認 `libs/simpleui-1.1.2.jar` 的授權與 binary 再散布權；目前專案未附該依賴的授權檔。
+- 確認所有打包進 APK／ZIP 的字型、音訊、圖像與第三方 binary 均可合法散布。
+- 將所有必要 notice 與 license 一併放入 release 成品。
 
-## 主要結構
+本 README 與第三方聲明僅整理專案狀態與風險，不構成法律意見或權利保證。
 
-```text
-assets/
-├─ audio/
-│  ├─ music/
-│  └─ sfx/
-├─ data/
-│  ├─ scenarios/scenarios.json
-│  ├─ factions/factions.json
-│  ├─ cities/cities.json
-│  └─ maps/maps.json
-├─ i18n/ui_zh_Hant.xml
-└─ ui/
-   ├─ lobby.xml
-   ├─ new_game.xml
-   ├─ strategic_map.xml
-   ├─ city.xml
-   ├─ month_report.xml
-   ├─ battle_report.xml
-   ├─ save_load.xml
-   └─ settings.xml
+## 開發文件
 
-core/src/main/java/idv/kuan/studio/sango/
-├─ application/
-├─ audio/
-├─ domain/
-├─ repository/
-├─ runtime/
-└─ ui/
-   ├─ flow/
-   ├─ support/
-   ├─ theme/
-   └─ widget/
-```
-
-設計細節見 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)，驗證範圍見 [`docs/VALIDATION.md`](docs/VALIDATION.md)。
-
-## 目前限制
-
-- 戰鬥仍是 Auto-resolve，尚未建立 Tactical Combat。
-- 同一勢力同時只能有一支野戰軍。
-- 六城地圖仍是流程驗證用 Region Map，不是完整中國地圖。
-- Prototype Audio 可驗證切換、音量與事件回饋，但不代表正式配樂品質。
-- 存檔沒有雲端同步，也沒有跨裝置衝突解決。
-
-## GdxTools
-
-目前沒有把 GdxTools 綁入 Sango。StudyRoutine snapshot 的 GdxTools 仍是 `../../api/GdxTools/core` 外部本機 module，直接引用會使 Source ZIP 與 CI 無法獨立建置。此版以小型 `SaveGameRepository` 介面與 LibGDX `Json` adapter 完成存檔；日後 GdxTools 有可攜式 Maven artifact 或完整 module 時，可只替換 Repository adapter，不必讓 Domain 或 Screen 直接依賴第三方 CRUD API。
-
-## 第三方與授權
-
-詳見 `THIRD_PARTY_NOTICES.md`。SimpleUI snapshot 未附授權檔；對外散布前必須確認適用授權。若未來加入 Suno BGM，請一併遵守上方的來源紀錄、公開散布與下架處理規則。
+- [遊戲玩法說明](docs/gameplay.md)
+- [第三方與素材聲明](THIRD_PARTY_NOTICES.md)
+- [0.6.0 驗收清單](docs/0.6.0/acceptance-checklist.md)
