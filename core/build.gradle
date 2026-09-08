@@ -1,0 +1,130 @@
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+eclipse.project.name = appName + '-core'
+
+def stripBundledGdxFromSimpleUi = tasks.register('stripBundledGdxFromSimpleUi', Jar) {
+  archiveFileName = 'simpleui-1.1.2-no-bundled-gdx.jar'
+  destinationDirectory = layout.buildDirectory.dir('libs')
+  from(zipTree(rootProject.file('libs/simpleui-1.1.2.jar'))) {
+    exclude 'com/badlogic/**'
+  }
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+def simpleUiWithoutBundledGdx = files(
+  stripBundledGdxFromSimpleUi.flatMap {
+    it.archiveFile
+  }
+)
+simpleUiWithoutBundledGdx.builtBy(stripBundledGdxFromSimpleUi)
+
+dependencies {
+  api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+  api "com.badlogicgames.gdx:gdx:$gdxVersion"
+  api simpleUiWithoutBundledGdx
+}
+
+tasks.register('runVerticalSliceSmokeTest', JavaExec) {
+  group = 'verification'
+  description = '驗證舊六城戰報、存檔槽、既有音效及任務結束後自由遊玩。'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.VerticalSliceSmokeTest')
+  args rootProject.file('assets').absolutePath
+}
+
+tasks.named('check') {
+  dependsOn runVerticalSliceSmokeTest
+}
+
+
+tasks.register('runNationalCampaignSmokeTest', JavaExec) {
+  group = 'verification'
+  description = '驗證六勢力、42 城、士氣、空城佔領與舊存檔 migration。'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.NationalCampaignSmokeTest')
+  args rootProject.file('assets').absolutePath
+}
+
+tasks.register('runUiResourceSmokeTest', JavaExec) {
+  group = 'verification'
+  description = '驗證 XML、i18n、Actor ID 與不依賴 Graphics Context 的相機數學。'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.UiResourceSmokeTest')
+  args rootProject.file('assets').absolutePath
+}
+
+tasks.named('check') {
+  dependsOn 'runNationalCampaignSmokeTest', 'runUiResourceSmokeTest'
+}
+
+
+tasks.register('runNationalActionPointSmokeTest', JavaExec) {
+  group = 'verification'
+  description = '驗證全城民心聚合、3–9 點行動力、月份快照與舊存檔不回補。'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.NationalActionPointSmokeTest')
+  args rootProject.file('assets').absolutePath
+}
+
+tasks.named('check') {
+  dependsOn 'runNationalActionPointSmokeTest'
+}
+
+
+tasks.register('runCampaignGrowthSmokeTest', JavaExec) {
+  group = 'verification'
+  description = '驗證 0.6.0 CampaignGrowth 純邏輯；不代替實機驗收。'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.CampaignGrowthSmokeTest')
+  args rootProject.file('assets').absolutePath
+}
+
+
+tasks.register('runMusicPlaybackSmokeTest', JavaExec) {
+  group = 'verification'
+  description = '驗證 0.6.0 MusicPlayback 純邏輯；不代替實機驗收。'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.MusicPlaybackSmokeTest')
+  args rootProject.file('assets').absolutePath
+}
+
+tasks.named('check') {
+  dependsOn 'runCampaignGrowthSmokeTest', 'runMusicPlaybackSmokeTest'
+}
+
+tasks.register('runMapInteractionSmokeTest', JavaExec) {
+  group = 'verification'
+  description = 'Check map host sizing and city double-tap behavior without opening the game.'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.MapInteractionSmokeTest')
+}
+
+tasks.register('runReportCatalogSmokeTest', JavaExec) {
+  group = 'verification'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.ReportCatalogSmokeTest')
+}
+
+tasks.named('check') {
+  dependsOn 'runMapInteractionSmokeTest', 'runReportCatalogSmokeTest'
+}
+
+tasks.register('runRetreatExpeditionSmokeTest', JavaExec) {
+  group = 'verification'
+  description = 'Check simultaneous expeditions, retreat routing and save compatibility.'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.RetreatExpeditionSmokeTest')
+  args rootProject.file('assets').absolutePath
+}
+
+tasks.named('check') {
+  dependsOn 'runRetreatExpeditionSmokeTest'
+}

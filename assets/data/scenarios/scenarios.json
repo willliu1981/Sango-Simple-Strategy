@@ -1,0 +1,186 @@
+{
+  "scenarios": [
+    {
+      "id": "prototype_warlords",
+      "nameKey": "scenario_prototype_name",
+      "descriptionKey": "scenario_prototype_description",
+      "startYear": 190,
+      "startMonth": 1,
+      "initialTurn": 1,
+      "actionPointsPerTurn": 3,
+      "mapId": "prototype_central_region",
+      "factionIds": [
+        "cao_cao",
+        "liu_bei",
+        "sun_ce"
+      ],
+      "opponentFactionId": "yellow_turban",
+      "neutralFactionId": "neutral",
+      "turnLimitMonths": 12,
+      "enemyAttackDelayMonths": 4,
+      "playerStarts": [
+        {
+          "playerFactionId": "cao_cao",
+          "startCityId": "chenliu",
+          "targetCityId": "runan"
+        },
+        {
+          "playerFactionId": "liu_bei",
+          "startCityId": "pingyuan",
+          "targetCityId": "ye"
+        },
+        {
+          "playerFactionId": "sun_ce",
+          "startCityId": "wu_commandery",
+          "targetCityId": "guangling"
+        }
+      ]
+    },
+    {
+      "id": "warlords_china",
+      "nameKey": "scenario_china_name",
+      "descriptionKey": "scenario_china_description",
+      "startYear": 190,
+      "startMonth": 1,
+      "initialTurn": 1,
+      "actionPointsPerTurn": 3,
+      "mapId": "china_42",
+      "factionIds": [
+        "cao_cao",
+        "liu_bei",
+        "sun_ce",
+        "yuan_shao",
+        "liu_biao",
+        "ma_teng"
+      ],
+      "opponentFactionId": "yellow_turban",
+      "neutralFactionId": "neutral",
+      "turnLimitMonths": 12,
+      "enemyAttackDelayMonths": 4,
+      "playerStarts": [
+        {
+          "playerFactionId": "cao_cao",
+          "startCityId": "chenliu",
+          "targetCityId": "runan"
+        },
+        {
+          "playerFactionId": "liu_bei",
+          "startCityId": "pingyuan",
+          "targetCityId": "ye"
+        },
+        {
+          "playerFactionId": "sun_ce",
+          "startCityId": "wu_commandery",
+          "targetCityId": "guangling"
+        },
+        {
+          "playerFactionId": "yuan_shao",
+          "startCityId": "ye",
+          "targetCityId": "shangdang"
+        },
+        {
+          "playerFactionId": "liu_biao",
+          "startCityId": "xiangyang",
+          "targetCityId": "jiangxia"
+        },
+        {
+          "playerFactionId": "ma_teng",
+          "startCityId": "wuwei",
+          "targetCityId": "tianshui"
+        }
+      ],
+      "initialFactions": [
+        {
+          "factionId": "cao_cao",
+          "capitalCityId": "chenliu",
+          "cityIds": [
+            "chenliu",
+            "xuchang"
+          ]
+        },
+        {
+          "factionId": "liu_bei",
+          "capitalCityId": "pingyuan",
+          "cityIds": [
+            "pingyuan",
+            "beihai"
+          ]
+        },
+        {
+          "factionId": "sun_ce",
+          "capitalCityId": "wu_commandery",
+          "cityIds": [
+            "wu_commandery",
+            "kuaiji"
+          ]
+        },
+        {
+          "factionId": "yuan_shao",
+          "capitalCityId": "ye",
+          "cityIds": [
+            "ye",
+            "nanpi"
+          ]
+        },
+        {
+          "factionId": "liu_biao",
+          "capitalCityId": "xiangyang",
+          "cityIds": [
+            "xiangyang",
+            "jiangling"
+          ]
+        },
+        {
+          "factionId": "ma_teng",
+          "capitalCityId": "wuwei",
+          "cityIds": [
+            "wuwei",
+            "anding"
+          ]
+        },
+        {
+          "factionId": "yellow_turban",
+          "capitalCityId": "runan",
+          "cityIds": [
+            "runan",
+            "shouchun"
+          ]
+        },
+        {
+          "factionId": "neutral",
+          "capitalCityId": "luoyang",
+          "cityIds": [
+            "tianshui",
+            "changan",
+            "luoyang",
+            "wan",
+            "hanzhong",
+            "wudu",
+            "zitong",
+            "chengdu",
+            "jiangzhou",
+            "yongan",
+            "jianning",
+            "yunnan",
+            "jinyang",
+            "shangdang",
+            "ji",
+            "beiping",
+            "xiangping",
+            "xiaopei",
+            "xiapi",
+            "guangling",
+            "jianye",
+            "poyang",
+            "yuzhang",
+            "jiangxia",
+            "changsha",
+            "wuling",
+            "jiaozhi",
+            "nanhai"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+<ui xmlns="http://kuan.studio/simpleui">
+    <table id="main" i18n="literal" flags="fillParent" pad="38"
+        backgroundColor="0.010,0.009,0.008,0.84">
+        <table width="1320" height="970" pad="48" backgroundColor="0.046,0.036,0.030,0.995">
+            <label fontKey="title" fontSize="70" width="1180" height="92" color="0.94,0.76,0.43,1">${text:settings_title}</label>
+            <row />
+            <label id="settings_context_label" fontSize="28" width="1180" height="64"
+                wrap="true" color="0.73,0.67,0.58,1">${text:settings_context_lobby}</label>
+            <row />
+            <table width="1180" height="310" pad="28" backgroundColor="0.025,0.022,0.020,1">
+                <table width="540" height="250">
+                    <textButton id="settings_music_toggle_button" fontSize="35" width="500" height="82">${text:settings_music_on}</textButton>
+                    <row />
+                    <label id="settings_music_volume_label" fontSize="29" width="500" height="58">${text:settings_music_volume_placeholder}</label>
+                    <row />
+                    <table width="500" height="72">
+                        <textButton id="settings_music_down_button" fontSize="38" width="225" height="68">${text:button_volume_down}</textButton>
+                        <textButton id="settings_music_up_button" fontSize="38" width="225" height="68" padLeft="24">${text:button_volume_up}</textButton>
+                    </table>
+                </table>
+                <table width="45"></table>
+                <table width="540" height="250">
+                    <textButton id="settings_sound_toggle_button" fontSize="35" width="500" height="82">${text:settings_sound_on}</textButton>
+                    <row />
+                    <label id="settings_sound_volume_label" fontSize="29" width="500" height="58">${text:settings_sound_volume_placeholder}</label>
+                    <row />
+                    <table width="500" height="72">
+                        <textButton id="settings_sound_down_button" fontSize="38" width="225" height="68">${text:button_volume_down}</textButton>
+                        <textButton id="settings_sound_up_button" fontSize="38" width="225" height="68" padLeft="24">${text:button_volume_up}</textButton>
+                    </table>
+                </table>
+            </table>
+            <row />
+            <table width="1180" height="340" padTop="16">
+                <textButton id="settings_save_game_button" fontSize="36" width="560" height="86">${text:button_open_save_screen}</textButton>
+                <textButton id="settings_load_game_button" fontSize="36" width="560" height="86" padLeft="32">${text:button_load_game}</textButton>
+                <row />
+                <textButton id="settings_return_lobby_button" fontSize="36" width="560" height="86" padTop="24">${text:button_save_return_lobby}</textButton>
+                <textButton id="settings_exit_game_button" fontSize="36" width="560" height="86" padLeft="32" padTop="24">${text:button_exit}</textButton>
+                <row />
+                <textButton id="settings_gameplay_guide_button" fontSize="36" width="560" height="86" padTop="24">${text:button_gameplay_guide}</textButton>
+                <textButton id="settings_back_button" fontSize="36" width="560" height="86" padLeft="32" padTop="24">${text:button_back}</textButton>
+            </table>
+            <row />
+            <label fontSize="25" width="1180" height="70" wrap="true" color="0.62,0.58,0.51,1">${text:settings_audio_note}</label>
+        </table>
+    </table>
+
+    <table id="settings_return_lobby_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0,0,0,0.88" flags="fillParent">
+        <table width="930" pad="52" backgroundColor="0.055,0.043,0.035,0.995">
+            <label fontKey="title" fontSize="60" width="800" height="86" color="0.94,0.76,0.43,1">${text:return_lobby_confirm_title}</label>
+            <row />
+            <label fontSize="32" width="790" height="118" wrap="true" color="0.84,0.80,0.72,1">${text:return_lobby_confirm_description}</label>
+            <row />
+            <table width="790" height="86" padTop="24">
+                <textButton id="settings_return_cancel_button" fontSize="36" width="350" height="82">${text:button_cancel}</textButton>
+                <textButton id="settings_return_confirm_button" fontSize="36" width="410" height="82" padLeft="30">${text:button_save_return_lobby}</textButton>
+            </table>
+        </table>
+    </table>
+
+    <table id="settings_exit_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0,0,0,0.88" flags="fillParent">
+        <table width="930" pad="52" backgroundColor="0.055,0.043,0.035,0.995">
+            <label fontKey="title" fontSize="60" width="800" height="86" color="0.94,0.48,0.34,1">${text:exit_title}</label>
+            <row />
+            <label fontSize="32" width="790" height="118" wrap="true" color="0.84,0.80,0.72,1">${text:exit_description}</label>
+            <row />
+            <table width="790" height="86" padTop="24">
+                <textButton id="settings_exit_cancel_button" fontSize="36" width="350" height="82">${text:button_cancel}</textButton>
+                <textButton id="settings_exit_confirm_button" fontSize="36" width="410" height="82" padLeft="30">${text:button_exit_confirm}</textButton>
+            </table>
+        </table>
+    </table>
+</ui>

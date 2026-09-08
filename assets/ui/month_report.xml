@@ -1,0 +1,25 @@
+<ui xmlns="http://kuan.studio/simpleui">
+    <table id="main" i18n="literal" flags="fillParent" pad="40"
+        backgroundColor="0,0,0,0.86">
+        <table width="1320" height="900" pad="54" backgroundColor="0.050,0.040,0.033,0.995">
+            <label fontKey="title" fontSize="68" width="1180" height="92"
+                color="0.94,0.76,0.43,1">${text:report_heading}</label>
+            <row />
+            <label id="month_report_period_label" fontSize="31" width="1180" height="54"
+                color="0.75,0.68,0.57,1">${text:report_period_placeholder}</label>
+            <row />
+            <table width="1180" height="570" pad="34" backgroundColor="0.025,0.022,0.020,1">
+                <group id="month_report_scroll_host" width="1090" height="500">
+                    <label id="month_report_content_label" fontSize="29" width="1066" height="1"
+                        align="left" textAlign="left" wrap="true" color="0.87,0.82,0.72,1">${text:report_empty}</label>
+                </group>
+            </table>
+            <row />
+            <table width="1180" height="92" padTop="28">
+                <textButton id="month_report_close_button" fontSize="38" width="540" height="86">${text:button_report_close}</textButton>
+                <textButton id="month_report_battle_button" fontSize="38" width="580" height="86"
+                    padLeft="34">${text:button_view_battles}</textButton>
+            </table>
+        </table>
+    </table>
+</ui>

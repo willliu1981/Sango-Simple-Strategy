@@ -1,0 +1,73 @@
+<ui xmlns="http://kuan.studio/simpleui">
+    <table id="main" i18n="literal" flags="fillParent" pad="34"
+        backgroundColor="0.010,0.009,0.008,0.82">
+        <table width="1740" height="980" pad="40" backgroundColor="0.040,0.032,0.027,0.99">
+            <label id="save_load_title_label" fontKey="title" fontSize="68" width="1620" height="88"
+                color="0.94,0.76,0.43,1">${text:save_load_title_load}</label>
+            <row />
+            <label id="save_load_description_label" fontSize="28" width="1620" height="58"
+                color="0.73,0.67,0.58,1">${text:save_load_description_load}</label>
+            <row />
+            <table width="1620" height="640" padTop="18">
+                <table width="690" height="620" pad="26" backgroundColor="0.058,0.047,0.039,0.98">
+                    <textButton id="save_slot_1_button" fontSize="31" width="620" height="150">${text:save_slot_1_placeholder}</textButton>
+                    <row />
+                    <textButton id="save_slot_2_button" fontSize="31" width="620" height="150" padTop="24">${text:save_slot_2_placeholder}</textButton>
+                    <row />
+                    <textButton id="save_slot_3_button" fontSize="31" width="620" height="150" padTop="24">${text:save_slot_3_placeholder}</textButton>
+                </table>
+                <table width="42"></table>
+                <table width="880" height="620" pad="34" backgroundColor="0.055,0.044,0.037,0.98">
+                    <label id="save_slot_detail_heading_label" fontKey="title" fontSize="48" width="800" height="64"
+                        color="0.90,0.72,0.40,1">${text:save_slot_detail_heading}</label>
+                    <row />
+                    <table width="800" height="410" pad="30" backgroundColor="0.025,0.022,0.020,1">
+                        <label id="save_slot_detail_label" fontSize="29" width="730" height="345"
+                            align="left" textAlign="left" wrap="true" color="0.85,0.80,0.70,1">${text:save_slot_empty_detail}</label>
+                    </table>
+                    <row />
+                    <textButton id="save_load_delete_button" fontSize="34" width="800" height="82" padTop="20">${text:button_delete_slot}</textButton>
+                </table>
+            </table>
+            <row />
+            <label id="save_load_status_label" fontSize="27" width="1620" height="56"
+                color="0.78,0.71,0.61,1">${text:save_load_status_ready}</label>
+            <row />
+            <table width="1620" height="92" padTop="10">
+                <textButton id="save_load_back_button" fontSize="38" width="520" height="86">${text:button_back}</textButton>
+                <table width="470"></table>
+                <textButton id="save_load_action_button" fontSize="38" width="600" height="86">${text:button_load_selected_slot}</textButton>
+            </table>
+        </table>
+    </table>
+
+    <table id="save_overwrite_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0,0,0,0.88" flags="fillParent">
+        <table width="940" pad="52" backgroundColor="0.055,0.043,0.035,0.995">
+            <label fontKey="title" fontSize="60" width="810" height="88" color="0.94,0.76,0.43,1">${text:save_overwrite_title}</label>
+            <row />
+            <label id="save_overwrite_description_label" fontSize="32" width="800" height="120"
+                wrap="true" color="0.84,0.80,0.72,1">${text:save_overwrite_description_placeholder}</label>
+            <row />
+            <table width="800" height="86" padTop="24">
+                <textButton id="save_overwrite_cancel_button" fontSize="36" width="360" height="82">${text:button_cancel}</textButton>
+                <textButton id="save_overwrite_confirm_button" fontSize="36" width="410" height="82" padLeft="30">${text:button_overwrite_save}</textButton>
+            </table>
+        </table>
+    </table>
+
+    <table id="save_delete_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0,0,0,0.88" flags="fillParent">
+        <table width="940" pad="52" backgroundColor="0.055,0.043,0.035,0.995">
+            <label fontKey="title" fontSize="60" width="810" height="88" color="0.94,0.45,0.32,1">${text:save_delete_title}</label>
+            <row />
+            <label id="save_delete_description_label" fontSize="32" width="800" height="120"
+                wrap="true" color="0.84,0.80,0.72,1">${text:save_delete_description_placeholder}</label>
+            <row />
+            <table width="800" height="86" padTop="24">
+                <textButton id="save_delete_cancel_button" fontSize="36" width="360" height="82">${text:button_cancel}</textButton>
+                <textButton id="save_delete_confirm_button" fontSize="36" width="410" height="82" padLeft="30">${text:button_delete_confirm}</textButton>
+            </table>
+        </table>
+    </table>
+</ui>

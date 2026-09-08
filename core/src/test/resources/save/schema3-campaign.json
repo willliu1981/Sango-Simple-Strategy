@@ -1,0 +1,176 @@
+{
+"schemaVersion": 1,
+"gameVersion": "0.4.0",
+"savedAtEpochMillis": 1788624000000,
+"gameState": {
+	"schemaVersion": 3,
+	"scenarioId": "prototype_warlords",
+	"mapId": "prototype_central_region",
+	"playerFactionId": "cao_cao",
+	"opponentFactionId": "yellow_turban",
+	"neutralFactionId": "neutral",
+	"victoryTargetCityId": "runan",
+	"campaignStatus": null,
+	"scenarioObjectiveStatus": "FAILED",
+	"gameplayStatus": "ACTIVE",
+	"currentTurn": 14,
+	"currentYear": 191,
+	"currentMonth": 2,
+	"elapsedMonths": 13,
+	"turnLimitMonths": 12,
+	"actionPointsRemaining": 2,
+	"actionPointsPerTurn": 3,
+	"enemyAttackCountdown": 3,
+	"nextArmySequence": 3,
+	"nextBattleSequence": 2,
+	"lastActionCode": "LAUNCH_EXPEDITION",
+	"factionStates": [
+		{
+			"factionId": "cao_cao",
+			"capitalCityId": "chenliu",
+			"gold": 1200,
+			"food": 1940,
+			"active": true
+		},
+		{
+			"factionId": "yellow_turban",
+			"capitalCityId": "runan",
+			"gold": 700,
+			"food": 1752,
+			"active": true
+		},
+		{
+			"factionId": "neutral",
+			"capitalCityId": "pingyuan",
+			"gold": 0,
+			"food": 0,
+			"active": true
+		}
+	],
+	"cityStates": [
+		{
+			"cityId": "pingyuan",
+			"ownerFactionId": "neutral",
+			"population": 54000,
+			"agriculture": 46,
+			"commerce": 32,
+			"waterControl": 42,
+			"defense": 35,
+			"troops": 1000,
+			"publicOrder": 80,
+			"training": 32,
+			"harvestModifierPercent": 100,
+			"scoutedUntilTurn": 0
+		},
+		{
+			"cityId": "ye",
+			"ownerFactionId": "neutral",
+			"population": 70000,
+			"agriculture": 44,
+			"commerce": 45,
+			"waterControl": 40,
+			"defense": 35,
+			"troops": 950,
+			"publicOrder": 55,
+			"training": 30,
+			"harvestModifierPercent": 100,
+			"scoutedUntilTurn": 0
+		},
+		{
+			"cityId": "chenliu",
+			"ownerFactionId": "cao_cao",
+			"population": 62000,
+			"agriculture": 40,
+			"commerce": 42,
+			"waterControl": 35,
+			"defense": 32,
+			"troops": 1000,
+			"publicOrder": 18,
+			"training": 35,
+			"harvestModifierPercent": 100,
+			"scoutedUntilTurn": 0
+		},
+		{
+			"cityId": "runan",
+			"ownerFactionId": "yellow_turban",
+			"population": 58000,
+			"agriculture": 50,
+			"commerce": 30,
+			"waterControl": 28,
+			"defense": 30,
+			"troops": 523,
+			"publicOrder": 52,
+			"training": 30,
+			"harvestModifierPercent": 100,
+			"scoutedUntilTurn": 0
+		},
+		{
+			"cityId": "guangling",
+			"ownerFactionId": "neutral",
+			"population": 60000,
+			"agriculture": 42,
+			"commerce": 44,
+			"waterControl": 38,
+			"defense": 34,
+			"troops": 950,
+			"publicOrder": 57,
+			"training": 31,
+			"harvestModifierPercent": 100,
+			"scoutedUntilTurn": 0
+		},
+		{
+			"cityId": "wu_commandery",
+			"ownerFactionId": "neutral",
+			"population": 68000,
+			"agriculture": 38,
+			"commerce": 50,
+			"waterControl": 50,
+			"defense": 38,
+			"troops": 1100,
+			"publicOrder": 60,
+			"training": 40,
+			"harvestModifierPercent": 100,
+			"scoutedUntilTurn": 0
+		}
+	],
+	"armyStates": [
+		{
+			"armyId": "army-2",
+			"factionId": "cao_cao",
+			"originCityId": "chenliu",
+			"targetCityId": "runan",
+			"remainingTravelMonths": 1,
+			"troops": 1000,
+			"training": 35,
+			"morale": 0,
+			"tactic": "BALANCED"
+		}
+	],
+	"battleReports": [
+		{
+			"battleId": "battle-1",
+			"resolvedTurn": 1,
+			"resolvedYear": 190,
+			"resolvedMonth": 1,
+			"originCityId": "chenliu",
+			"targetCityId": "runan",
+			"attackerFactionId": "cao_cao",
+			"defenderFactionId": "yellow_turban",
+			"attackerTactic": "BALANCED",
+			"attackerTroopsBefore": 800,
+			"defenderTroopsBefore": 950,
+			"attackerTraining": 35,
+			"defenderTraining": 30,
+			"defenderDefense": 30,
+			"attackerLosses": 520,
+			"defenderLosses": 427,
+			"attackerSurvivors": 280,
+			"defenderSurvivors": 523,
+			"outcome": "DEFENDER_VICTORY",
+			"cityCaptured": false,
+			"winnerFactionId": "yellow_turban",
+			"read": true
+		}
+	]
+}
+}

@@ -1,0 +1,15 @@
+<ui xmlns="http://kuan.studio/simpleui">
+    <table id="main" i18n="literal" flags="fillParent" pad="32" backgroundColor="0.025,0.022,0.018,1">
+        <table width="1500" height="960" pad="32" backgroundColor="0.055,0.043,0.035,1">
+            <label fontKey="title" fontSize="56" width="1400" height="76" color="0.94,0.76,0.43,1">${text:world_battle_heading}</label>
+            <row />
+            <label fontSize="24" width="1400" height="48" color="0.79,0.73,0.63,1">${text:world_battle_description}</label>
+            <row />
+            <group id="world_battle_scroll_host" width="1400" height="650" />
+            <row />
+            <textButton id="world_battle_back_button" fontSize="30" width="1400" height="72">${text:button_return_from_battle}</textButton>
+            <row />
+            <textButton id="world_battle_row_template" visible="false" fontSize="25" width="1" height="1">${text:world_battle_heading}</textButton>
+        </table>
+    </table>
+</ui>

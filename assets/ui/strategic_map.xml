@@ -1,0 +1,208 @@
+<ui xmlns="http://kuan.studio/simpleui">
+    <table id="main" i18n="literal" flags="fillParent" pad="22"
+        backgroundColor="0.008,0.007,0.006,0.76">
+        <table width="1840" height="1020" pad="22" backgroundColor="0.038,0.030,0.025,0.98">
+            <table width="1788" height="68">
+                <label fontKey="title" fontSize="42" width="390" height="60"
+                    align="left" textAlign="left" color="0.94,0.76,0.43,1">${text:map_title}</label>
+                <table width="690" height="64">
+                    <label id="map_scenario_label" fontSize="24" width="670" height="30"
+                        align="left" textAlign="left">${text:map_scenario_placeholder}</label>
+                    <row />
+                    <label id="map_date_label" fontSize="24" width="670" height="30"
+                        align="left" textAlign="left" color="0.72,0.66,0.56,1">${text:map_date_placeholder}</label>
+                </table>
+                <table width="680" height="64">
+                    <label id="map_turn_label" fontSize="25" width="660" height="30"
+                        align="right" textAlign="right">${text:map_turn_placeholder}</label>
+                    <row />
+                    <label id="map_objective_label" fontSize="22" width="660" height="30"
+                        align="right" textAlign="right" wrap="true" color="0.94,0.76,0.38,1">${text:map_objective_placeholder}</label>
+                </table>
+            </table>
+            <row />
+
+            <table width="1788" height="36">
+                <label id="map_national_order_label" fontSize="22" width="520" height="36"
+                    align="left" textAlign="left" color="0.73,0.78,0.69,1">${text:national_order_placeholder}</label>
+                <label id="map_resources_label" fontSize="22" width="700" height="36"
+                    align="center" textAlign="center" color="0.94,0.76,0.38,1">${text:map_resources_placeholder}</label>
+                <label id="map_unread_battle_label" fontSize="22" width="560" height="36"
+                    align="right" textAlign="right" color="0.95,0.45,0.31,1">${text:map_unread_battle_none}</label>
+            </table>
+            <row />
+
+            <table width="1788" height="780" padTop="4">
+                <table width="1110" height="770" pad="12" backgroundColor="0.052,0.043,0.036,0.98">
+                    <table width="1068" height="44">
+                        <label id="map_name_label" fontKey="title" fontSize="27" width="330" height="40"
+                            align="left" textAlign="left" color="0.88,0.70,0.39,1">${text:map_name_placeholder}</label>
+                        <textButton id="map_zoom_in_button" fontSize="28" width="66" height="40">${text:map_zoom_in}</textButton>
+                        <textButton id="map_zoom_out_button" fontSize="28" width="66" height="40" padLeft="8">${text:map_zoom_out}</textButton>
+                        <textButton id="map_fit_button" fontSize="23" width="96" height="40" padLeft="8">${text:map_fit_all}</textButton>
+                        <textButton id="map_focus_button" fontSize="23" width="166" height="40" padLeft="8">${text:map_focus_selected}</textButton>
+                        <label id="map_legend_label" fontSize="21" width="300" height="40"
+                            align="right" textAlign="right" color="0.65,0.60,0.52,1">${text:map_legend}</label>
+                    </table>
+                    <row />
+                    <table width="1068" height="650" pad="10" backgroundColor="0.025,0.026,0.025,0.98">
+                        <group id="map_host" width="1040" height="626" touchChildrenOnly="true" />
+                    </table>
+                    <row />
+                    <label id="map_army_summary_label" fontSize="21" width="1068" height="50"
+                        align="left" textAlign="left" wrap="true" color="0.76,0.69,0.58,1">${text:map_army_none}</label>
+                </table>
+
+                <table width="28"></table>
+
+                <table width="650" height="660" pad="20" backgroundColor="0.060,0.049,0.041,0.98">
+                    <label id="selected_city_name_label" fontKey="title" fontSize="45" width="590" height="56"
+                        color="0.92,0.74,0.40,1">${text:map_selected_city_placeholder}</label>
+                    <row />
+                    <label id="selected_city_owner_label" fontSize="26" width="590" height="34"
+                        align="left" textAlign="left">${text:map_owner_placeholder}</label>
+                    <row />
+                    <label id="selected_city_intel_label" fontSize="24" width="590" height="76"
+                        align="left" textAlign="left" wrap="true" color="0.79,0.73,0.63,1">${text:map_intel_placeholder}</label>
+                    <row />
+                    <label id="selected_city_stats_label" fontSize="24" width="590" height="66"
+                        align="left" textAlign="left" wrap="true" color="0.70,0.78,0.75,1">${text:map_stats_placeholder}</label>
+                    <row />
+                    <label id="selected_city_route_label" fontSize="23" width="590" height="58"
+                        align="left" textAlign="left" wrap="true" color="0.68,0.62,0.54,1">${text:map_route_placeholder}</label>
+                    <row />
+                    <label fontKey="title" fontSize="30" width="590" height="40"
+                        color="0.86,0.68,0.37,1">${text:map_tactic_heading}</label>
+                    <row />
+                    <table width="590" height="62">
+                        <textButton id="tactic_balanced_button" fontSize="24" width="182" height="58">${text:button_tactic_balanced}</textButton>
+                        <textButton id="tactic_assault_button" fontSize="24" width="182" height="58"
+                            padLeft="14">${text:button_tactic_assault}</textButton>
+                        <textButton id="tactic_cautious_button" fontSize="24" width="182" height="58"
+                            padLeft="14">${text:button_tactic_cautious}</textButton>
+                    </table>
+                    <row />
+                    <table width="590" height="68" padTop="8">
+                        <textButton id="manage_city_button" fontSize="28" width="284" height="64">${text:button_manage_city}</textButton>
+                        <textButton id="view_city_battle_button" fontSize="25" width="292" height="64"
+                            padLeft="14">${text:button_city_battles_placeholder}</textButton>
+                    </table>
+                    <row />
+                    <table width="590" height="68" padTop="8">
+                        <textButton id="scout_city_button" fontSize="27" width="284" height="64">${text:button_scout_city}</textButton>
+                        <textButton id="launch_expedition_button" fontSize="27" width="292" height="64"
+                            padLeft="14">${text:button_launch_expedition}</textButton>
+                    </table>
+                    <row />
+                    <label id="map_font_probe" fontSize="27" width="1" height="1" visible="false">${text:map_node_font_probe}</label>
+                </table>
+            </table>
+            <row />
+
+            <label id="map_status_label" fontSize="21" width="1788" height="28"
+                align="left" textAlign="left" wrap="true" color="0.79,0.72,0.61,1">${text:map_status_ready}</label>
+            <row />
+            <table width="1788" height="64" padTop="4">
+                <textButton id="map_settings_button" fontSize="26" width="230" height="60">${text:button_settings}</textButton>
+                <textButton id="context_help_button" fontSize="26" width="250" height="60" padLeft="12">操作說明</textButton>
+                <textButton id="show_last_report_button" fontSize="25" width="310" height="60"
+                    padLeft="12">${text:button_show_last_report}</textButton>
+                <textButton id="show_unread_battle_button" fontSize="24" width="360" height="60"
+                    padLeft="12">天下戰報（未讀0）</textButton>
+                <table width="82"></table>
+                <textButton id="end_month_button" fontSize="30" width="520" height="60">${text:button_end_month}</textButton>
+            </table>
+        </table>
+    </table>
+
+    <table id="map_fullscreen_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0.010,0.009,0.008,1" flags="fillParent">
+        <table id="map_fullscreen_host" width="1920" height="1080"></table>
+    </table>
+
+    <table id="expedition_dispatch_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0,0,0,0.88" flags="fillParent">
+        <table width="1280" pad="36" backgroundColor="0.055,0.043,0.035,0.995">
+            <label id="dispatch_title_label" fontKey="title" fontSize="52" width="1180" height="68"
+                color="0.94,0.76,0.43,1">${text:dispatch_title_placeholder}</label>
+            <row />
+            <label id="dispatch_route_label" fontSize="25" width="1170" height="76"
+                align="left" textAlign="left" wrap="true" color="0.84,0.80,0.72,1">${text:dispatch_route_placeholder}</label>
+            <row />
+            <table width="1170" height="60">
+                <textButton id="dispatch_origin_previous_button" fontSize="27" width="210" height="56">${text:button_dispatch_origin_previous}</textButton>
+                <label id="dispatch_origin_label" fontSize="25" width="494" height="56" align="center" textAlign="center">${text:dispatch_origin_selection_placeholder}</label>
+                <textButton id="dispatch_origin_next_button" fontSize="27" width="210" height="56" padLeft="14">${text:button_dispatch_origin_next}</textButton>
+                <textButton id="dispatch_origin_toggle_button" fontSize="25" width="200" height="56" padLeft="14">加入此城</textButton>
+            </table>
+            <row />
+            <label id="dispatch_amount_label" fontKey="title" fontSize="37" width="1170" height="54"
+                color="0.96,0.78,0.40,1">${text:dispatch_amount_placeholder}</label>
+            <row />
+            <table width="1170" height="66" padTop="6">
+                <textButton id="dispatch_decrease_button" fontSize="31" width="220" height="62">${text:button_dispatch_decrease}</textButton>
+                <textButton id="dispatch_increase_button" fontSize="31" width="220" height="62"
+                    padLeft="14">${text:button_dispatch_increase}</textButton>
+                <textButton id="dispatch_minimum_button" fontSize="28" width="260" height="62"
+                    padLeft="14">${text:button_dispatch_minimum}</textButton>
+                <textButton id="dispatch_maximum_button" fontSize="28" width="260" height="62"
+                    padLeft="14">${text:button_dispatch_maximum}</textButton>
+            </table>
+            <row />
+            <label fontSize="23" width="1170" height="42" wrap="true"
+                color="0.70,0.65,0.56,1">${text:dispatch_amount_hint}</label>
+            <row />
+            <group id="dispatch_selected_origins_host" width="1170" height="128" touchChildrenOnly="true" />
+            <row />
+            <label id="dispatch_summary_label" fontSize="25" width="1170" height="62" wrap="true"
+                align="left" textAlign="left" color="0.94,0.76,0.38,1">出征摘要</label>
+            <row />
+            <label id="dispatch_status_label" fontSize="23" width="1170" height="54" wrap="true"
+                align="left" textAlign="left" color="0.79,0.72,0.61,1">確認前請檢查資源。</label>
+            <row />
+            <table width="1170" height="74" padTop="10">
+                <textButton id="dispatch_help_button" fontSize="29" width="280" height="68">出征說明</textButton>
+                <textButton id="dispatch_cancel_button" fontSize="31" width="380" height="68" padLeft="20">${text:button_cancel}</textButton>
+                <textButton id="dispatch_confirm_button" fontSize="31" width="450" height="68"
+                    padLeft="20">${text:button_confirm_expedition}</textButton>
+            </table>
+        </table>
+    </table>
+
+    <table id="end_month_confirm_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0,0,0,0.88" flags="fillParent">
+        <table width="1040" pad="52" backgroundColor="0.055,0.043,0.035,0.995">
+            <label id="end_month_confirm_title_label" fontKey="title" fontSize="60" width="900" height="86"
+                color="0.94,0.76,0.43,1">${text:end_month_confirm_title_placeholder}</label>
+            <row />
+            <label id="end_month_confirm_description_label" fontSize="31" width="890" height="150"
+                wrap="true" color="0.84,0.80,0.72,1">${text:end_month_confirm_description_placeholder}</label>
+            <row />
+            <table width="890" height="86" padTop="24">
+                <textButton id="end_month_cancel_button" fontSize="36" width="400" height="82">${text:button_cancel}</textButton>
+                <textButton id="end_month_confirm_button" fontSize="36" width="460" height="82"
+                    padLeft="30">${text:button_end_month_confirm}</textButton>
+            </table>
+        </table>
+    </table>
+
+    <table id="battle_prompt_mask" i18n="literal" visible="false" touchable="enabled"
+        backgroundColor="0,0,0,0.88" flags="fillParent">
+        <table width="1040" pad="52" backgroundColor="0.060,0.038,0.030,0.995">
+            <label id="battle_prompt_title_label" fontKey="title" fontSize="60" width="900" height="86"
+                color="0.96,0.53,0.35,1">${text:battle_prompt_title_placeholder}</label>
+            <row />
+            <label id="battle_prompt_description_label" fontSize="31" width="890" height="125"
+                wrap="true" color="0.86,0.80,0.70,1">${text:battle_prompt_description}</label>
+            <row />
+            <table width="890" height="86" padTop="24">
+                <textButton id="battle_prompt_later_button" fontSize="36" width="400" height="82">${text:button_view_later}</textButton>
+                <textButton id="battle_prompt_view_button" fontSize="36" width="460" height="82"
+                    padLeft="30">${text:button_view_battle_report}</textButton>
+            </table>
+        </table>
+    </table>
+
+    <label id="dispatch_selected_origins_label" fontSize="24" visible="false" wrap="true"
+        align="left" textAlign="left" color="0.82,0.78,0.69,1">已選來源</label>
+</ui>

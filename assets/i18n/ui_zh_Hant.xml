@@ -1,0 +1,570 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<i18n>
+    <scope id="literal">
+        <entry name="report_retreat_started" value="{0} 戰敗後，{2} 名生還士兵撤往 {1}，行程 {3} 個月，下月開始移動。" />
+        <entry name="report_retreat_advanced" value="撤退部隊 {2} 兵由 {0} 前往 {1}，此段道路尚需 {3} 個月。" />
+        <entry name="report_retreat_rerouted" value="原撤退路線通往 {0}，現已失效；{2} 兵改撤往 {1}，新行程 {3} 個月。" />
+        <entry name="report_retreat_arrived" value="由 {1} 戰場撤回的 {2} 兵已抵達 {0}，併入守軍。" />
+        <entry name="report_retreat_disbanded" value="{0} 一帶部隊無可撤往的安全我方城池，{1} 兵潰散。" />
+        <entry name="map_army_retreat_summary" value="{0} {1} 兵・士氣 {2}｜撤往 {3}（尚需 {4} 個月）" />
+        <entry name="world_battle_heading" value="天下戰報" />
+        <entry name="world_battle_description" value="只列戰鬥事件；我方相關優先，同類依月份由新到舊排列。已讀戰報仍可點開。" />
+        <entry name="world_battle_player" value="我方戰事" />
+        <entry name="world_battle_other" value="其他勢力" />
+        <entry name="world_battle_read" value="已讀" />
+        <entry name="world_battle_unread" value="未讀" />
+        <entry name="world_battle_winner" value="勝方：{0}" />
+        <entry name="world_battle_empty" value="目前沒有戰事紀錄。" />
+        <entry name="report_player_battle_summary" value="{0}：{1}；我方戰損 {2}，戰後兵力 {3}。可由下方查看詳細戰報。" />
+        <entry name="report_player_battle_win" value="我方獲勝" />
+        <entry name="report_player_battle_loss" value="我方戰敗" />
+        <entry name="report_shortage_city_morale" value="{0} 駐軍缺糧，士氣 -{1}；目前士氣 {2}。" />
+        <entry name="report_shortage_army_morale" value="{0} 前往 {3} 的部隊缺糧，士氣 -{1}；目前士氣 {2}。" />
+        <entry name="battle_contributions_title" value="各城參戰明細" />
+        <entry name="battle_contribution_row" value="{0}｜{1}\n開戰 {2} 兵，戰損 {3}，生還 {4}\n訓練 {5}｜士氣 {6}" />
+        <entry name="button_next_scoped_battle_format" value="下一份戰報（{0}）" />
+        <entry name="button_no_next_scoped_battle" value="已到最後一份戰報" />
+        <entry name="context_help_button" value="操作說明" />
+        <entry name="context_help_close" value="關閉" />
+        <entry name="button_world_battle_reports_format" value="天下戰報（未讀 {0}）" />
+        <entry name="map_status_no_transfer_origin" value="沒有可沿道路運兵至此的我方城池。" />
+        <entry name="dispatch_transfer_single_origin" value="運兵使用目前來源" />
+        <entry name="dispatch_remove_origin" value="移除此城" />
+        <entry name="dispatch_add_origin" value="加入此城" />
+        <entry name="dispatch_transfer_help_button" value="運兵說明" />
+        <entry name="dispatch_expedition_help_button" value="出征說明" />
+        <entry name="dispatch_selected_origin_line_format" value="{0}：{1} 兵｜{2} 個月" />
+        <entry name="dispatch_selected_origins_empty" value="已選來源：尚未加入任何城池。" />
+        <entry name="dispatch_selected_origins_format" value="已選來源：\n{0}" />
+        <entry name="dispatch_summary_format" value="合計 {0} 城／{1} 兵｜費用 {2} AP、{3} 糧｜集結 {4} 個月（最慢路程）" />
+        <entry name="dispatch_status_ready" value="資源足夠；確認後所有來源將編入同一批行動。" />
+        <entry name="dispatch_status_select_origin" value="請至少加入一座來源城。" />
+        <entry name="dispatch_status_invalid_origin_amount_format" value="{0} 的派兵數需至少 400、以 100 遞增，並保留 400 守軍。" />
+        <entry name="dispatch_status_insufficient_ap_format" value="行動力不足：本次需 {0} AP，目前剩餘 {1}。" />
+        <entry name="dispatch_status_insufficient_food_format" value="糧不足：本次需 {0} 糧，目前只有 {1}。" />
+        <entry name="dispatch_status_army_active" value="我方已有部隊行軍中，需等待其抵達。" />
+        <entry name="help_map_title" value="戰略圖操作說明" />
+        <entry name="help_map_body" value="共用金與共用糧屬於整個勢力；行動力（AP）限制本月可下達的命令。\n\n偵察與出征的目標必須和至少一座我方城有直接道路連接；運兵則可沿道路前往我方城池。偵察非我方城消耗 1 AP 與 20 金，提供三回合精確情報，不消耗軍糧。\n\n使用＋、－縮放，「全圖」重設視野，「定位」回到選取城。快速點兩下地圖進入全螢幕；全螢幕時單擊城池只選取；雙擊城池返回並聚焦；點擊空白處不返回。\n\n勢力月報記錄我方收支、缺糧、災害與戰事；天下戰報只列各地戰鬥，我方戰事優先。" />
+        <entry name="help_city_title" value="內政操作說明" />
+        <entry name="help_city_body" value="金、糧是全勢力共用資源；人口屬於本城。農業提高秋收，商業提高季末商稅，治水降低夏季洪災風險與損失，城防影響守城；訓練與士氣影響作戰表現。\n\n安民可提高民心，最高到 95。民心至少 95，且沒有缺糧、洪災或易主時，月底累計一個穩定月；連續第 3 個合格月底起，每月自然提高 1 點，最高 100。不合格時累計歸零，不代表直接扣除民心。\n\n缺軍糧會造成逃兵，並依缺口比例降低駐軍與行軍部隊士氣。缺一半軍糧扣 10 點，完全缺糧扣 20 點；士氣最低 0。補足軍糧不會立即回復已失去的士氣。" />
+        <entry name="help_recruit_title" value="徵兵說明" />
+        <entry name="help_recruit_body" value="徵兵立即減少本城人口，消耗 1 AP，並依實際人數扣除金與糧；確認前請查看費用預覽。\n\n可徵人數受人口保留量、單次上限、可用金糧及武將統率限制。\n\n新兵訓練與士氣依有效民心決定，加入後按新舊兵力加權；大量徵兵可能降低整體訓練與士氣。增加兵力也會提高後續每月軍糧需求。" />
+        <entry name="help_transfer_title" value="運兵說明" />
+        <entry name="help_transfer_body" value="運兵只在我方城池間進行。使用上一城／下一城切換沿道路可達的來源，再調整兵數。\n\n每次至少派 400 兵，來源城保留 400 守軍，以 100 人增減，單次最多 10,000 兵。派遣消耗 1 AP 與 100 糧。\n\n行程依道路最短時間計算，抵達後才加入目標城；行軍期間仍受軍糧不足影響。其他部隊正在行軍時，只要兵力、行動力與糧食足夠，仍可再派兵。" />
+        <entry name="help_expedition_title" value="聯合出征說明" />
+        <entry name="help_expedition_body" value="選擇敵方或中立目標城，再用上一城／下一城切換直接相鄰的我方來源城。逐城加入出征並設定兵數，各城數量分別保留。\n\n每城至少派 400 兵、保留 400 守軍，以 100 人增減，每城最多 10,000 兵。每個來源消耗 1 AP 與 100 糧；確認時整批檢查資源，不能只扣除部分來源。\n\n先到部隊等待同批其他部隊集結，再共同進入一場戰鬥。同勢力即使分次下令，只要同月抵達同一目標，也會合併為一場戰鬥與一份戰報。戰報可查看各城出兵、戰損與生還兵力。本功能限同一勢力，不包含盟軍。已有部隊行軍不會阻止另一次派兵。\n\n戰敗生還者從下月起撤往安全道路上最近的我方城；同距離優先原城，再比較城防。撤退途中仍需軍糧，退路失效會改道，無路可退時潰散，結果列入勢力月報。" />
+        <entry name="lobby_sango" value="SANGO" description="lobby_sango" />
+        <entry name="lobby_title" value="簡易三國志" description="lobby_title" />
+        <entry name="lobby_tagline" value="漢末群雄 · 天下待定" description="lobby_tagline" />
+        <entry name="lobby_intro" value="六大勢力逐鹿 42 城。治理人口、按需徵兵、分批訓練，在四季樂聲中自由征戰。" description="lobby_intro" />
+        <entry name="lobby_main_menu" value="主選單" description="lobby_main_menu" />
+        <entry name="lobby_vertical_slice" value="六勢力 · 全國 42 城 · 自由征戰" description="lobby_vertical_slice" />
+        <entry name="lobby_version" value="Strategy Prototype 0.6.0" description="lobby_version" />
+        <entry name="button_continue" value="繼續遊戲" description="button_continue" />
+        <entry name="button_new_game" value="開始新局" description="button_new_game" />
+        <entry name="button_load_game" value="讀取存檔" description="button_load_game" />
+        <entry name="button_settings" value="設定" description="button_settings" />
+        <entry name="button_exit" value="離開遊戲" description="button_exit" />
+        <entry name="button_cancel" value="取消" description="button_cancel" />
+        <entry name="button_confirm" value="完成" description="button_confirm" />
+        <entry name="button_exit_confirm" value="確認離開" description="button_exit_confirm" />
+        <entry name="button_back_lobby" value="返回 Lobby" description="button_back_lobby" />
+        <entry name="button_start_game" value="建立新局並開始" description="button_start_game" />
+        <entry name="button_overwrite" value="覆寫並建立新局" description="button_overwrite" />
+        <entry name="button_save" value="手動存檔" description="button_save" />
+        <entry name="button_return_lobby" value="返回 Lobby" description="button_return_lobby" />
+        <entry name="button_return_map" value="返回戰略地圖" description="button_return_map" />
+        <entry name="button_end_month" value="結束本月" description="button_end_month" />
+        <entry name="button_show_last_report" value="勢力月報" description="button_show_last_report" />
+        <entry name="button_report_close" value="關閉月報" description="button_report_close" />
+        <entry name="status_no_campaign" value="尚無戰局存檔；請先開始新局。" description="status_no_campaign" />
+        <entry name="status_campaign_available" value="已有戰局，可選擇「繼續遊戲」。" description="status_campaign_available" />
+        <entry name="status_save_recovery_available" value="存檔槽 {0} 的主要檔異常，可由暫存或備份繼續。" description="status_save_recovery_available" />
+        <entry name="status_save_corrupt" value="存檔無法讀取；可從讀取存檔畫面檢查其他槽位。" description="status_save_corrupt" />
+        <entry name="settings_title" value="設定" description="settings_title" />
+        <entry name="settings_note" value="背景音樂、遊戲音效與音量設定會立即套用並保存。" description="settings_note" />
+        <entry name="settings_music_on" value="背景音樂：開啟" description="settings_music_on" />
+        <entry name="settings_music_off" value="背景音樂：關閉" description="settings_music_off" />
+        <entry name="settings_sound_on" value="遊戲音效：開啟" description="settings_sound_on" />
+        <entry name="settings_sound_off" value="遊戲音效：關閉" description="settings_sound_off" />
+        <entry name="exit_title" value="離開 Sango？" description="exit_title" />
+        <entry name="exit_description" value="戰局操作會自動保存；介面設定也已寫入。確定要關閉遊戲嗎？" description="exit_description" />
+        <entry name="new_game_title" value="建立新局" description="new_game_title" />
+        <entry name="new_game_status_ready" value="選擇勢力與存檔槽後即可建立新局。" description="new_game_status_ready" />
+        <entry name="new_game_status_definition_error" value="無法載入劇本資料，請檢查 assets/data。" description="new_game_status_definition_error" />
+        <entry name="new_game_status_select_faction" value="請先選擇勢力。" description="new_game_status_select_faction" />
+        <entry name="new_game_status_create_failed" value="建立新局失敗；原存檔不會被不完整資料取代。" description="new_game_status_create_failed" />
+        <entry name="new_game_scenario_heading" value="劇本" description="new_game_scenario_heading" />
+        <entry name="new_game_faction_heading" value="選擇勢力" description="new_game_faction_heading" />
+        <entry name="new_game_scenario_date" value="起始：初平元年 · 西元 190 年" description="new_game_scenario_date" />
+        <entry name="new_game_scenario_actions" value="每月依全城民心總和的分段門檻獲得 3–9 行動力。目標成功或失敗皆可繼續。" description="new_game_scenario_actions" />
+        <entry name="scenario_prototype_name" value="群雄割據（流程原型）" description="scenario_prototype_name" />
+        <entry name="scenario_prototype_description" value="選擇一個勢力，在六城區域地圖經營主城。農業於九月秋收、商業於季末收稅；敵軍會集結進攻。請在十二個月內攻下指定敵城。" description="scenario_prototype_description" />
+        <entry name="new_game_selected_faction_placeholder" value="勢力：尚未選擇" description="new_game_selected_faction_placeholder" />
+        <entry name="new_game_selected_ruler_placeholder" value="君主：尚未選擇" description="new_game_selected_ruler_placeholder" />
+        <entry name="new_game_selected_city_placeholder" value="主城：尚未選擇" description="new_game_selected_city_placeholder" />
+        <entry name="new_game_selected_resources_placeholder" value="初始資源：尚未選擇" description="new_game_selected_resources_placeholder" />
+        <entry name="new_game_selected_summary_placeholder" value="選擇勢力後顯示原型特色。" description="new_game_selected_summary_placeholder" />
+        <entry name="new_game_faction_prefix" value="勢力：" description="new_game_faction_prefix" />
+        <entry name="new_game_ruler_prefix" value="君主：" description="new_game_ruler_prefix" />
+        <entry name="new_game_city_prefix" value="主城：" description="new_game_city_prefix" />
+        <entry name="new_game_resources_prefix" value="初始資源：" description="new_game_resources_prefix" />
+        <entry name="resource_gold_suffix" value=" 金 · " description="resource_gold_suffix" />
+        <entry name="resource_food_suffix" value=" 糧" description="resource_food_suffix" />
+        <entry name="overwrite_title" value="覆寫現有戰局？" description="overwrite_title" />
+        <entry name="overwrite_description" value="存檔槽 1 已有資料。繼續後會建立備份，再以所選勢力建立全新戰局；這項操作無法由遊戲內復原。" description="overwrite_description" />
+        <entry name="faction_cao_cao" value="曹操軍" description="faction_cao_cao" />
+        <entry name="ruler_cao_cao" value="曹操" description="ruler_cao_cao" />
+        <entry name="faction_cao_cao_summary" value="中原・陳留與許昌。首要目標：汝南。兼顧內政與前線，注意多方向接壤。" description="faction_cao_cao_summary" />
+        <entry name="faction_liu_bei" value="劉備軍" description="faction_liu_bei" />
+        <entry name="ruler_liu_bei" value="劉備" description="ruler_liu_bei" />
+        <entry name="faction_liu_bei_summary" value="東北・平原與北海。首要目標：鄴。河北勢力相互接壤，先整備再擴張。" description="faction_liu_bei_summary" />
+        <entry name="faction_sun_ce" value="孫策軍" description="faction_sun_ce" />
+        <entry name="ruler_sun_ce" value="孫策" description="ruler_sun_ce" />
+        <entry name="faction_sun_ce_summary" value="江東・吳郡與會稽。首要目標：廣陵。由江東向淮南開拓，維持軍糧。" description="faction_sun_ce_summary" />
+        <entry name="faction_yellow_turban" value="黃巾殘部" description="faction_yellow_turban" />
+        <entry name="ruler_yellow_turban" value="黃巾渠帥" description="ruler_yellow_turban" />
+        <entry name="faction_yellow_turban_summary" value="盤據目標城池並會主動集結進攻的敵對勢力。" description="faction_yellow_turban_summary" />
+        <entry name="faction_neutral" value="中立城池" description="faction_neutral" />
+        <entry name="ruler_neutral" value="地方守軍" description="ruler_neutral" />
+        <entry name="faction_neutral_summary" value="尚未加入戰爭的地方勢力。" description="faction_neutral_summary" />
+        <entry name="city_chenliu" value="陳留" description="city_chenliu" />
+        <entry name="city_pingyuan" value="平原" description="city_pingyuan" />
+        <entry name="city_wu_commandery" value="吳郡" description="city_wu_commandery" />
+        <entry name="city_ye" value="鄴" description="city_ye" />
+        <entry name="city_runan" value="汝南" description="city_runan" />
+        <entry name="city_guangling" value="廣陵" description="city_guangling" />
+        <entry name="map_prototype_central_region" value="中原六城戰略區" description="map_prototype_central_region" />
+        <entry name="city_title" value="城池內政" description="city_title" />
+        <entry name="city_overview_heading" value="領地概況" description="city_overview_heading" />
+        <entry name="city_actions_heading" value="本回合命令" description="city_actions_heading" />
+        <entry name="city_actions_note" value="每次成功命令消耗 1 AP；開墾與商業收益於季節結算。徵兵先選擇數量再確認。" description="city_actions_note" />
+        <entry name="city_rule_summary" value="徵兵可自行選擇人數，受人口曲線、金糧與人口保留量限制。新兵素質依兵力加權；訓練僅影響覆蓋兵數，再回算全軍平均。人口於十二月底依有效民心增減。" description="city_rule_summary" />
+        <entry name="city_scenario_placeholder" value="劇本：尚未載入" description="city_scenario_placeholder" />
+        <entry name="city_date_placeholder" value="年代：尚未載入" description="city_date_placeholder" />
+        <entry name="city_turn_placeholder" value="回合：尚未載入" description="city_turn_placeholder" />
+        <entry name="city_action_points_placeholder" value="行動力：0 / 0" description="city_action_points_placeholder" />
+        <entry name="city_faction_placeholder" value="勢力：尚未載入" description="city_faction_placeholder" />
+        <entry name="city_ruler_placeholder" value="君主：尚未載入" description="city_ruler_placeholder" />
+        <entry name="city_scenario_prefix" value="劇本：" description="city_scenario_prefix" />
+        <entry name="city_turn_prefix" value="回合：第 " description="city_turn_prefix" />
+        <entry name="city_turn_suffix" value=" 回合" description="city_turn_suffix" />
+        <entry name="city_year_suffix" value=" 年 " description="city_year_suffix" />
+        <entry name="city_month_suffix" value=" 月" description="city_month_suffix" />
+        <entry name="city_faction_prefix" value="勢力：" description="city_faction_prefix" />
+        <entry name="city_ruler_prefix" value="君主：" description="city_ruler_prefix" />
+        <entry name="city_action_points_prefix" value="行動力：" description="city_action_points_prefix" />
+        <entry name="city_management_suffix" value="內政" description="city_management_suffix" />
+        <entry name="stat_gold" value="金" description="stat_gold" />
+        <entry name="stat_food" value="糧" description="stat_food" />
+        <entry name="stat_population" value="人口" description="stat_population" />
+        <entry name="stat_troops" value="兵力" description="stat_troops" />
+        <entry name="stat_agriculture" value="農業" description="stat_agriculture" />
+        <entry name="stat_commerce" value="商業" description="stat_commerce" />
+        <entry name="stat_public_order" value="民心" description="stat_public_order" />
+        <entry name="button_pacify_short" value="安民" description="button_pacify_short" />
+        <entry name="button_pacify" value="安民｜100 金、50 糧\n民心最高 95" description="button_pacify" />
+        <entry name="city_status_pacify_success" value="完成安民，民心已提升。" description="city_status_pacify_success" />
+        <entry name="city_status_pacify_result_format" value="完成安民：民心 {0} → {1}。金 -100、糧 -50。" description="city_status_pacify_result_format" />
+        <entry name="stat_training" value="訓練" description="stat_training" />
+        <entry name="stat_water_control" value="治水" description="stat_water_control" />
+        <entry name="stat_defense" value="城防" description="stat_defense" />
+        <entry name="stat_quarterly_tax" value="預估季稅" description="stat_quarterly_tax" />
+        <entry name="stat_harvest" value="預估秋收" description="stat_harvest" />
+        <entry name="city_season_forecast_placeholder" value="季節預估尚未載入。" description="city_season_forecast_placeholder" />
+        <entry name="city_season_forecast_format" value="距季末商稅 {0} 個月｜距九月秋收 {1} 個月｜夏季洪災風險 {2}%｜每月軍糧依總兵力結算" description="city_season_forecast_format" />
+        <entry name="button_agriculture" value="開墾（50 金）" description="button_agriculture" />
+        <entry name="button_commerce" value="商業開發（50 金）" description="button_commerce" />
+        <entry name="button_water_control" value="治水（80 金）" description="button_water_control" />
+        <entry name="button_fortify" value="修築城防（100 金）" description="button_fortify" />
+        <entry name="button_recruit" value="徵兵｜選擇人數\n人口・金糧・新兵素質預覽" description="button_recruit" />
+        <entry name="button_train" value="訓練｜50 金\n最多覆蓋 20,000 兵" description="button_train" />
+        <entry name="city_status_ready" value="內政投資不會立即產生金糧；收益會在季末或秋收結算。" description="city_status_ready" />
+        <entry name="city_status_load_failed" value="無法載入戰局；請返回 Lobby 並建立新局。" description="city_status_load_failed" />
+        <entry name="city_status_save_failed" value="存檔失敗，因此本次命令沒有套用。" description="city_status_save_failed" />
+        <entry name="city_status_action_failed" value="內政命令執行失敗，戰局狀態未更新。" description="city_status_action_failed" />
+        <entry name="city_status_saved" value="戰局已保存。" description="city_status_saved" />
+        <entry name="city_status_agriculture_success" value="完成開墾投資：農業 +5。糧食將於九月秋收結算。" description="city_status_agriculture_success" />
+        <entry name="city_status_commerce_success" value="完成商業投資：商業 +5。金錢將於季末商稅結算。" description="city_status_commerce_success" />
+        <entry name="city_status_water_control_success" value="完成治水：治水 +5，洪災風險與秋收損失下降。" description="city_status_water_control_success" />
+        <entry name="city_status_fortify_success" value="完成城防修築：城防 +5。" description="city_status_fortify_success" />
+        <entry name="city_status_recruit_success" value="完成徵兵，部隊素質依兵力重新加權。" description="city_status_recruit_success" />
+        <entry name="city_status_train_success" value="完成覆蓋訓練，成果已回算全軍平均。" description="city_status_train_success" />
+        <entry name="city_status_no_action_points" value="行動力不足；可直接使用下方的「結束本月」。" description="city_status_no_action_points" />
+        <entry name="city_status_insufficient_gold" value="金不足，無法執行此命令。" description="city_status_insufficient_gold" />
+        <entry name="city_status_insufficient_food" value="糧不足，無法執行此命令。" description="city_status_insufficient_food" />
+        <entry name="city_status_insufficient_population" value="人口不足，無法繼續徵兵。" description="city_status_insufficient_population" />
+        <entry name="city_status_not_owned" value="此城不屬於我方。" description="city_status_not_owned" />
+        <entry name="city_status_value_maximum" value="此項能力已達上限。" description="city_status_value_maximum" />
+        <entry name="map_title" value="區域戰略" description="map_title" />
+        <entry name="map_scenario_placeholder" value="劇本：尚未載入" description="map_scenario_placeholder" />
+        <entry name="map_date_placeholder" value="年代：尚未載入" description="map_date_placeholder" />
+        <entry name="map_turn_placeholder" value="回合：尚未載入" description="map_turn_placeholder" />
+        <entry name="map_objective_placeholder" value="目標尚未載入。" description="map_objective_placeholder" />
+        <entry name="map_name_placeholder" value="區域地圖" description="map_name_placeholder" />
+        <entry name="map_legend" value="金：我方　紅：敵軍　灰：中立" description="map_legend" />
+        <entry name="map_army_none" value="目前沒有行軍中的部隊。" description="map_army_none" />
+        <entry name="map_selected_city_placeholder" value="尚未選取城池" description="map_selected_city_placeholder" />
+        <entry name="map_owner_placeholder" value="所屬：尚未載入" description="map_owner_placeholder" />
+        <entry name="map_intel_placeholder" value="情報尚未載入。" description="map_intel_placeholder" />
+        <entry name="map_stats_placeholder" value="城池狀態尚未載入。" description="map_stats_placeholder" />
+        <entry name="map_route_placeholder" value="道路資訊尚未載入。" description="map_route_placeholder" />
+        <entry name="map_tactic_heading" value="出征戰術" description="map_tactic_heading" />
+        <entry name="button_tactic_balanced" value="穩健" description="button_tactic_balanced" />
+        <entry name="button_tactic_assault" value="強攻" description="button_tactic_assault" />
+        <entry name="button_tactic_cautious" value="保守" description="button_tactic_cautious" />
+        <entry name="button_manage_city" value="進入城池內政" description="button_manage_city" />
+        <entry name="button_scout_city" value="偵察（20 金）" description="button_scout_city" />
+        <entry name="button_launch_expedition" value="出征" description="button_launch_expedition" />
+        <entry name="button_launch_expedition_format" value="出征（{0} 兵）" description="button_launch_expedition_format" />
+        <entry name="map_status_ready" value="選擇城池以管理、偵察或出征。" description="map_status_ready" />
+        <entry name="map_scenario_prefix" value="劇本：" description="map_scenario_prefix" />
+        <entry name="map_objective_victory" value="劇本目標已達成；目前進入自由征戰。" description="map_objective_victory" />
+        <entry name="map_objective_defeat" value="劇本目標已失敗；仍可繼續自由征戰。" description="map_objective_defeat" />
+        <entry name="map_objective_format" value="目標：攻下 {0}｜期限剩餘 {1} 個月" description="map_objective_format" />
+        <entry name="map_marker_player" value="我方" description="map_marker_player" />
+        <entry name="map_marker_enemy" value="敵軍" description="map_marker_enemy" />
+        <entry name="map_marker_neutral" value="中立" description="map_marker_neutral" />
+        <entry name="map_marker_target" value="目標" description="map_marker_target" />
+        <entry name="map_owner_prefix" value="所屬：" description="map_owner_prefix" />
+        <entry name="map_intel_exact_format" value="兵力：{0}｜人口：{1}｜情報：已掌握" description="map_intel_exact_format" />
+        <entry name="map_intel_estimate_format" value="兵力：約 {0}～{1}｜情報不足；偵察可取得三回合精確情報。" description="map_intel_estimate_format" />
+        <entry name="map_stats_unknown" value="城防、訓練、士氣與內政狀態尚未掌握。" description="map_stats_unknown" />
+        <entry name="map_stats_format" value="城防 {0}｜訓練 {1}｜士氣 {5}　農業 {2}｜商業 {3}｜治水 {4}" description="map_stats_format" />
+        <entry name="map_route_owned" value="此城屬於我方；目前沒有可運兵的我方城池。" description="map_route_owned" />
+        <entry name="map_route_owned_transfer_format" value="可由 {0} 運兵至此，行程 {1} 個月。派兵消耗 1 行動力與 100 糧。" description="map_route_owned_transfer_format" />
+        <entry name="map_route_not_adjacent" value="目前沒有與此城直接相鄰的我方城池，無法偵察或出征。" description="map_route_not_adjacent" />
+        <entry name="map_route_format" value="可由 {0} 沿道路進軍，行程 {1} 個月。出征消耗 1 行動力與 100 糧。" description="map_route_format" />
+        <entry name="map_army_none_format" value="目前沒有行軍中的部隊。敵軍預估 {0} 個月後完成下一次集結。" description="map_army_none_format" />
+        <entry name="map_army_player_prefix" value="我軍" description="map_army_player_prefix" />
+        <entry name="map_army_enemy_prefix" value="敵軍" description="map_army_enemy_prefix" />
+        <entry name="map_army_route_word" value="兵：" description="map_army_route_word" />
+        <entry name="map_month_remaining_suffix" value=" 月抵達）" description="map_month_remaining_suffix" />
+        <entry name="map_status_load_failed" value="無法載入戰局；請返回 Lobby 並選擇存檔。" description="map_status_load_failed" />
+        <entry name="map_status_city_selected" value="已選取城池。" description="map_status_city_selected" />
+        <entry name="map_status_not_adjacent" value="目標與我方城池不相鄰。" description="map_status_not_adjacent" />
+        <entry name="map_status_action_failed" value="戰略命令失敗，戰局未更新。" description="map_status_action_failed" />
+        <entry name="map_status_scout_success" value="偵察完成；精確情報可維持三個回合。" description="map_status_scout_success" />
+        <entry name="map_status_expedition_success" value="已派出 {0} 兵；部隊將在月底結算時行軍。" description="map_status_expedition_success" />
+        <entry name="map_status_campaign_finished" value="我方已失去全部城池，不能再下達命令。" description="map_status_campaign_finished" />
+        <entry name="map_status_origin_not_owned" value="出發城不屬於我方。" description="map_status_origin_not_owned" />
+        <entry name="map_status_target_owned" value="目標已屬於我方。" description="map_status_target_owned" />
+        <entry name="map_status_insufficient_troops" value="至少需保留 400 守軍並派出 400 兵。" description="map_status_insufficient_troops" />
+        <entry name="map_status_invalid_expedition_amount" value="派兵數量須至少 400，且為 100 的倍數。" description="map_status_invalid_expedition_amount" />
+        <entry name="map_status_army_active" value="我方已有一支部隊行軍中，需等待其抵達。" description="map_status_army_active" />
+        <entry name="map_status_month_ended" value="月份結算完成並已自動存檔。" description="map_status_month_ended" />
+        <entry name="report_heading" value="勢力月報" description="report_heading" />
+        <entry name="report_period_placeholder" value="結算月份尚未載入。" description="report_period_placeholder" />
+        <entry name="report_period_format" value="{0} 年 {1} 月結算" description="report_period_format" />
+        <entry name="report_empty" value="本月沒有特殊事件。" description="report_empty" />
+        <entry name="report_event_upkeep" value="軍糧支出：-{0} 糧，用於維持 {1} 兵。" description="report_event_upkeep" />
+        <entry name="report_event_shortage" value="軍糧不足 {0}，共有 {1} 兵逃散。" description="report_event_shortage" />
+        <entry name="report_event_public_order_recovered" value="{0} 民心自然恢復 +{1}；目前民心 {2}。" description="report_event_public_order_recovered" />
+        <entry name="report_event_tax" value="季末商稅：+{0} 金（{1} 座城池）。" description="report_event_tax" />
+        <entry name="report_event_flood" value="{0} 發生洪災；秋收預估減少 {1}%（事前風險 {2}%）。" description="report_event_flood" />
+        <entry name="report_event_flood_avoided" value="{0} 平安度過汛期（洪災風險 {1}%）。" description="report_event_flood_avoided" />
+        <entry name="report_event_harvest" value="秋收：+{0} 糧（{1} 座城池）。" description="report_event_harvest" />
+        <entry name="report_event_army_advanced" value="我軍 {0} 兵由 {1} 向 {2} 行軍，尚需 {3} 個月。" description="report_event_army_advanced" />
+        <entry name="report_event_reinforced" value="{0} 獲得 {1} 兵增援。" description="report_event_reinforced" />
+        <entry name="report_event_player_attack_won" value="我軍攻克 {0}；完整結果已加入戰報。" description="report_event_player_attack_won" />
+        <entry name="report_event_enemy_attack_won" value="敵軍攻下 {0}；完整結果已加入戰報。" description="report_event_enemy_attack_won" />
+        <entry name="report_event_player_defense_won" value="我軍守住 {0}；完整結果已加入戰報。" description="report_event_player_defense_won" />
+        <entry name="report_event_player_attack_lost" value="我軍進攻 {0} 失敗；完整結果已加入戰報。" description="report_event_player_attack_lost" />
+        <entry name="report_event_city_captured" value="{0} 的控制權已轉移，現有駐軍 {1}。" description="report_event_city_captured" />
+        <entry name="report_event_enemy_preparing" value="敵軍仍在 {0} 集結，預估 {1} 個月後出征。" description="report_event_enemy_preparing" />
+        <entry name="report_event_enemy_reinforcing" value="敵軍在 {0} 補充 {1} 兵，出征延後。" description="report_event_enemy_reinforcing" />
+        <entry name="report_event_enemy_marching" value="敵軍 {0} 兵已由 {1} 向 {2} 出征，預計 {3} 個月抵達。" description="report_event_enemy_marching" />
+        <entry name="report_event_victory" value="劇本目標達成：已攻下目標城池 {0}，可繼續自由征戰。" description="report_event_victory" />
+        <entry name="report_event_defeat_capital" value="原定劇本目標失敗：我方首都 {0} 失守；若仍有領地，將遷都並繼續征戰。" description="report_event_defeat_capital" />
+        <entry name="report_event_defeat_timeout" value="原定劇本目標失敗：未能在 {0} 個月內攻下目標城池；遊戲轉入自由征戰。" description="report_event_defeat_timeout" />
+        <entry name="status_campaign_available_slot" value="找到 {0} 個可用存檔；繼續遊戲將讀取槽位 {1}。" description="status_campaign_available_slot" />
+        <entry name="status_save_corrupt_slots" value="偵測到損壞槽位；可進入讀取存檔查看診斷或刪除。" description="status_save_corrupt_slots" />
+        <entry name="new_game_save_slot_heading" value="選擇存檔槽" description="new_game_save_slot_heading" />
+        <entry name="new_game_slot_1_placeholder" value="存檔槽 1" description="new_game_slot_1_placeholder" />
+        <entry name="new_game_slot_2_placeholder" value="存檔槽 2" description="new_game_slot_2_placeholder" />
+        <entry name="new_game_slot_3_placeholder" value="存檔槽 3" description="new_game_slot_3_placeholder" />
+        <entry name="new_game_selected_slot_placeholder" value="目前選擇：存檔槽 1" description="new_game_selected_slot_placeholder" />
+        <entry name="new_game_selected_slot_format" value="目前選擇：存檔槽 {0}" description="new_game_selected_slot_format" />
+        <entry name="new_game_slot_format" value="存檔槽 {0}｜{1}" description="new_game_slot_format" />
+        <entry name="new_game_slot_empty" value="空白" description="new_game_slot_empty" />
+        <entry name="new_game_slot_occupied" value="已有戰局" description="new_game_slot_occupied" />
+        <entry name="new_game_slot_corrupt" value="存檔損壞" description="new_game_slot_corrupt" />
+        <entry name="overwrite_description_format" value="存檔槽 {0} 已有資料。繼續後會先保留備份，再以所選勢力建立全新戰局。" description="overwrite_description_format" />
+        <entry name="objective_in_progress" value="進行中" description="objective_in_progress" />
+        <entry name="objective_achieved" value="已達成・自由征戰" description="objective_achieved" />
+        <entry name="objective_failed" value="已失敗・自由征戰" description="objective_failed" />
+        <entry name="map_gameplay_eliminated" value="我方已失去全部城池｜只能查看局勢或讀取存檔" description="map_gameplay_eliminated" />
+        <entry name="map_objective_achieved_free" value="劇本目標達成｜自由征戰中" description="map_objective_achieved_free" />
+        <entry name="map_objective_failed_free" value="劇本目標失敗｜自由征戰中" description="map_objective_failed_free" />
+        <entry name="map_unread_battle_none" value="戰事通報：目前沒有未讀戰報。" description="map_unread_battle_none" />
+        <entry name="map_unread_battle_alert_format" value="戰事通報：有 {0} 份未讀戰報；發生戰鬥的城池正在閃爍。" description="map_unread_battle_alert_format" />
+        <entry name="map_marker_battle_format" value="戰事 {0}" description="map_marker_battle_format" />
+        <entry name="button_city_battles_placeholder" value="查看此城戰報" description="button_city_battles_placeholder" />
+        <entry name="button_city_battles_format" value="查看此城戰報（{0}）" description="button_city_battles_format" />
+        <entry name="button_transfer_troops" value="運兵" description="button_transfer_troops" />
+        <entry name="dispatch_title_placeholder" value="派兵" description="dispatch_title_placeholder" />
+        <entry name="dispatch_transfer_title" value="運兵" description="dispatch_transfer_title" />
+        <entry name="dispatch_expedition_title" value="聯合出征" description="dispatch_expedition_title" />
+        <entry name="dispatch_route_placeholder" value="來源、目的與路程尚未載入。" description="dispatch_route_placeholder" />
+        <entry name="dispatch_origin_selection_placeholder" value="派兵來源" description="dispatch_origin_selection_placeholder" />
+        <entry name="dispatch_origin_selection_format" value="來源：{0}（{1}/{2}）" description="dispatch_origin_selection_format" />
+        <entry name="dispatch_origin_selection_hidden" value="" description="dispatch_origin_selection_hidden" />
+        <entry name="button_dispatch_origin_previous" value="上一城" description="button_dispatch_origin_previous" />
+        <entry name="button_dispatch_origin_next" value="下一城" description="button_dispatch_origin_next" />
+        <entry name="dispatch_route_format" value="目標：{1}｜目前來源：{0}｜路程：{2} 個月" description="dispatch_route_format" />
+        <entry name="dispatch_amount_placeholder" value="派兵數量：400" description="dispatch_amount_placeholder" />
+        <entry name="dispatch_amount_format" value="目前來源派兵：{0}" description="dispatch_amount_format" />
+        <entry name="dispatch_amount_hint" value="每次增減 100；至少派出 400，且出發城須保留 400 守軍，單次上限 10,000。" description="dispatch_amount_hint" />
+        <entry name="button_dispatch_decrease" value="－100" description="button_dispatch_decrease" />
+        <entry name="button_dispatch_increase" value="＋100" description="button_dispatch_increase" />
+        <entry name="button_dispatch_minimum" value="最小" description="button_dispatch_minimum" />
+        <entry name="button_dispatch_maximum" value="最大" description="button_dispatch_maximum" />
+        <entry name="button_confirm_transfer" value="確認運兵" description="button_confirm_transfer" />
+        <entry name="button_confirm_expedition" value="確認出征" description="button_confirm_expedition" />
+        <entry name="button_unread_battles_placeholder" value="天下戰報" description="button_unread_battles_placeholder" />
+        <entry name="button_unread_battles_format" value="天下戰報（未讀 {0}）" description="button_unread_battles_format" />
+        <entry name="map_status_player_eliminated" value="我方已失去全部城池，不能再下達命令。" description="map_status_player_eliminated" />
+        <entry name="end_month_confirm_title_placeholder" value="結束本月？" description="end_month_confirm_title_placeholder" />
+        <entry name="end_month_confirm_title_format" value="確定結束 {0} 年 {1} 月？" description="end_month_confirm_title_format" />
+        <entry name="end_month_confirm_description_placeholder" value="月底將進行軍糧、季節收入、行軍、戰鬥與敵軍行動結算。" description="end_month_confirm_description_placeholder" />
+        <entry name="end_month_confirm_description_format" value="剩餘行動力：{0} / {1}。月底結算軍糧、季節收入、行軍、戰鬥與敵軍行動，再按全城民心計算下月 3–9 點。未用點數不保留。" description="end_month_confirm_description_format" />
+        <entry name="button_end_month_confirm" value="確認結束本月" description="button_end_month_confirm" />
+        <entry name="battle_prompt_title_placeholder" value="本月發生戰鬥" description="battle_prompt_title_placeholder" />
+        <entry name="battle_prompt_title_format" value="{0} 發生戰鬥" description="battle_prompt_title_format" />
+        <entry name="battle_prompt_description" value="本月正在關注的城池發生戰事。是否立即觀看完整戰報？" description="battle_prompt_description" />
+        <entry name="button_view_later" value="稍後觀看" description="button_view_later" />
+        <entry name="button_view_battle_report" value="觀看戰報" description="button_view_battle_report" />
+        <entry name="battle_report_title_placeholder" value="城池攻防戰" description="battle_report_title_placeholder" />
+        <entry name="battle_report_title_format" value="{0}攻防戰" description="battle_report_title_format" />
+        <entry name="battle_report_sequence_placeholder" value="戰報 0 / 0" description="battle_report_sequence_placeholder" />
+        <entry name="battle_report_sequence_format" value="戰報 {0} / {1}" description="battle_report_sequence_format" />
+        <entry name="battle_report_period_placeholder" value="戰鬥時間尚未載入" description="battle_report_period_placeholder" />
+        <entry name="battle_report_period_format" value="{0} 年 {1} 月｜第 {2} 回合" description="battle_report_period_format" />
+        <entry name="battle_report_route_placeholder" value="行軍路線尚未載入" description="battle_report_route_placeholder" />
+        <entry name="battle_report_route_format" value="{0} → {1}" description="battle_report_route_format" />
+        <entry name="battle_report_tactic_placeholder" value="戰術與城防尚未載入" description="battle_report_tactic_placeholder" />
+        <entry name="battle_report_tactic_prefix" value="攻方戰術：" description="battle_report_tactic_prefix" />
+        <entry name="battle_report_defense_format" value="｜守方城防：{0}" description="battle_report_defense_format" />
+        <entry name="battle_report_attacker" value="攻方" description="battle_report_attacker" />
+        <entry name="battle_report_defender" value="守方" description="battle_report_defender" />
+        <entry name="battle_report_faction_placeholder" value="勢力尚未載入" description="battle_report_faction_placeholder" />
+        <entry name="battle_report_before" value="開戰兵力" description="battle_report_before" />
+        <entry name="battle_report_losses" value="戰損" description="battle_report_losses" />
+        <entry name="battle_report_survivors" value="戰後兵力" description="battle_report_survivors" />
+        <entry name="battle_report_training_placeholder" value="雙方訓練尚未載入" description="battle_report_training_placeholder" />
+        <entry name="battle_report_training_format" value="攻方訓練 {0}｜守方訓練 {1}" description="battle_report_training_format" />
+        <entry name="battle_report_result_placeholder" value="戰鬥結果尚未載入" description="battle_report_result_placeholder" />
+        <entry name="battle_report_player_attack_win" value="我軍攻下 {0}" description="battle_report_player_attack_win" />
+        <entry name="battle_report_player_defense_win" value="我軍守住 {0}" description="battle_report_player_defense_win" />
+        <entry name="battle_report_player_attack_loss" value="我軍進攻 {0} 失敗" description="battle_report_player_attack_loss" />
+        <entry name="battle_report_player_defense_loss" value="我軍失守 {0}" description="battle_report_player_defense_loss" />
+        <entry name="battle_report_capture_placeholder" value="城池控制結果尚未載入" description="battle_report_capture_placeholder" />
+        <entry name="battle_report_capture_success" value="城池控制權已轉移至 {0}。" description="battle_report_capture_success" />
+        <entry name="battle_report_capture_failed" value="守方仍控制此城。" description="battle_report_capture_failed" />
+        <entry name="button_return_from_battle" value="返回上一畫面" description="button_return_from_battle" />
+        <entry name="button_next_battle" value="下一份未讀戰報" description="button_next_battle" />
+        <entry name="button_next_battle_format" value="下一份未讀戰報（{0}）" description="button_next_battle_format" />
+        <entry name="button_no_unread_battle" value="沒有其他未讀戰報" description="button_no_unread_battle" />
+        <entry name="button_next_month_battle_format" value="下一份本月戰報（{0}）" description="button_next_month_battle_format" />
+        <entry name="button_no_next_month_battle" value="沒有其他本月戰報" description="button_no_next_month_battle" />
+        <entry name="button_view_battles" value="查看我方戰事" description="button_view_battles" />
+        <entry name="button_view_battles_format" value="查看我方戰事（{0}）" description="button_view_battles_format" />
+        <entry name="report_event_capital_relocated" value="首都已由 {1} 遷往 {0}；遊戲可繼續。" description="report_event_capital_relocated" />
+        <entry name="report_event_player_eliminated" value="我方已失去全部城池，無法再下達命令；仍可查看局勢或讀取其他存檔。" description="report_event_player_eliminated" />
+        <entry name="save_load_title_load" value="讀取存檔" description="save_load_title_load" />
+        <entry name="save_load_title_save" value="儲存遊戲" description="save_load_title_save" />
+        <entry name="save_load_description_load" value="選擇一個有效槽位以載入戰局。" description="save_load_description_load" />
+        <entry name="save_load_description_save" value="選擇槽位保存目前戰局；覆寫既有槽位前會再次確認。" description="save_load_description_save" />
+        <entry name="save_load_status_ready" value="選擇存檔槽。" description="save_load_status_ready" />
+        <entry name="save_load_status_selected" value="已選擇存檔槽 {0}。" description="save_load_status_selected" />
+        <entry name="save_load_status_load_failed" value="存檔讀取失敗，請檢查診斷資訊。" description="save_load_status_load_failed" />
+        <entry name="save_load_status_saved" value="已保存至存檔槽 {0}。" description="save_load_status_saved" />
+        <entry name="save_load_status_save_failed" value="保存失敗，原存檔未被替換。" description="save_load_status_save_failed" />
+        <entry name="save_load_status_deleted" value="已刪除存檔槽 {0}。" description="save_load_status_deleted" />
+        <entry name="save_load_status_delete_failed" value="刪除存檔失敗。" description="save_load_status_delete_failed" />
+        <entry name="save_slot_1_placeholder" value="存檔槽 1" description="save_slot_1_placeholder" />
+        <entry name="save_slot_2_placeholder" value="存檔槽 2" description="save_slot_2_placeholder" />
+        <entry name="save_slot_3_placeholder" value="存檔槽 3" description="save_slot_3_placeholder" />
+        <entry name="save_slot_heading_format" value="存檔槽 {0}" description="save_slot_heading_format" />
+        <entry name="save_slot_empty" value="空白槽位" description="save_slot_empty" />
+        <entry name="save_slot_corrupt" value="存檔損壞" description="save_slot_corrupt" />
+        <entry name="save_slot_city_count_suffix" value=" 城" description="save_slot_city_count_suffix" />
+        <entry name="save_slot_detail_heading" value="存檔詳細資訊" description="save_slot_detail_heading" />
+        <entry name="save_slot_empty_detail" value="此槽位沒有存檔。" description="save_slot_empty_detail" />
+        <entry name="save_slot_corrupt_detail" value="此槽位沒有可用的主要、暫存或備份存檔。診斷：{0}" description="save_slot_corrupt_detail" />
+        <entry name="save_slot_scenario_prefix" value="劇本：" description="save_slot_scenario_prefix" />
+        <entry name="save_slot_faction_prefix" value="勢力：" description="save_slot_faction_prefix" />
+        <entry name="save_slot_capital_prefix" value="首都：" description="save_slot_capital_prefix" />
+        <entry name="save_slot_date_prefix" value="年代：" description="save_slot_date_prefix" />
+        <entry name="save_slot_owned_cities_prefix" value="領地：" description="save_slot_owned_cities_prefix" />
+        <entry name="save_slot_objective_prefix" value="劇本目標：" description="save_slot_objective_prefix" />
+        <entry name="save_slot_saved_at_prefix" value="保存時間：" description="save_slot_saved_at_prefix" />
+        <entry name="save_slot_recovery_notice" value="將由暫存或備份檔復原。" description="save_slot_recovery_notice" />
+        <entry name="save_slot_no_capital" value="無有效首都" description="save_slot_no_capital" />
+        <entry name="button_back" value="返回" description="button_back" />
+        <entry name="button_load_selected_slot" value="讀取此存檔" description="button_load_selected_slot" />
+        <entry name="button_save_selected_slot" value="保存至此槽位" description="button_save_selected_slot" />
+        <entry name="button_delete_slot" value="刪除此槽位" description="button_delete_slot" />
+        <entry name="save_overwrite_title" value="覆寫存檔？" description="save_overwrite_title" />
+        <entry name="save_overwrite_description_placeholder" value="此槽位已有資料。" description="save_overwrite_description_placeholder" />
+        <entry name="save_overwrite_description_format" value="存檔槽 {0} 已有資料。確定以目前戰局覆寫？" description="save_overwrite_description_format" />
+        <entry name="button_overwrite_save" value="確認覆寫存檔" description="button_overwrite_save" />
+        <entry name="save_delete_title" value="刪除存檔？" description="save_delete_title" />
+        <entry name="save_delete_description_placeholder" value="刪除後無法由遊戲內復原。" description="save_delete_description_placeholder" />
+        <entry name="save_delete_description_format" value="確定刪除存檔槽 {0} 的主要、暫存與備份檔？" description="save_delete_description_format" />
+        <entry name="button_delete_confirm" value="確認刪除" description="button_delete_confirm" />
+        <entry name="settings_context_lobby" value="目前位於 Lobby，沒有載入中的戰局。" description="settings_context_lobby" />
+        <entry name="settings_context_game" value="目前戰局位於存檔槽 {0}；返回 Lobby 前會先保存。" description="settings_context_game" />
+        <entry name="settings_music_volume_placeholder" value="音樂音量：70%" description="settings_music_volume_placeholder" />
+        <entry name="settings_music_volume_format" value="音樂音量：{0}%" description="settings_music_volume_format" />
+        <entry name="settings_sound_volume_placeholder" value="音效音量：80%" description="settings_sound_volume_placeholder" />
+        <entry name="settings_sound_volume_format" value="音效音量：{0}%" description="settings_sound_volume_format" />
+        <entry name="button_gameplay_guide" value="玩法說明" description="button_gameplay_guide" />
+        <entry name="button_volume_down" value="－10%" description="button_volume_down" />
+        <entry name="button_volume_up" value="＋10%" description="button_volume_up" />
+        <entry name="button_open_save_screen" value="儲存遊戲" description="button_open_save_screen" />
+        <entry name="button_save_return_lobby" value="保存並返回 Lobby" description="button_save_return_lobby" />
+        <entry name="settings_audio_note" value="BGM 依季節切換。音樂與音效音量分開保存；實際播放仍取決於裝置音訊支援。" description="settings_audio_note" />
+        <entry name="lobby_settings_audio_note" value="可使用音樂鑑賞自由選曲。音樂與音效音量分開保存；實際播放仍取決於裝置音訊支援。" description="lobby_settings_audio_note" />
+        <entry name="return_lobby_confirm_title" value="返回 Lobby？" description="return_lobby_confirm_title" />
+        <entry name="return_lobby_confirm_description" value="目前進度將先保存。確定離開戰略／內政畫面並返回 Lobby？" description="return_lobby_confirm_description" />
+        <entry name="settings_save_before_exit_failed" value="保存失敗，已取消返回或退出。" description="settings_save_before_exit_failed" />
+        <entry name="gameplay_guide_title" value="玩法說明" description="gameplay_guide_title" />
+        <entry name="gameplay_guide_description" value="主要內政、軍事與資源規則；所有消耗均以畫面當下顯示為準。" description="gameplay_guide_description" />
+        <entry name="gameplay_guide_content" value="【經營勢力】\n金糧由全勢力共用。每月分配行動力，在內政、徵兵與軍事之間取捨；未使用的行動力不保留。商業帶來季末稅金，農業帶來九月秋收，治水降低六月災害風險。\n\n【維持軍隊】\n駐軍與行軍部隊都需要軍糧，訓練與士氣共同影響戰力。缺糧會造成逃兵與士氣下降，也會中斷民心自然恢復的穩定月份。軍糧完全不足時，當月士氣最多下降 20 點。\n\n【民心與成長】\n安民最高提升至 95。之後連續三個合格月底，可從 95 自然提升到 96，再逐月升至 100；缺糧、洪災、易主或民心低於 95 都會使穩定月份歸零。缺糧本身不直接扣民心。\n\n【戰略與協同】\n偵察與出征依城市間直接道路判定。可以選擇多座我方城市共同攻打一城，各城分別出兵與支付費用，等待全員抵達後一起作戰；我方城池之間也可運兵增援。資源足夠時可以同時多路派兵。戰敗後生還者需要時間撤退，退路中斷可能造成潰散。\n\n【閱讀報告】\n勢力月報整理我方收支、缺糧損失、民心、災害與參戰結果。天下戰報只列各勢力的戰鬥，我方相關優先；兩個入口查看的是同一份戰報。\n\n【操作提示】\n戰略圖、內政與派兵視窗的操作說明，只解釋當前畫面的內容。徵兵、運兵與出征的數量、成本及限制，請在各自操作處查看。" description="gameplay_guide_content" />
+        <entry name="button_back_to_settings" value="返回設定" description="button_back_to_settings" />
+        <entry name="city_status_player_eliminated" value="我方已失去全部城池，不能再下達命令或推進月份。" description="city_status_player_eliminated" />
+        <entry name="scenario_china_name" value="漢末群雄・全國征戰" description="scenario_china_name" />
+        <entry name="scenario_china_description" value="六個可選勢力同時存在於 42 城示意地圖，另有黃巾與中立城。12 個月內爭取首要目標，之後可自由征戰。城池配置為遊戲化設定，非精確史圖。" description="scenario_china_description" />
+        <entry name="map_china_42" value="全國戰略圖・42 城" description="map_china_42" />
+        <entry name="faction_yuan_shao" value="袁紹軍" description="faction_yuan_shao" />
+        <entry name="ruler_yuan_shao" value="袁紹" description="ruler_yuan_shao" />
+        <entry name="faction_yuan_shao_summary" value="河北・鄴與南皮。首要目標：上黨。人口與資源較充裕，可向并州擴張。" description="faction_yuan_shao_summary" />
+        <entry name="faction_liu_biao" value="劉表軍" description="faction_liu_biao" />
+        <entry name="ruler_liu_biao" value="劉表" description="ruler_liu_biao" />
+        <entry name="faction_liu_biao_summary" value="荊州・襄陽與江陵。首要目標：江夏。掌握多條道路，需兼顧城防與整備。" description="faction_liu_biao_summary" />
+        <entry name="faction_ma_teng" value="馬騰軍" description="faction_ma_teng" />
+        <entry name="ruler_ma_teng" value="馬騰" description="ruler_ma_teng" />
+        <entry name="faction_ma_teng_summary" value="西涼・武威與安定。首要目標：天水。武威初始訓練 55、士氣 80，可由西北逐步推進。" description="faction_ma_teng_summary" />
+        <entry name="stat_morale" value="士氣" description="stat_morale" />
+        <entry name="map_zoom_in" value="＋" description="map_zoom_in" />
+        <entry name="map_zoom_out" value="－" description="map_zoom_out" />
+        <entry name="map_fit_all" value="全圖" description="map_fit_all" />
+        <entry name="map_focus_selected" value="定位選取城" description="map_focus_selected" />
+        <entry name="map_navigation_hint" value="拖曳移動｜滾輪／雙指縮放" description="map_navigation_hint" />
+        <entry name="map_resources_placeholder" value="共用金 --｜共用糧 --｜本月軍糧需求 --" description="map_resources_placeholder" />
+        <entry name="map_resources_format" value="共用金 {0}｜共用糧 {1}｜本月軍糧需求 {2}" description="map_resources_format" />
+        <entry name="map_resources_shortage_format" value="共用金 {0}｜共用糧 {1}｜本月軍糧 {2}｜缺糧警示：尚缺 {3}" description="map_resources_shortage_format" />
+        <entry name="map_player_suffix" value="・我" description="map_player_suffix" />
+        <entry name="map_army_none_multi" value="目前沒有部隊行軍。各敵對勢力共用集結週期，下一次行動約 {0} 個月後。" description="map_army_none_multi" />
+        <entry name="map_army_summary_multi" value="{0} {1} 兵・士氣 {2}｜{3} → {4}（{5} 月抵達）" description="map_army_summary_multi" />
+        <entry name="map_army_more" value="另有 {0} 支部隊行軍；各地交戰結果將加入月報與戰報。" description="map_army_more" />
+        <entry name="battle_report_occupation_title" value="{0}・無抵抗佔領" description="battle_report_occupation_title" />
+        <entry name="battle_report_occupation_result" value="{0} 佔領 {1}（戰鬥零傷亡）" description="battle_report_occupation_result" />
+        <entry name="battle_report_other_factions_result" value="{0} 在 {1} 獲勝" description="battle_report_other_factions_result" />
+        <entry name="battle_report_morale_format" value="攻方士氣 {0}｜守方士氣 {1}" description="battle_report_morale_format" />
+        <entry name="battle_report_morale_legacy" value="舊戰報未記錄士氣快照。" description="battle_report_morale_legacy" />
+        <entry name="report_event_attack_winner_named" value="{0} 攻克 {1}；詳細結果已加入戰報。" description="report_event_attack_winner_named" />
+        <entry name="report_event_defense_winner_named" value="{0} 守住 {1}；詳細結果已加入戰報。" description="report_event_defense_winner_named" />
+        <entry name="report_event_unopposed" value="{0} 無抵抗佔領 {1}，戰鬥零傷亡；進駐 {2} 兵。" description="report_event_unopposed" />
+        <entry name="report_event_preparing_named" value="{0} 正在 {1} 集結，預計 {2} 個月後行動。" description="report_event_preparing_named" />
+        <entry name="report_event_reinforcing_named" value="{0} 在 {1} 徵召 {2} 兵，支付徵兵資源並降低士氣。" description="report_event_reinforcing_named" />
+        <entry name="report_event_marching_named" value="{0} 的 {1} 兵由 {2} 向 {3} 出征，{4} 個月後抵達。" description="report_event_marching_named" />
+        <entry name="city_wuwei" value="武威" description="city_wuwei" />
+        <entry name="city_tianshui" value="天水" description="city_tianshui" />
+        <entry name="city_anding" value="安定" description="city_anding" />
+        <entry name="city_changan" value="長安" description="city_changan" />
+        <entry name="city_luoyang" value="洛陽" description="city_luoyang" />
+        <entry name="city_xuchang" value="許昌" description="city_xuchang" />
+        <entry name="city_wan" value="宛" description="city_wan" />
+        <entry name="city_hanzhong" value="漢中" description="city_hanzhong" />
+        <entry name="city_wudu" value="武都" description="city_wudu" />
+        <entry name="city_zitong" value="梓潼" description="city_zitong" />
+        <entry name="city_chengdu" value="成都" description="city_chengdu" />
+        <entry name="city_jiangzhou" value="江州" description="city_jiangzhou" />
+        <entry name="city_yongan" value="永安" description="city_yongan" />
+        <entry name="city_jianning" value="建寧" description="city_jianning" />
+        <entry name="city_yunnan" value="雲南" description="city_yunnan" />
+        <entry name="city_jinyang" value="晉陽" description="city_jinyang" />
+        <entry name="city_shangdang" value="上黨" description="city_shangdang" />
+        <entry name="city_nanpi" value="南皮" description="city_nanpi" />
+        <entry name="city_ji" value="薊" description="city_ji" />
+        <entry name="city_beiping" value="北平" description="city_beiping" />
+        <entry name="city_xiangping" value="襄平" description="city_xiangping" />
+        <entry name="city_beihai" value="北海" description="city_beihai" />
+        <entry name="city_xiaopei" value="小沛" description="city_xiaopei" />
+        <entry name="city_xiapi" value="下邳" description="city_xiapi" />
+        <entry name="city_shouchun" value="壽春" description="city_shouchun" />
+        <entry name="city_jianye" value="建業" description="city_jianye" />
+        <entry name="city_kuaiji" value="會稽" description="city_kuaiji" />
+        <entry name="city_poyang" value="鄱陽" description="city_poyang" />
+        <entry name="city_yuzhang" value="豫章" description="city_yuzhang" />
+        <entry name="city_xiangyang" value="襄陽" description="city_xiangyang" />
+        <entry name="city_jiangling" value="江陵" description="city_jiangling" />
+        <entry name="city_jiangxia" value="江夏" description="city_jiangxia" />
+        <entry name="city_changsha" value="長沙" description="city_changsha" />
+        <entry name="city_wuling" value="武陵" description="city_wuling" />
+        <entry name="city_jiaozhi" value="交趾" description="city_jiaozhi" />
+        <entry name="city_nanhai" value="南海" description="city_nanhai" />
+        <entry name="map_node_font_probe" value="武威 天水 安定 長安 洛陽 陳留 許昌 汝南 宛 漢中 武都 梓潼 成都 江州 永安 建寧 雲南 晉陽 上黨 鄴 平原 南皮 薊 北平 襄平 北海 小沛 下邳 壽春 廣陵 建業 吳郡 會稽 鄱陽 豫章 襄陽 江陵 江夏 長沙 武陵 交趾 南海 曹操軍 劉備軍 孫策軍 袁紹軍 劉表軍 馬騰軍 黃巾殘部 中立 我方 敵軍 目標 戰事 未讀" description="map_node_font_probe" />
+        <entry name="national_order_placeholder" value="民心總和 -- ・下月預估 -- AP" description="national_order_placeholder" />
+        <entry name="national_order_preview_format" value="民心總和 {0}（{1} 城）・下月 {2} AP" description="national_order_preview_format" />
+        <entry name="report_event_action_points" value="下月行動力：{1} AP（結算後全城民心總和 {0}；本月剩餘不保留）。" description="report_event_action_points" />
+
+        <entry name="button_train_format" value="訓練｜{0} 金\n最多覆蓋 {1} 兵" description="button_train_format" />
+        <entry name="city_recruit_result_format" value="徵兵 {0} 人；金 -{1}、糧 -{2}。全軍訓練 {3}、士氣 {4}。" description="city_recruit_result_format" />
+        <entry name="city_train_result_format" value="訓練覆蓋 {0}/{1} 人；全軍訓練 {2} → {3}、士氣 {4} → {5}。金 -{6}。" description="city_train_result_format" />
+        <entry name="population_projection_format" value="人口容量 {0}｜年底預估 {1} 人（{2}%）\n依當時民心與人口重新結算；本次僅為預估。" description="population_projection_format" />
+        <entry name="population_projection_placeholder" value="人口容量與年底變化預估" description="population_projection_placeholder" />
+        <entry name="city_public_order_recovery_placeholder" value="民心穩定：狀態載入中" description="city_public_order_recovery_placeholder" />
+        <entry name="city_public_order_recovery_not_owned" value="民心穩定：僅適用我方城池" description="city_public_order_recovery_not_owned" />
+        <entry name="city_public_order_recovery_maximum" value="民心穩定：已達上限，無需自然恢復" description="city_public_order_recovery_maximum" />
+        <entry name="city_public_order_recovery_below_threshold" value="民心穩定：民心達 {0} 後開始累計" description="city_public_order_recovery_below_threshold" />
+        <entry name="city_public_order_recovery_progress" value="民心穩定：{0}/{1} 月" description="city_public_order_recovery_progress" />
+        <entry name="report_event_population" value="{0} 年底人口變化 {1}；目前人口 {2}。" description="report_event_population" />
+        <entry name="report_event_ai_actions" value="{0} 本月使用 {1}/{2} AP。" description="report_event_ai_actions" />
+        <entry name="recruitment_title" value="徵兵" description="recruitment_title" />
+        <entry name="recruitment_title_format" value="{0} · 徵兵" description="recruitment_title_format" />
+        <entry name="recruitment_description" value="拖動滑桿或輸入人數。每 2 兵需 1 金、1 糧，不足 2 兵向上計費；單次最多 10,000 人。" description="recruitment_description" />
+        <entry name="recruitment_placeholder" value="--" description="recruitment_placeholder" />
+        <entry name="recruitment_limit_format" value="人口 {0}｜至少保留 {1}｜人口徵兵上限 {2}｜資源允許 {3} 人" description="recruitment_limit_format" />
+        <entry name="recruitment_order_format" value="本城民心 {0}｜全勢力平均 {1}｜有效民心 {2}｜新兵訓練 {3}、士氣 {4}" description="recruitment_order_format" />
+        <entry name="recruitment_preview_format" value="徵兵 {0} 人；人口剩餘 {1}\n金 -{2}、糧 -{3}；消耗 1 AP\n全軍訓練 {4} → {5}；士氣 {6} → {7}" description="recruitment_preview_format" />
+        <entry name="recruitment_ready" value="確認後才會扣除人口、金糧與行動力；取消不消耗資源。" description="recruitment_ready" />
+        <entry name="recruitment_invalid_amount" value="請輸入 1 到 10000 之間的徵兵數量。" description="recruitment_invalid_amount" />
+        <entry name="recruitment_limit_exceeded" value="超過本城本次可徵兵上限。" description="recruitment_limit_exceeded" />
+        <entry name="recruitment_min" value="最少" description="recruitment_min" />
+        <entry name="recruitment_minus" value="−100" description="recruitment_minus" />
+        <entry name="recruitment_plus" value="+100" description="recruitment_plus" />
+        <entry name="recruitment_max" value="最多" description="recruitment_max" />
+        <entry name="recruitment_confirm" value="確認徵兵" description="recruitment_confirm" />
+        <entry name="training_no_troops" value="城內沒有士兵，不能執行訓練。" description="training_no_troops" />
+        <entry name="button_music_player" value="音樂鑑賞" description="button_music_player" />
+        <entry name="music_player_title" value="四時之聲 · 音樂鑑賞" description="music_player_title" />
+        <entry name="music_player_description" value="自由欣賞四季曲目，不推進月份、不消耗行動力。返回戰局時恢復當季 BGM。" description="music_player_description" />
+        <entry name="music_lobby" value="群雄序曲" description="music_lobby" />
+        <entry name="music_menu" value="主選單" description="music_menu" />
+        <entry name="music_spring" value="春風入城" description="music_spring" />
+        <entry name="music_summer" value="炎日運籌" description="music_summer" />
+        <entry name="music_autumn" value="暮秋望陣" description="music_autumn" />
+        <entry name="music_winter" value="寒夜圖謀" description="music_winter" />
+        <entry name="season_spring" value="春 · 一月至三月" description="season_spring" />
+        <entry name="season_summer" value="夏 · 四月至六月" description="season_summer" />
+        <entry name="season_autumn" value="秋 · 七月至九月" description="season_autumn" />
+        <entry name="season_winter" value="冬 · 十月至十二月" description="season_winter" />
+        <entry name="music_track_spring" value="春 · 春風入城" description="music_track_spring" />
+        <entry name="music_track_summer" value="夏 · 炎日運籌" description="music_track_summer" />
+        <entry name="music_track_autumn" value="秋 · 暮秋望陣" description="music_track_autumn" />
+        <entry name="music_track_winter" value="冬 · 寒夜圖謀" description="music_track_winter" />
+        <entry name="music_previous" value="上一首" description="music_previous" />
+        <entry name="music_next" value="下一首" description="music_next" />
+        <entry name="music_play" value="播放" description="music_play" />
+        <entry name="music_pause" value="暫停" description="music_pause" />
+        <entry name="music_enabled" value="音樂：開啟" description="music_enabled" />
+        <entry name="music_disabled" value="音樂：關閉" description="music_disabled" />
+        <entry name="music_load_failed" value="音樂載入失敗，請重新選曲。" description="music_load_failed" />
+        <entry name="music_muted_note" value="音樂已關閉或音量為零，可在設定調整。" description="music_muted_note" />
+        <entry name="music_paused_note" value="已暫停；播放會由目前位置繼續。" description="music_paused_note" />
+        <entry name="music_playing_note" value="單曲循環播放；切換曲目以兩秒淡入淡出銜接。" description="music_playing_note" />
+    </scope>
+</i18n>

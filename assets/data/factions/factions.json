@@ -1,0 +1,84 @@
+{
+  "factions": [
+    {
+      "id": "cao_cao",
+      "nameKey": "faction_cao_cao",
+      "rulerNameKey": "ruler_cao_cao",
+      "summaryKey": "faction_cao_cao_summary",
+      "capitalCityId": "chenliu",
+      "initialGold": 1200,
+      "initialFood": 2200,
+      "playable": true
+    },
+    {
+      "id": "liu_bei",
+      "nameKey": "faction_liu_bei",
+      "rulerNameKey": "ruler_liu_bei",
+      "summaryKey": "faction_liu_bei_summary",
+      "capitalCityId": "pingyuan",
+      "initialGold": 900,
+      "initialFood": 2100,
+      "playable": true
+    },
+    {
+      "id": "sun_ce",
+      "nameKey": "faction_sun_ce",
+      "rulerNameKey": "ruler_sun_ce",
+      "summaryKey": "faction_sun_ce_summary",
+      "capitalCityId": "wu_commandery",
+      "initialGold": 1100,
+      "initialFood": 2000,
+      "playable": true
+    },
+    {
+      "id": "yellow_turban",
+      "nameKey": "faction_yellow_turban",
+      "rulerNameKey": "ruler_yellow_turban",
+      "summaryKey": "faction_yellow_turban_summary",
+      "capitalCityId": "runan",
+      "initialGold": 700,
+      "initialFood": 1800,
+      "playable": false
+    },
+    {
+      "id": "neutral",
+      "nameKey": "faction_neutral",
+      "rulerNameKey": "ruler_neutral",
+      "summaryKey": "faction_neutral_summary",
+      "capitalCityId": "guangling",
+      "initialGold": 0,
+      "initialFood": 0,
+      "playable": false
+    },
+    {
+      "id": "yuan_shao",
+      "nameKey": "faction_yuan_shao",
+      "rulerNameKey": "ruler_yuan_shao",
+      "summaryKey": "faction_yuan_shao_summary",
+      "capitalCityId": "ye",
+      "initialGold": 1400,
+      "initialFood": 2400,
+      "playable": true
+    },
+    {
+      "id": "liu_biao",
+      "nameKey": "faction_liu_biao",
+      "rulerNameKey": "ruler_liu_biao",
+      "summaryKey": "faction_liu_biao_summary",
+      "capitalCityId": "xiangyang",
+      "initialGold": 1200,
+      "initialFood": 2400,
+      "playable": true
+    },
+    {
+      "id": "ma_teng",
+      "nameKey": "faction_ma_teng",
+      "rulerNameKey": "ruler_ma_teng",
+      "summaryKey": "faction_ma_teng_summary",
+      "capitalCityId": "wuwei",
+      "initialGold": 1000,
+      "initialFood": 2400,
+      "playable": true
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+buildscript {
+  repositories {
+    mavenCentral()
+    maven { url 'https://s01.oss.sonatype.org' }
+    gradlePluginPortal()
+    mavenLocal()
+    google()
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+  }
+  dependencies {
+    classpath 'com.android.tools.build:gradle:8.5.1'
+  }
+}
+
+allprojects {
+  apply plugin: 'eclipse'
+  apply plugin: 'idea'
+
+  tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+  }
+
+  idea {
+    module {
+      outputDir file('build/classes/java/main')
+      testOutputDir file('build/classes/java/test')
+    }
+  }
+}
+
+configure(subprojects - project(':android')) {
+  apply plugin: 'java-library'
+  sourceCompatibility = 17
+  targetCompatibility = 17
+  compileJava {
+    options.incremental = true
+  }
+}
+
+def assetsFolder = file("${project.rootDir}/assets/")
+def assetsIndexFile = file("${project.rootDir}/assets/assets.txt")
+def generateAssetsIndex = tasks.register('generateAssetsIndex') {
+  inputs.files(fileTree(assetsFolder) {
+    exclude 'assets.txt'
+  })
+  outputs.file(assetsIndexFile)
+
+  doLast {
+    def assetPaths = fileTree(assetsFolder) {
+      exclude 'assets.txt'
+    }.files.collect {
+      assetsFolder.relativePath(it).replace('\\', '/')
+    }.sort()
+
+    assetsIndexFile.setText(
+      assetPaths.isEmpty() ? '' : assetPaths.join('\n') + '\n',
+      'UTF-8'
+    )
+  }
+}
+
+def requiredLocalFontFiles = [
+  file("${project.rootDir}/assets/font/SourceHanSansCN-Regular.otf"),
+  file("${project.rootDir}/assets/font/SourceHanSansCN-Heavy.otf"),
+  file("${project.rootDir}/assets/skin/default/default.fnt"),
+  file("${project.rootDir}/assets/skin/default/default.png"),
+  file("${project.rootDir}/assets/skin/default/uiskin.png")
+]
+
+def verifyRequiredLocalFonts = tasks.register('verifyRequiredLocalFonts') {
+  group = 'verification'
+  description = '驗證本機中文字型與 Skin 所需的 bitmap 字型資產。'
+  inputs.files(requiredLocalFontFiles)
+
+  doLast {
+    def missingFontPaths = requiredLocalFontFiles.findAll {
+      !it.isFile()
+    }
+    if (!missingFontPaths.isEmpty()) {
+      throw new GradleException(
+        '缺少 Sango 中文字型資產：' +
+          missingFontPaths.collect { project.rootDir.toPath().relativize(it.toPath()) }.join(', ') +
+          '。請先執行 tools/prepare-local-assets-0.6.0.ps1 -SourceProject <原 Sango 專案路徑>。'
+      )
+    }
+  }
+}
+
+configure([project(':core'), project(':lwjgl3')]) {
+  tasks.named('processResources') {
+    dependsOn generateAssetsIndex
+  }
+}
+
+project(':lwjgl3').tasks.named('processResources') {
+  dependsOn verifyRequiredLocalFonts
+}
+
+project(':android').tasks.configureEach { androidTask ->
+  if (androidTask.name == 'preBuild') {
+    androidTask.dependsOn rootProject.tasks.named('verifyRequiredLocalFonts')
+    androidTask.dependsOn rootProject.tasks.named('generateAssetsIndex')
+  }
+}
+
+subprojects {
+  version = '0.6.0'
+  ext.appName = 'Sango'
+  repositories {
+    mavenCentral()
+    maven { url 'https://s01.oss.sonatype.org' }
+    mavenLocal()
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://jitpack.io' }
+  }
+}
+
+eclipse.project.name = 'Sango-parent'

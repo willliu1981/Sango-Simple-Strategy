@@ -1,0 +1,632 @@
+{
+  "maps": [
+    {
+      "id": "prototype_central_region",
+      "nameKey": "map_prototype_central_region",
+      "nodes": [
+        {
+          "cityId": "pingyuan",
+          "x": 0.14,
+          "y": 0.72
+        },
+        {
+          "cityId": "ye",
+          "x": 0.36,
+          "y": 0.84
+        },
+        {
+          "cityId": "chenliu",
+          "x": 0.47,
+          "y": 0.55
+        },
+        {
+          "cityId": "runan",
+          "x": 0.31,
+          "y": 0.24
+        },
+        {
+          "cityId": "guangling",
+          "x": 0.68,
+          "y": 0.39
+        },
+        {
+          "cityId": "wu_commandery",
+          "x": 0.84,
+          "y": 0.14
+        }
+      ],
+      "connections": [
+        {
+          "fromCityId": "pingyuan",
+          "toCityId": "ye",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "ye",
+          "toCityId": "chenliu",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "chenliu",
+          "toCityId": "runan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "chenliu",
+          "toCityId": "guangling",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "runan",
+          "toCityId": "guangling",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "guangling",
+          "toCityId": "wu_commandery",
+          "travelMonths": 1
+        }
+      ],
+      "backgroundAssetPath": "picture/maps/central_region_terrain.jpg"
+    },
+    {
+      "id": "china_42",
+      "nameKey": "map_china_42",
+      "nodes": [
+        {
+          "cityId": "wuwei",
+          "x": 0.09,
+          "y": 0.8
+        },
+        {
+          "cityId": "tianshui",
+          "x": 0.2,
+          "y": 0.64
+        },
+        {
+          "cityId": "anding",
+          "x": 0.25,
+          "y": 0.76
+        },
+        {
+          "cityId": "changan",
+          "x": 0.34,
+          "y": 0.64
+        },
+        {
+          "cityId": "luoyang",
+          "x": 0.46,
+          "y": 0.63
+        },
+        {
+          "cityId": "chenliu",
+          "x": 0.59,
+          "y": 0.6
+        },
+        {
+          "cityId": "xuchang",
+          "x": 0.55,
+          "y": 0.5
+        },
+        {
+          "cityId": "runan",
+          "x": 0.64,
+          "y": 0.4
+        },
+        {
+          "cityId": "wan",
+          "x": 0.43,
+          "y": 0.46
+        },
+        {
+          "cityId": "hanzhong",
+          "x": 0.29,
+          "y": 0.48
+        },
+        {
+          "cityId": "wudu",
+          "x": 0.16,
+          "y": 0.48
+        },
+        {
+          "cityId": "zitong",
+          "x": 0.21,
+          "y": 0.34
+        },
+        {
+          "cityId": "chengdu",
+          "x": 0.13,
+          "y": 0.24
+        },
+        {
+          "cityId": "jiangzhou",
+          "x": 0.31,
+          "y": 0.22
+        },
+        {
+          "cityId": "yongan",
+          "x": 0.38,
+          "y": 0.3
+        },
+        {
+          "cityId": "jianning",
+          "x": 0.22,
+          "y": 0.055
+        },
+        {
+          "cityId": "yunnan",
+          "x": 0.08,
+          "y": 0.06
+        },
+        {
+          "cityId": "jinyang",
+          "x": 0.43,
+          "y": 0.83
+        },
+        {
+          "cityId": "shangdang",
+          "x": 0.48,
+          "y": 0.74
+        },
+        {
+          "cityId": "ye",
+          "x": 0.58,
+          "y": 0.82
+        },
+        {
+          "cityId": "pingyuan",
+          "x": 0.69,
+          "y": 0.82
+        },
+        {
+          "cityId": "nanpi",
+          "x": 0.71,
+          "y": 0.93
+        },
+        {
+          "cityId": "ji",
+          "x": 0.6,
+          "y": 0.95
+        },
+        {
+          "cityId": "beiping",
+          "x": 0.82,
+          "y": 0.94
+        },
+        {
+          "cityId": "xiangping",
+          "x": 0.95,
+          "y": 0.92
+        },
+        {
+          "cityId": "beihai",
+          "x": 0.85,
+          "y": 0.79
+        },
+        {
+          "cityId": "xiaopei",
+          "x": 0.72,
+          "y": 0.67
+        },
+        {
+          "cityId": "xiapi",
+          "x": 0.84,
+          "y": 0.64
+        },
+        {
+          "cityId": "shouchun",
+          "x": 0.76,
+          "y": 0.49
+        },
+        {
+          "cityId": "guangling",
+          "x": 0.91,
+          "y": 0.52
+        },
+        {
+          "cityId": "jianye",
+          "x": 0.82,
+          "y": 0.37
+        },
+        {
+          "cityId": "wu_commandery",
+          "x": 0.94,
+          "y": 0.36
+        },
+        {
+          "cityId": "kuaiji",
+          "x": 0.94,
+          "y": 0.23
+        },
+        {
+          "cityId": "poyang",
+          "x": 0.78,
+          "y": 0.25
+        },
+        {
+          "cityId": "yuzhang",
+          "x": 0.72,
+          "y": 0.13
+        },
+        {
+          "cityId": "xiangyang",
+          "x": 0.5,
+          "y": 0.36
+        },
+        {
+          "cityId": "jiangling",
+          "x": 0.52,
+          "y": 0.25
+        },
+        {
+          "cityId": "jiangxia",
+          "x": 0.63,
+          "y": 0.3
+        },
+        {
+          "cityId": "changsha",
+          "x": 0.58,
+          "y": 0.14
+        },
+        {
+          "cityId": "wuling",
+          "x": 0.43,
+          "y": 0.15
+        },
+        {
+          "cityId": "jiaozhi",
+          "x": 0.44,
+          "y": 0.045
+        },
+        {
+          "cityId": "nanhai",
+          "x": 0.66,
+          "y": 0.045
+        }
+      ],
+      "connections": [
+        {
+          "fromCityId": "wuwei",
+          "toCityId": "anding",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "wuwei",
+          "toCityId": "tianshui",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "anding",
+          "toCityId": "tianshui",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "anding",
+          "toCityId": "changan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "tianshui",
+          "toCityId": "changan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "tianshui",
+          "toCityId": "wudu",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "wudu",
+          "toCityId": "hanzhong",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "wudu",
+          "toCityId": "zitong",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "hanzhong",
+          "toCityId": "changan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "hanzhong",
+          "toCityId": "zitong",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "hanzhong",
+          "toCityId": "wan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "changan",
+          "toCityId": "luoyang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "changan",
+          "toCityId": "jinyang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jinyang",
+          "toCityId": "ji",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jinyang",
+          "toCityId": "shangdang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "shangdang",
+          "toCityId": "ye",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "shangdang",
+          "toCityId": "luoyang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "ye",
+          "toCityId": "pingyuan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "ye",
+          "toCityId": "ji",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "ji",
+          "toCityId": "nanpi",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "ji",
+          "toCityId": "beiping",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "beiping",
+          "toCityId": "xiangping",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "nanpi",
+          "toCityId": "pingyuan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "pingyuan",
+          "toCityId": "beihai",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "pingyuan",
+          "toCityId": "xiaopei",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "ye",
+          "toCityId": "chenliu",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "shangdang",
+          "toCityId": "chenliu",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "luoyang",
+          "toCityId": "chenliu",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "luoyang",
+          "toCityId": "wan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "chenliu",
+          "toCityId": "xuchang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "chenliu",
+          "toCityId": "xiaopei",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "chenliu",
+          "toCityId": "runan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "xuchang",
+          "toCityId": "runan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "xuchang",
+          "toCityId": "wan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "xiaopei",
+          "toCityId": "xiapi",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "beihai",
+          "toCityId": "xiapi",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "xiapi",
+          "toCityId": "guangling",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "xiapi",
+          "toCityId": "shouchun",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "runan",
+          "toCityId": "shouchun",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "runan",
+          "toCityId": "jiangxia",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "runan",
+          "toCityId": "xiangyang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "shouchun",
+          "toCityId": "guangling",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "shouchun",
+          "toCityId": "jianye",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "guangling",
+          "toCityId": "wu_commandery",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jianye",
+          "toCityId": "wu_commandery",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jianye",
+          "toCityId": "poyang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "wu_commandery",
+          "toCityId": "kuaiji",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "kuaiji",
+          "toCityId": "yuzhang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "poyang",
+          "toCityId": "yuzhang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "poyang",
+          "toCityId": "jiangxia",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "wan",
+          "toCityId": "xiangyang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "xiangyang",
+          "toCityId": "jiangling",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "xiangyang",
+          "toCityId": "jiangxia",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jiangling",
+          "toCityId": "jiangxia",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jiangling",
+          "toCityId": "yongan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jiangling",
+          "toCityId": "wuling",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jiangxia",
+          "toCityId": "changsha",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "changsha",
+          "toCityId": "wuling",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "changsha",
+          "toCityId": "yuzhang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "yuzhang",
+          "toCityId": "nanhai",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "nanhai",
+          "toCityId": "jiaozhi",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "wuling",
+          "toCityId": "jiaozhi",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "yongan",
+          "toCityId": "jiangzhou",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jiangzhou",
+          "toCityId": "chengdu",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "chengdu",
+          "toCityId": "zitong",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jiangzhou",
+          "toCityId": "jianning",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jianning",
+          "toCityId": "yunnan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jianning",
+          "toCityId": "jiaozhi",
+          "travelMonths": 1
+        }
+      ],
+      "backgroundAssetPath": "picture/maps/china_42_terrain.jpg"
+    }
+  ]
+}
