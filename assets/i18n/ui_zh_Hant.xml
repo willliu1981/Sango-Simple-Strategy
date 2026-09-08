@@ -28,7 +28,8 @@
         <entry name="context_help_close" value="關閉" />
         <entry name="button_world_battle_reports_format" value="天下戰報（未讀 {0}）" />
         <entry name="map_status_no_transfer_origin" value="沒有可沿道路運兵至此的我方城池。" />
-        <entry name="dispatch_transfer_single_origin" value="運兵使用目前來源" />
+        <entry name="dispatch_sort_shortest" value="排序：路程最短" />
+        <entry name="dispatch_sort_most_troops" value="排序：可派兵最多" />
         <entry name="dispatch_remove_origin" value="移除此城" />
         <entry name="dispatch_add_origin" value="加入此城" />
         <entry name="dispatch_transfer_help_button" value="運兵說明" />
@@ -37,7 +38,9 @@
         <entry name="dispatch_selected_origins_empty" value="已選來源：尚未加入任何城池。" />
         <entry name="dispatch_selected_origins_format" value="已選來源：\n{0}" />
         <entry name="dispatch_summary_format" value="合計 {0} 城／{1} 兵｜費用 {2} AP、{3} 糧｜集結 {4} 個月（最慢路程）" />
+        <entry name="dispatch_transfer_summary_format" value="本次運兵 {0} 兵｜費用 1 AP、100 糧｜行程 {1} 個月" />
         <entry name="dispatch_status_ready" value="資源足夠；確認後所有來源將編入同一批行動。" />
+        <entry name="dispatch_transfer_status_ready" value="資源足夠；確認後將由目前來源出發。" />
         <entry name="dispatch_status_select_origin" value="請至少加入一座來源城。" />
         <entry name="dispatch_status_invalid_origin_amount_format" value="{0} 的派兵數需至少 400、以 100 遞增，並保留 400 守軍。" />
         <entry name="dispatch_status_insufficient_ap_format" value="行動力不足：本次需 {0} AP，目前剩餘 {1}。" />
@@ -230,7 +233,7 @@
         <entry name="map_intel_exact_format" value="兵力：{0}｜人口：{1}｜情報：已掌握" description="map_intel_exact_format" />
         <entry name="map_intel_estimate_format" value="兵力：約 {0}～{1}｜情報不足；偵察可取得三回合精確情報。" description="map_intel_estimate_format" />
         <entry name="map_stats_unknown" value="城防、訓練、士氣與內政狀態尚未掌握。" description="map_stats_unknown" />
-        <entry name="map_stats_format" value="城防 {0}｜訓練 {1}｜士氣 {5}　農業 {2}｜商業 {3}｜治水 {4}" description="map_stats_format" />
+        <entry name="map_stats_format" value="城防 {0}｜訓練 {1}｜士氣 {2}｜民心 {3}　農業 {4}｜商業 {5}｜治水 {6}" description="map_stats_format" />
         <entry name="map_route_owned" value="此城屬於我方；目前沒有可運兵的我方城池。" description="map_route_owned" />
         <entry name="map_route_owned_transfer_format" value="可由 {0} 運兵至此，行程 {1} 個月。派兵消耗 1 行動力與 100 糧。" description="map_route_owned_transfer_format" />
         <entry name="map_route_not_adjacent" value="目前沒有與此城直接相鄰的我方城池，無法偵察或出征。" description="map_route_not_adjacent" />
@@ -312,6 +315,7 @@
         <entry name="button_dispatch_origin_previous" value="上一城" description="button_dispatch_origin_previous" />
         <entry name="button_dispatch_origin_next" value="下一城" description="button_dispatch_origin_next" />
         <entry name="dispatch_route_format" value="目標：{1}｜目前來源：{0}｜路程：{2} 個月" description="dispatch_route_format" />
+        <entry name="dispatch_transfer_route_format" value="目標：{1}｜目前來源：{0}｜路程：{2} 個月｜可派兵：{3}" description="dispatch_transfer_route_format" />
         <entry name="dispatch_amount_placeholder" value="派兵數量：400" description="dispatch_amount_placeholder" />
         <entry name="dispatch_amount_format" value="目前來源派兵：{0}" description="dispatch_amount_format" />
         <entry name="dispatch_amount_hint" value="每次增減 100；至少派出 400，且出發城須保留 400 守軍，單次上限 10,000。" description="dispatch_amount_hint" />
@@ -541,9 +545,11 @@
         <entry name="training_no_troops" value="城內沒有士兵，不能執行訓練。" description="training_no_troops" />
         <entry name="button_music_player" value="音樂鑑賞" description="button_music_player" />
         <entry name="music_player_title" value="四時之聲 · 音樂鑑賞" description="music_player_title" />
-        <entry name="music_player_description" value="自由欣賞四季曲目，不推進月份、不消耗行動力。返回戰局時恢復當季 BGM。" description="music_player_description" />
+        <entry name="music_player_description" value="自由欣賞遊戲曲目，不推進月份、不消耗行動力。返回主選單時恢復大廳 BGM。" description="music_player_description" />
         <entry name="music_lobby" value="群雄序曲" description="music_lobby" />
         <entry name="music_menu" value="主選單" description="music_menu" />
+        <entry name="music_strategy" value="帷幄之聲" description="music_strategy" />
+        <entry name="music_strategy_scene" value="戰略主題" description="music_strategy_scene" />
         <entry name="music_spring" value="春風入城" description="music_spring" />
         <entry name="music_summer" value="炎日運籌" description="music_summer" />
         <entry name="music_autumn" value="暮秋望陣" description="music_autumn" />
@@ -552,19 +558,25 @@
         <entry name="season_summer" value="夏 · 四月至六月" description="season_summer" />
         <entry name="season_autumn" value="秋 · 七月至九月" description="season_autumn" />
         <entry name="season_winter" value="冬 · 十月至十二月" description="season_winter" />
-        <entry name="music_track_spring" value="春 · 春風入城" description="music_track_spring" />
-        <entry name="music_track_summer" value="夏 · 炎日運籌" description="music_track_summer" />
-        <entry name="music_track_autumn" value="秋 · 暮秋望陣" description="music_track_autumn" />
-        <entry name="music_track_winter" value="冬 · 寒夜圖謀" description="music_track_winter" />
+        <entry name="music_track_lobby" value="群雄序曲" description="music_track_lobby" />
+        <entry name="music_track_strategy" value="帷幄之聲" description="music_track_strategy" />
+        <entry name="music_track_spring" value="春風入城" description="music_track_spring" />
+        <entry name="music_track_summer" value="炎日運籌" description="music_track_summer" />
+        <entry name="music_track_autumn" value="暮秋望陣" description="music_track_autumn" />
+        <entry name="music_track_winter" value="寒夜圖謀" description="music_track_winter" />
         <entry name="music_previous" value="上一首" description="music_previous" />
         <entry name="music_next" value="下一首" description="music_next" />
         <entry name="music_play" value="播放" description="music_play" />
         <entry name="music_pause" value="暫停" description="music_pause" />
-        <entry name="music_enabled" value="音樂：開啟" description="music_enabled" />
-        <entry name="music_disabled" value="音樂：關閉" description="music_disabled" />
+        <entry name="music_mode_play_once" value="單曲播放" description="music_mode_play_once" />
+        <entry name="music_mode_repeat_one" value="單曲循環" description="music_mode_repeat_one" />
+        <entry name="music_mode_repeat_all" value="全部循環" description="music_mode_repeat_all" />
         <entry name="music_load_failed" value="音樂載入失敗，請重新選曲。" description="music_load_failed" />
         <entry name="music_muted_note" value="音樂已關閉或音量為零，可在設定調整。" description="music_muted_note" />
+        <entry name="music_completed_note" value="目前曲目已播放完畢。" description="music_completed_note" />
         <entry name="music_paused_note" value="已暫停；播放會由目前位置繼續。" description="music_paused_note" />
-        <entry name="music_playing_note" value="單曲循環播放；切換曲目以兩秒淡入淡出銜接。" description="music_playing_note" />
+        <entry name="music_play_once_note" value="播放完目前曲目後停止。" description="music_play_once_note" />
+        <entry name="music_repeat_one_note" value="單曲循環播放；切換曲目以兩秒淡入淡出銜接。" description="music_repeat_one_note" />
+        <entry name="music_repeat_all_note" value="依清單順序播放，最後一首結束後回到第一首。" description="music_repeat_all_note" />
     </scope>
 </i18n>

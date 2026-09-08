@@ -4,6 +4,7 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.badlogic.gdx.audio.Music;
@@ -16,7 +17,9 @@ public final class MusicPlaybackController {
     private final Function<MusicTrack, Music> loader;
     private final float fadeSeconds;
     private final Map<MusicTrack, Voice> voices = new EnumMap<>(MusicTrack.class);
-    private MusicTrack requestedTrack;
+    private volatile MusicTrack requestedTrack;
+    private volatile boolean requestedLooping = true;
+    private volatile Consumer<MusicTrack> requestedCompletionListener;
     private MusicTrack failedTrack;
     private boolean transitionPending;
     private boolean platformPaused;
@@ -33,12 +36,55 @@ public final class MusicPlaybackController {
     }
 
     public void request(MusicTrack track) {
-        if (disposed || track == null || requestedTrack == track) {
+        request(track, true, null);
+    }
+
+    public void request(MusicTrack track, boolean looping, Consumer<MusicTrack> completionListener) {
+        if (disposed || track == null) {
             return;
         }
+        boolean trackChanged = requestedTrack != track;
         requestedTrack = track;
+        requestedLooping = looping;
+        requestedCompletionListener = completionListener;
         failedTrack = null;
-        transitionPending = true;
+        if (trackChanged) {
+            transitionPending = true;
+        } else {
+            configureRequestedVoice();
+            Voice voice = voices.get(requestedTrack);
+            if (voice != null && voice.completed) {
+                restartRequestedTrack();
+            }
+        }
+    }
+
+    public void setRequestedTrackBehavior(boolean looping, Consumer<MusicTrack> completionListener) {
+        if (disposed || requestedTrack == null) {
+            return;
+        }
+        requestedLooping = looping;
+        requestedCompletionListener = completionListener;
+        configureRequestedVoice();
+    }
+
+    public void restartRequestedTrack() {
+        if (disposed || requestedTrack == null) {
+            return;
+        }
+        Voice voice = voices.get(requestedTrack);
+        if (voice == null) {
+            transitionPending = true;
+            return;
+        }
+        try {
+            voice.music.setPosition(0f);
+            voice.completed = false;
+        } catch (RuntimeException exception) {
+            failedTrack = requestedTrack;
+            release(voice.music);
+            voices.remove(requestedTrack);
+        }
     }
 
     public void retryRequestedTrack() {
@@ -76,7 +122,7 @@ public final class MusicPlaybackController {
             try {
                 voice.music.setVolume(Math.max(0f, Math.min(1f,
                     voice.gain * volume * entry.getKey().getOutputGain())));
-                if (!voice.music.isPlaying()) {
+                if (!voice.completed && !voice.music.isPlaying()) {
                     voice.music.play();
                 }
             } catch (RuntimeException exception) {
@@ -98,9 +144,8 @@ public final class MusicPlaybackController {
                     failedTrack = requestedTrack;
                     return;
                 }
-                loadedMusic.setLooping(true);
                 loadedMusic.setVolume(0f);
-                requestedVoice = new Voice(loadedMusic);
+                requestedVoice = new Voice(requestedTrack, loadedMusic);
                 voices.put(requestedTrack, requestedVoice);
             } catch (RuntimeException exception) {
                 failedTrack = requestedTrack;
@@ -110,11 +155,35 @@ public final class MusicPlaybackController {
                 return;
             }
         }
+        configureRequestedVoice();
         transitionElapsed = 0f;
         for (Map.Entry<MusicTrack, Voice> entry : voices.entrySet()) {
             Voice voice = entry.getValue();
             voice.startGain = voice.gain;
             voice.targetGain = entry.getKey() == requestedTrack ? 1f : 0f;
+        }
+    }
+
+    private void configureRequestedVoice() {
+        Voice voice = voices.get(requestedTrack);
+        if (voice == null) {
+            return;
+        }
+        try {
+            voice.music.setLooping(requestedLooping);
+            voice.music.setOnCompletionListener(music -> {
+                if (requestedTrack != voice.track || requestedLooping) {
+                    return;
+                }
+                voice.completed = true;
+                if (requestedCompletionListener != null) {
+                    requestedCompletionListener.accept(voice.track);
+                }
+            });
+        } catch (RuntimeException exception) {
+            failedTrack = requestedTrack;
+            release(voice.music);
+            voices.remove(requestedTrack);
         }
     }
 
@@ -207,12 +276,15 @@ public final class MusicPlaybackController {
     }
 
     private static final class Voice {
+        private final MusicTrack track;
         private final Music music;
+        private volatile boolean completed;
         private float gain;
         private float startGain;
         private float targetGain;
 
-        private Voice(Music music) {
+        private Voice(MusicTrack track, Music music) {
+            this.track = track;
             this.music = music;
         }
     }

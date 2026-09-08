@@ -93,8 +93,16 @@ tasks.register('runMusicPlaybackSmokeTest', JavaExec) {
   args rootProject.file('assets').absolutePath
 }
 
+tasks.register('runDispatchOriginOrderingSmokeTest', JavaExec) {
+  group = 'verification'
+  description = '驗證運兵來源排序與穩定平手順序。'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.validation.DispatchOriginOrderingSmokeTest')
+}
+
 tasks.named('check') {
-  dependsOn 'runCampaignGrowthSmokeTest', 'runMusicPlaybackSmokeTest'
+  dependsOn 'runCampaignGrowthSmokeTest', 'runMusicPlaybackSmokeTest', 'runDispatchOriginOrderingSmokeTest'
 }
 
 tasks.register('runMapInteractionSmokeTest', JavaExec) {

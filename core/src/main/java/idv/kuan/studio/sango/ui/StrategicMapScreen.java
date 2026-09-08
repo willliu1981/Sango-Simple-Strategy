@@ -58,6 +58,7 @@ import idv.kuan.studio.sango.ui.support.ContextHelpOverlay;
 import idv.kuan.studio.sango.ui.support.ScreenBackground;
 import idv.kuan.studio.sango.ui.support.MapTerrainBackground;
 import idv.kuan.studio.sango.ui.support.NationalOrderTextFormatter;
+import idv.kuan.studio.sango.ui.support.TransferOriginOrder;
 import idv.kuan.studio.sango.ui.theme.MapNodeTone;
 import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
 import idv.kuan.studio.sango.ui.widget.StrategicMapWidget;
@@ -90,6 +91,7 @@ public final class StrategicMapScreen extends SuiScreen {
     private Color currentStatusColor = STATUS_NORMAL_COLOR;
     private String pendingOriginCityId;
     private String pendingTargetCityId;
+    private TransferOriginOrder pendingTransferOriginOrder = TransferOriginOrder.SHORTEST_TRAVEL;
     private final Map<String, Integer> pendingDispatchAmounts = new LinkedHashMap<>();
     private final List<String> pendingSelectedOriginCityIds = new ArrayList<>();
 
@@ -583,9 +585,13 @@ public final class StrategicMapScreen extends SuiScreen {
         boolean exactIntel = hasExactIntel(gameState, selectedCityState);
         boolean playerOwned = gameState.playerFactionId.equals(selectedCityState.ownerFactionId);
         List<CityState> dispatchOrigins = playerOwned
-            ? findTransferPlayerCities(gameState, selectedCityState.cityId)
+            ? orderedTransferOrigins(
+                gameState, selectedCityState.cityId, TransferOriginOrder.SHORTEST_TRAVEL
+            )
             : findAdjacentPlayerCities(gameState, selectedCityState.cityId);
-        CityState dispatchOriginCityState = findBestDispatchOrigin(dispatchOrigins);
+        CityState dispatchOriginCityState = playerOwned
+            ? (dispatchOrigins.isEmpty() ? null : dispatchOrigins.get(0))
+            : findBestDispatchOrigin(dispatchOrigins);
         CityState scoutOriginCityState = playerOwned
             ? null : findAdjacentPlayerCityForScout(gameState, selectedCityState.cityId);
         CityState routeOriginCityState = scoutOriginCityState == null
@@ -665,13 +671,14 @@ public final class StrategicMapScreen extends SuiScreen {
         }
         return text(
             "map_stats_format",
-            "城防 {0}｜訓練 {1}｜農業 {2}｜商業 {3}｜治水 {4}｜士氣 {5}",
+            "城防 {0}｜訓練 {1}｜士氣 {2}｜民心 {3}｜農業 {4}｜商業 {5}｜治水 {6}",
             cityState.defense,
             cityState.training,
+            cityState.morale,
+            cityState.publicOrder,
             cityState.agriculture,
             cityState.commerce,
-            cityState.waterControl,
-            cityState.morale
+            cityState.waterControl
         );
     }
 
@@ -764,6 +771,18 @@ public final class StrategicMapScreen extends SuiScreen {
             }
         }
         return candidates;
+    }
+
+    private List<CityState> orderedTransferOrigins(
+        GameState gameState,
+        String targetCityId,
+        TransferOriginOrder order
+    ) {
+        return order.sort(
+            findTransferPlayerCities(gameState, targetCityId),
+            city -> travelMonths(gameState, city.cityId, targetCityId),
+            city -> SangoServices.launchExpeditionCommand().calculateDispatchTroops(city)
+        );
     }
 
     private void refreshArmySummary(GameState gameState) {
@@ -863,10 +882,15 @@ public final class StrategicMapScreen extends SuiScreen {
         boolean transfer = currentState.playerFactionId.equals(
             currentState.requireCityState(targetCityId).ownerFactionId
         );
+        if (transfer) {
+            pendingTransferOriginOrder = TransferOriginOrder.SHORTEST_TRAVEL;
+        }
         List<CityState> candidates = transfer
-            ? findTransferPlayerCities(currentState, targetCityId)
+            ? orderedTransferOrigins(currentState, targetCityId, pendingTransferOriginOrder)
             : findAdjacentPlayerCities(currentState, targetCityId);
-        CityState originCityState = findBestDispatchOrigin(candidates);
+        CityState originCityState = transfer
+            ? (candidates.isEmpty() ? null : candidates.get(0))
+            : findBestDispatchOrigin(candidates);
         if (originCityState == null) {
             setStatus(
                 transfer
@@ -922,7 +946,19 @@ public final class StrategicMapScreen extends SuiScreen {
 
     private void toggleDispatchOrigin() {
         GameState currentState = requireCurrentState();
-        if (currentState == null || pendingOriginCityId == null || isPendingTransfer(currentState)) {
+        if (currentState == null || pendingOriginCityId == null) {
+            return;
+        }
+        if (isPendingTransfer(currentState)) {
+            pendingTransferOriginOrder = pendingTransferOriginOrder.next();
+            List<CityState> origins = pendingOriginCandidates(currentState);
+            if (!origins.isEmpty()) {
+                pendingOriginCityId = origins.get(0).cityId;
+                pendingSelectedOriginCityIds.clear();
+                pendingSelectedOriginCityIds.add(pendingOriginCityId);
+            }
+            refreshDispatchDetails();
+            SangoServices.audio().playSound(SoundEffect.UI_CLICK);
             return;
         }
         if (pendingSelectedOriginCityIds.contains(pendingOriginCityId)) {
@@ -946,9 +982,15 @@ public final class StrategicMapScreen extends SuiScreen {
             ? text("dispatch_transfer_title", "運兵")
             : text("dispatch_expedition_title", "聯合出征"));
         label("dispatch_route_label").setText(text(
-            "dispatch_route_format", "目前來源：{0}｜目標：{1}｜路程：{2} 個月",
+            transfer ? "dispatch_transfer_route_format" : "dispatch_route_format",
+            transfer
+                ? "目標：{1}｜目前來源：{0}｜路程：{2} 個月｜可派兵：{3}"
+                : "目標：{1}｜目前來源：{0}｜路程：{2} 個月",
             cityName(pendingOriginCityId), cityName(pendingTargetCityId),
-            travelMonths(currentState, pendingOriginCityId, pendingTargetCityId)
+            travelMonths(currentState, pendingOriginCityId, pendingTargetCityId),
+            numberFormat.format(SangoServices.launchExpeditionCommand().calculateDispatchTroops(
+                currentState.requireCityState(pendingOriginCityId)
+            ))
         ));
         label("dispatch_origin_label").setText(text(
             "dispatch_origin_selection_format", "來源：{0}（{1}/{2}）",
@@ -958,9 +1000,11 @@ public final class StrategicMapScreen extends SuiScreen {
         setButtonEnabled(button("dispatch_origin_next_button"), origins.size() >= 2);
         TextButton toggleButton = button("dispatch_origin_toggle_button");
         if (transfer) {
-            toggleButton.setText(text("dispatch_transfer_single_origin", "運兵使用目前來源"));
+            toggleButton.setText(pendingTransferOriginOrder == TransferOriginOrder.SHORTEST_TRAVEL
+                ? text("dispatch_sort_shortest", "排序：路程最短")
+                : text("dispatch_sort_most_troops", "排序：可派兵最多"));
             SangoUiStyles.applySecondaryButton(toggleButton);
-            setButtonEnabled(toggleButton, false);
+            setButtonEnabled(toggleButton, origins.size() >= 2);
         } else {
             boolean selected = pendingSelectedOriginCityIds.contains(pendingOriginCityId);
             toggleButton.setText(selected
@@ -1045,18 +1089,27 @@ public final class StrategicMapScreen extends SuiScreen {
             ? text("dispatch_selected_origins_empty", "已選來源：尚未加入任何城池。")
             : text("dispatch_selected_origins_format", "已選來源：\n{0}", selectedLines));
         int orderCount = selectedOrigins.size();
-        label("dispatch_summary_label").setText(text(
-            "dispatch_summary_format",
-            "合計 {0} 城／{1} 兵｜費用 {2} AP、{3} 糧｜集結 {4} 個月（最慢路程）",
-            orderCount,
-            numberFormat.format(totalTroops),
-            orderCount,
-            numberFormat.format(orderCount * LaunchExpeditionCommand.FOOD_COST),
-            slowestTravelMonths
-        ));
+        boolean transfer = isPendingTransfer(currentState);
+        label("dispatch_summary_label").setText(transfer
+            ? text(
+                "dispatch_transfer_summary_format",
+                "本次運兵 {0} 兵｜費用 1 AP、100 糧｜行程 {1} 個月",
+                numberFormat.format(totalTroops), slowestTravelMonths
+            )
+            : text(
+                "dispatch_summary_format",
+                "合計 {0} 城／{1} 兵｜費用 {2} AP、{3} 糧｜集結 {4} 個月（最慢路程）",
+                orderCount,
+                numberFormat.format(totalTroops),
+                orderCount,
+                numberFormat.format(orderCount * LaunchExpeditionCommand.FOOD_COST),
+                slowestTravelMonths
+            ));
         String validationMessage = dispatchValidationMessage(currentState, selectedOrigins);
         label("dispatch_status_label").setText(validationMessage == null
-            ? text("dispatch_status_ready", "資源足夠；確認後所有來源將編入同一批行動。")
+            ? transfer
+                ? text("dispatch_transfer_status_ready", "資源足夠；確認後將由目前來源出發。")
+                : text("dispatch_status_ready", "資源足夠；確認後所有來源將編入同一批行動。")
             : validationMessage);
         label("dispatch_status_label").setColor(
             validationMessage == null ? STATUS_SUCCESS_COLOR : STATUS_ERROR_COLOR
@@ -1115,7 +1168,7 @@ public final class StrategicMapScreen extends SuiScreen {
 
     private List<CityState> pendingOriginCandidates(GameState gameState) {
         return isPendingTransfer(gameState)
-            ? findTransferPlayerCities(gameState, pendingTargetCityId)
+            ? orderedTransferOrigins(gameState, pendingTargetCityId, pendingTransferOriginOrder)
             : findAdjacentPlayerCities(gameState, pendingTargetCityId);
     }
 

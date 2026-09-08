@@ -131,9 +131,9 @@
             <row />
             <table width="1170" height="60">
                 <textButton id="dispatch_origin_previous_button" fontSize="27" width="210" height="56">${text:button_dispatch_origin_previous}</textButton>
-                <label id="dispatch_origin_label" fontSize="25" width="494" height="56" align="center" textAlign="center">${text:dispatch_origin_selection_placeholder}</label>
+                <label id="dispatch_origin_label" fontSize="25" width="414" height="56" align="center" textAlign="center">${text:dispatch_origin_selection_placeholder}</label>
                 <textButton id="dispatch_origin_next_button" fontSize="27" width="210" height="56" padLeft="14">${text:button_dispatch_origin_next}</textButton>
-                <textButton id="dispatch_origin_toggle_button" fontSize="25" width="200" height="56" padLeft="14">加入此城</textButton>
+                <textButton id="dispatch_origin_toggle_button" fontSize="23" width="280" height="56" padLeft="14">加入此城</textButton>
             </table>
             <row />
             <label id="dispatch_amount_label" fontKey="title" fontSize="37" width="1170" height="54"

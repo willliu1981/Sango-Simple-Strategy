@@ -9,13 +9,17 @@
             <row />
             <table width="1650" height="620">
                 <table width="610" height="600" pad="24" backgroundColor="0.023,0.020,0.018,1">
-                    <textButton id="music_track_0_button" fontSize="32" width="550" height="112">${text:music_track_spring}</textButton>
+                    <textButton id="music_track_0_button" fontSize="30" width="550" height="82">${text:music_track_lobby}</textButton>
                     <row />
-                    <textButton id="music_track_1_button" fontSize="32" width="550" height="112" padTop="18">${text:music_track_summer}</textButton>
+                    <textButton id="music_track_1_button" fontSize="30" width="550" height="82" padTop="10">${text:music_track_strategy}</textButton>
                     <row />
-                    <textButton id="music_track_2_button" fontSize="32" width="550" height="112" padTop="18">${text:music_track_autumn}</textButton>
+                    <textButton id="music_track_2_button" fontSize="30" width="550" height="82" padTop="10">${text:music_track_spring}</textButton>
                     <row />
-                    <textButton id="music_track_3_button" fontSize="32" width="550" height="112" padTop="18">${text:music_track_winter}</textButton>
+                    <textButton id="music_track_3_button" fontSize="30" width="550" height="82" padTop="10">${text:music_track_summer}</textButton>
+                    <row />
+                    <textButton id="music_track_4_button" fontSize="30" width="550" height="82" padTop="10">${text:music_track_autumn}</textButton>
+                    <row />
+                    <textButton id="music_track_5_button" fontSize="30" width="550" height="82" padTop="10">${text:music_track_winter}</textButton>
                 </table>
                 <table width="32"></table>
                 <table width="1000" height="600" pad="32" backgroundColor="0.064,0.050,0.039,0.98">
@@ -33,12 +37,12 @@
                     </table>
                     <row />
                     <label id="music_status_label" fontSize="26" width="900" height="90" wrap="true"
-                        color="0.73,0.69,0.60,1">${text:music_playing_note}</label>
+                        color="0.73,0.69,0.60,1">${text:music_repeat_one_note}</label>
                 </table>
             </table>
             <row />
             <table width="1640" height="106" padTop="14">
-                <textButton id="music_enable_button" fontSize="31" width="420" height="80">${text:music_enabled}</textButton>
+                <textButton id="music_mode_button" fontSize="31" width="420" height="80">${text:music_mode_repeat_one}</textButton>
                 <table width="760"></table>
                 <textButton id="music_back_button" fontSize="36" width="460" height="80">${text:button_back}</textButton>
             </table>

@@ -15,6 +15,8 @@ public final class SangoAudioService {
     private final MusicPlaybackController playback = new MusicPlaybackController(this::loadMusic, CROSSFADE_SECONDS);
     private final Map<SoundEffect, Sound> soundByEffect = new EnumMap<>(SoundEffect.class);
     private boolean galleryActive;
+    private volatile MusicTrack completedGalleryTrack;
+    private volatile boolean galleryCompletionPending;
     private boolean paused;
     private boolean disposed;
 
@@ -24,33 +26,61 @@ public final class SangoAudioService {
         }
     }
 
-    public void enterMusicPlayer(MusicTrack musicTrack) {
-        if (disposed || musicTrack == null || musicTrack == MusicTrack.LOBBY) {
+    public void enterMusicPlayer(MusicTrack musicTrack, boolean loopTrack) {
+        if (disposed || musicTrack == null) {
             return;
         }
         galleryActive = true;
+        completedGalleryTrack = null;
+        galleryCompletionPending = false;
         playback.setUserPaused(false);
-        playback.request(musicTrack);
+        playback.request(musicTrack, loopTrack, this::onGalleryTrackCompleted);
         playback.retryRequestedTrack();
+    }
+
+    public void setMusicPlayerLooping(boolean loopTrack) {
+        if (galleryActive) {
+            playback.setRequestedTrackBehavior(loopTrack, this::onGalleryTrackCompleted);
+        }
     }
 
     public void exitMusicPlayer(MusicTrack restoreTrack) {
         galleryActive = false;
+        completedGalleryTrack = null;
+        galleryCompletionPending = false;
         playback.setUserPaused(false);
         playback.request(restoreTrack);
     }
 
     public void toggleMusicPlayerPause() {
         if (galleryActive) {
-            playback.setUserPaused(!playback.isUserPaused());
+            boolean resumePlayback = isMusicPlayerPaused();
+            if (resumePlayback && completedGalleryTrack != null) {
+                completedGalleryTrack = null;
+                galleryCompletionPending = false;
+                playback.restartRequestedTrack();
+            }
+            playback.setUserPaused(!resumePlayback);
             if (!playback.isUserPaused()) {
                 playback.retryRequestedTrack();
             }
         }
     }
 
+    public MusicTrack pollCompletedMusicPlayerTrack() {
+        if (!galleryCompletionPending) {
+            return null;
+        }
+        galleryCompletionPending = false;
+        return completedGalleryTrack;
+    }
+
+    public boolean hasMusicPlayerCompleted() {
+        return completedGalleryTrack != null;
+    }
+
     public boolean isMusicPlayerPaused() {
-        return playback.isUserPaused();
+        return playback.isUserPaused() || completedGalleryTrack != null;
     }
 
     public boolean hasMusicLoadFailure() {
@@ -112,6 +142,14 @@ public final class SangoAudioService {
             logAudioError("無法載入背景音樂：" + musicTrack.getAssetPath(), exception);
             return null;
         }
+    }
+
+    private void onGalleryTrackCompleted(MusicTrack musicTrack) {
+        if (!galleryActive || playback.requestedTrack() != musicTrack) {
+            return;
+        }
+        completedGalleryTrack = musicTrack;
+        galleryCompletionPending = true;
     }
 
     private Sound loadSound(SoundEffect soundEffect) {

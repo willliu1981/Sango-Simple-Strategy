@@ -95,8 +95,8 @@ public final class UiResourceSmokeTest {
             check(factionScreenIds.contains("faction_" + i + "_button"), "六個勢力按鈕 ID");
         }
         Set<String> musicScreenIds = actorIdsByXml.get("ui/music_player.xml");
-        for (int i = 0; i < 4; i++) {
-            check(musicScreenIds.contains("music_track_" + i + "_button"), "四首動態曲目按鈕 ID");
+        for (int i = 0; i < 6; i++) {
+            check(musicScreenIds.contains("music_track_" + i + "_button"), "六首動態曲目按鈕 ID");
         }
         String cityXml = Files.readString(assetsPath.resolve("ui/city.xml"));
         check(cityXml.indexOf("id=\"city_settings_button\"") < cityXml.indexOf("id=\"return_map_button\""),

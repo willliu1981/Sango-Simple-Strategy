@@ -22,10 +22,11 @@ import idv.kuan.studio.sango.ui.support.ScreenBackground;
 import idv.kuan.studio.sango.ui.support.ScreenMusic;
 import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
 
-/** 不推進月份、不消耗 AP 的四季音樂鑑賞。 */
+/** 不推進月份、不消耗 AP 的音樂鑑賞。 */
 public final class MusicPlayerScreen extends SuiScreen {
     private final ScreenBackground background = new ScreenBackground();
-    private final MusicTrack[] tracks = MusicTrack.seasonalTracks();
+    private final MusicTrack[] tracks = MusicTrack.galleryTracks();
+    private PlaybackMode playbackMode = PlaybackMode.REPEAT_ONE;
     private int selectedIndex;
     private float refreshTimer;
 
@@ -46,16 +47,16 @@ public final class MusicPlayerScreen extends SuiScreen {
         SangoUiStyles.applyPrimaryButton(button("music_play_pause_button"));
         SangoUiStyles.applySecondaryButton(button("music_next_button"));
         SangoUiStyles.applySecondaryButton(button("music_back_button"));
-        SangoUiStyles.applySecondaryButton(button("music_enable_button"));
+        SangoUiStyles.applySecondaryButton(button("music_mode_button"));
         ui.onClick("music_previous_button", () -> selectTrack((selectedIndex + tracks.length - 1) % tracks.length));
         ui.onClick("music_next_button", () -> selectTrack((selectedIndex + 1) % tracks.length));
         ui.onClick("music_play_pause_button", () -> {
             SangoServices.audio().toggleMusicPlayerPause();
             refreshView();
         });
-        ui.onClick("music_enable_button", () -> {
-            SangoPreferences.setMusicEnabled(!SangoPreferences.isMusicEnabled());
-            SangoServices.audio().applyPreferences();
+        ui.onClick("music_mode_button", () -> {
+            playbackMode = playbackMode.next();
+            SangoServices.audio().setMusicPlayerLooping(playbackMode == PlaybackMode.REPEAT_ONE);
             refreshView();
         });
         ui.onClick("music_back_button", this::returnToPreviousScreen);
@@ -68,6 +69,11 @@ public final class MusicPlayerScreen extends SuiScreen {
 
     @Override
     protected void beforeActDraw(float delta) {
+        MusicTrack completedTrack = SangoServices.audio().pollCompletedMusicPlayerTrack();
+        if (completedTrack != null && playbackMode == PlaybackMode.REPEAT_ALL
+            && completedTrack == tracks[selectedIndex]) {
+            selectTrack((selectedIndex + 1) % tracks.length);
+        }
         refreshTimer += delta;
         if (refreshTimer >= 0.2f) {
             refreshTimer = 0f;
@@ -77,7 +83,9 @@ public final class MusicPlayerScreen extends SuiScreen {
 
     private void selectTrack(int trackIndex) {
         selectedIndex = trackIndex;
-        SangoServices.audio().enterMusicPlayer(tracks[selectedIndex]);
+        SangoServices.audio().enterMusicPlayer(
+            tracks[selectedIndex], playbackMode == PlaybackMode.REPEAT_ONE
+        );
         for (int i = 0; i < tracks.length; i++) {
             TextButton trackButton = button("music_track_" + i + "_button");
             if (i == selectedIndex) {
@@ -102,16 +110,19 @@ public final class MusicPlayerScreen extends SuiScreen {
         button("music_play_pause_button").setText(paused
             ? text("music_play", "播放") : text("music_pause", "暫停"));
         boolean enabled = SangoPreferences.isMusicEnabled();
-        button("music_enable_button").setText(enabled
-            ? text("music_enabled", "音樂：開啟") : text("music_disabled", "音樂：關閉"));
+        button("music_mode_button").setText(text(playbackMode.textKey, playbackMode.fallbackText));
         if (SangoServices.audio().hasMusicLoadFailure()) {
             label("music_status_label").setText(text("music_load_failed", "音樂載入失敗，請重新選曲。"));
         } else if (!enabled || SangoPreferences.getMusicVolume() == 0f) {
             label("music_status_label").setText(text("music_muted_note", "音樂已關閉或音量為零，可在設定調整。"));
+        } else if (SangoServices.audio().hasMusicPlayerCompleted()) {
+            label("music_status_label").setText(text("music_completed_note", "目前曲目已播放完畢。"));
         } else if (paused) {
             label("music_status_label").setText(text("music_paused_note", "已暫停；播放會由目前位置繼續。"));
         } else {
-            label("music_status_label").setText(text("music_playing_note", "單曲循環播放；切換曲目以兩秒淡入淡出銜接。"));
+            label("music_status_label").setText(text(
+                playbackMode.statusKey, playbackMode.fallbackStatus
+            ));
         }
     }
 
@@ -163,5 +174,28 @@ public final class MusicPlayerScreen extends SuiScreen {
 
     private String text(String key, String fallback) {
         return Sui.i18n.manager().getText("literal", key, fallback);
+    }
+
+    private enum PlaybackMode {
+        PLAY_ONCE("music_mode_play_once", "單曲播放", "music_play_once_note", "播放完目前曲目後停止。"),
+        REPEAT_ONE("music_mode_repeat_one", "單曲循環", "music_repeat_one_note", "單曲循環播放；切換曲目以兩秒淡入淡出銜接。"),
+        REPEAT_ALL("music_mode_repeat_all", "全部循環", "music_repeat_all_note", "依清單順序播放，最後一首結束後回到第一首。");
+
+        private final String textKey;
+        private final String fallbackText;
+        private final String statusKey;
+        private final String fallbackStatus;
+
+        PlaybackMode(String textKey, String fallbackText, String statusKey, String fallbackStatus) {
+            this.textKey = textKey;
+            this.fallbackText = fallbackText;
+            this.statusKey = statusKey;
+            this.fallbackStatus = fallbackStatus;
+        }
+
+        private PlaybackMode next() {
+            PlaybackMode[] modes = values();
+            return modes[(ordinal() + 1) % modes.length];
+        }
     }
 }
