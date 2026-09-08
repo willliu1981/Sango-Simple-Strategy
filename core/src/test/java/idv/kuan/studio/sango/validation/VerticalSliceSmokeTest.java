@@ -323,9 +323,7 @@ public final class VerticalSliceSmokeTest {
         BattleReport firstBattleReport = gameState.battleReports[0];
         assertEquals(VICTORY_TARGET_ID, firstBattleReport.targetCityId, "首戰戰報城池");
         assertTrue(!firstBattleReport.read, "新戰報預設未讀");
-        MarkBattleReportReadCommand markBattleReportReadCommand = new MarkBattleReportReadCommand(
-            commands.saveGameRepository
-        );
+        MarkBattleReportReadCommand markBattleReportReadCommand = new MarkBattleReportReadCommand();
         gameState = markBattleReportReadCommand.execute(
             SAVE_SLOT,
             gameState,
@@ -335,8 +333,8 @@ public final class VerticalSliceSmokeTest {
         assertEquals(0, gameState.countUnreadBattleReports(), "已讀後不再計入未讀數");
         GameState reloadedReportState = commands.saveGameRepository.load(SAVE_SLOT);
         assertTrue(
-            reloadedReportState.requireBattleReport(firstBattleReport.battleId).read,
-            "戰報已讀狀態必須持久化"
+            !reloadedReportState.requireBattleReport(firstBattleReport.battleId).read,
+            "戰報已讀尚未明確存檔，讀取可回到原狀態"
         );
         assertEquals(696, gameState.requireCityState(PLAYER_CAPITAL_ID).troops, "敗軍生還者返回主城");
         assertEquals(513, gameState.requireCityState(VICTORY_TARGET_ID).troops, "首戰後敵城守軍");
@@ -831,12 +829,9 @@ public final class VerticalSliceSmokeTest {
         ) {
             saveGameRepository = new LocalJsonSaveGameRepository(saveDirectory);
             newGameCommand = new NewGameCommand(definitionRepository, saveGameRepository);
-            domesticActionCommand = new ExecuteDomesticActionCommand(saveGameRepository);
-            scoutCityCommand = new ScoutCityCommand(definitionRepository, saveGameRepository);
-            launchExpeditionCommand = new LaunchExpeditionCommand(
-                definitionRepository,
-                saveGameRepository
-            );
+            domesticActionCommand = new ExecuteDomesticActionCommand();
+            scoutCityCommand = new ScoutCityCommand(definitionRepository);
+            launchExpeditionCommand = new LaunchExpeditionCommand(definitionRepository);
             endTurnCommand = new EndTurnCommand(
                 saveGameRepository,
                 new TurnResolutionService(definitionRepository)

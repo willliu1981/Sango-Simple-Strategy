@@ -175,6 +175,7 @@ public final class CampaignGrowthSmokeTest {
 
     private static void testOrders(GameState initial, LocalJsonSaveGameRepository saves) {
         GameState state = initial.copy();
+        GameState savedBeforeOrder = saves.load(1);
         CityState city = state.requireCapitalCityState();
         state.requirePlayerFactionState().gold = 100000;
         state.requirePlayerFactionState().food = 100000;
@@ -184,7 +185,7 @@ public final class CampaignGrowthSmokeTest {
             owned.publicOrder = 50;
         }
         TroopQualityRules.set(city, 100_000_000, 100_000_000);
-        ExecuteDomesticActionCommand command = new ExecuteDomesticActionCommand(saves);
+        ExecuteDomesticActionCommand command = new ExecuteDomesticActionCommand();
         DomesticActionResult result = command.execute(1, state, city.cityId, DomesticActionType.RECRUIT, 1000);
         check(result.isSuccessful(), "自選千人徵兵成功");
         CityState nextCity = result.getGameState().requireCapitalCityState();
@@ -194,7 +195,9 @@ public final class CampaignGrowthSmokeTest {
             && result.getGameState().requirePlayerFactionState().food == 99500, "按人數扣金糧");
         check(result.getGameState().actionPointsRemaining == 2, "單次只扣一點 AP");
         check(city.troops == 1000 && city.population == 30000, "命令保留輸入狀態");
-        check(saves.load(1).requireCapitalCityState().training == 75, "結果持久化");
+        check(saves.load(1).requireCapitalCityState().training
+            == savedBeforeOrder.requireCapitalCityState().training,
+            "內政後尚未明確存檔，讀取仍為操作前狀態");
         for (int amount : new int[] {-1, 0, 1733, 10001, Integer.MAX_VALUE}) {
             result = command.execute(1, state, city.cityId, DomesticActionType.RECRUIT, amount);
             check(!result.isSuccessful(), "非法或超過曲線人數拒絕");
@@ -322,10 +325,11 @@ public final class CampaignGrowthSmokeTest {
             "城市士氣操作後以整數存讀");
         check(new GameStateMigrator().migrate(loaded).requireCapitalCityState().trainingFraction == 0,
             "目前 schema 重讀保留整數素質");
-        GameState launched = new LaunchExpeditionCommand(definitions, saves)
+        GameState launched = new LaunchExpeditionCommand(definitions)
             .execute(2, loaded, city.cityId, "runan", BattleTactic.BALANCED).getGameState();
         check(launched.armyStates[0].trainingFraction == 0 && launched.armyStates[0].moraleFraction == 0,
             "出征軍保存原城整數素質");
+        saves.save(2, launched);
         check(saves.load(2).armyStates[0].trainingFraction == 0, "野戰軍整數素質存讀");
         launched.requireCityState("runan").troops = 0;
         launched.enemyAttackCountdown = 99;

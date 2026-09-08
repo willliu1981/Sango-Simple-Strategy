@@ -18,7 +18,6 @@ import idv.kuan.studio.sango.domain.rule.ExpeditionRules;
 import idv.kuan.studio.sango.domain.rule.FactionActionPointRules;
 import idv.kuan.studio.sango.domain.rule.StrategicActionFailureReason;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
-import idv.kuan.studio.sango.repository.SaveGameRepository;
 
 /** 由己方城池派出一或多支軍隊；抵達後依目的地當下所有權運兵或攻城。 */
 public final class LaunchExpeditionCommand {
@@ -29,14 +28,9 @@ public final class LaunchExpeditionCommand {
     public static final int MAXIMUM_EXPEDITION = ExpeditionRules.MAXIMUM_EXPEDITION;
 
     private final GameDefinitionRepository definitionRepository;
-    private final SaveGameRepository saveGameRepository;
 
-    public LaunchExpeditionCommand(
-        GameDefinitionRepository definitionRepository,
-        SaveGameRepository saveGameRepository
-    ) {
+    public LaunchExpeditionCommand(GameDefinitionRepository definitionRepository) {
         this.definitionRepository = definitionRepository;
-        this.saveGameRepository = saveGameRepository;
     }
 
     public StrategicActionResult execute(
@@ -101,13 +95,12 @@ public final class LaunchExpeditionCommand {
         nextState.lastActionCode = "LAUNCH_EXPEDITION";
 
         GameStateValidator.validate(nextState);
-        saveGameRepository.save(slotNumber, nextState);
         return StrategicActionResult.success("EXPEDITION", nextState, dispatchedTroops);
     }
 
     /**
      * 從多座直接相鄰的己方城池聯合進攻同一座敵方或中立城池。
-     * 所有來源會先在原狀態完成驗證，再於單一副本扣款並只保存一次。
+     * 所有來源會先在原狀態完成驗證，再於單一副本扣款。
      */
     public StrategicActionResult execute(
         int slot,
@@ -164,7 +157,6 @@ public final class LaunchExpeditionCommand {
         nextState.lastActionCode = "LAUNCH_EXPEDITION";
 
         GameStateValidator.validate(nextState);
-        saveGameRepository.save(slot, nextState);
         return StrategicActionResult.success("EXPEDITION", nextState, totalTroops);
     }
 

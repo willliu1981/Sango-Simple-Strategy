@@ -545,7 +545,7 @@
         <entry name="training_no_troops" value="城內沒有士兵，不能執行訓練。" description="training_no_troops" />
         <entry name="button_music_player" value="音樂鑑賞" description="button_music_player" />
         <entry name="music_player_title" value="四時之聲 · 音樂鑑賞" description="music_player_title" />
-        <entry name="music_player_description" value="自由欣賞遊戲曲目，不推進月份、不消耗行動力。返回主選單時恢復大廳 BGM。" description="music_player_description" />
+        <entry name="music_player_description" value="自由欣賞遊戲曲目，可切換播放模式；離開時恢復大廳 BGM。" description="music_player_description" />
         <entry name="music_lobby" value="群雄序曲" description="music_lobby" />
         <entry name="music_menu" value="主選單" description="music_menu" />
         <entry name="music_strategy" value="帷幄之聲" description="music_strategy" />

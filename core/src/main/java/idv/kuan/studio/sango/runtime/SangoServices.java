@@ -52,15 +52,12 @@ public final class SangoServices {
             definitionRepository
         );
         newGameCommand = new NewGameCommand(definitionRepository, saveGameRepository);
-        domesticActionCommand = new ExecuteDomesticActionCommand(saveGameRepository);
-        scoutCityCommand = new ScoutCityCommand(definitionRepository, saveGameRepository);
-        launchExpeditionCommand = new LaunchExpeditionCommand(
-            definitionRepository,
-            saveGameRepository
-        );
+        domesticActionCommand = new ExecuteDomesticActionCommand();
+        scoutCityCommand = new ScoutCityCommand(definitionRepository);
+        launchExpeditionCommand = new LaunchExpeditionCommand(definitionRepository);
         endTurnCommand = new EndTurnCommand(saveGameRepository, turnResolutionService);
         saveCurrentGameCommand = new SaveCurrentGameCommand(saveGameRepository);
-        markBattleReportReadCommand = new MarkBattleReportReadCommand(saveGameRepository);
+        markBattleReportReadCommand = new MarkBattleReportReadCommand();
         initialized = true;
     }
 

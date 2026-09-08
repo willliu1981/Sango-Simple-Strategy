@@ -134,7 +134,7 @@ public final class NationalActionPointSmokeTest {
         AssetJsonGameDefinitionRepository definitions,
         LocalJsonSaveGameRepository saves
     ) {
-        ExecuteDomesticActionCommand domesticCommand = new ExecuteDomesticActionCommand(saves);
+        ExecuteDomesticActionCommand domesticCommand = new ExecuteDomesticActionCommand();
         TurnResolutionService turnService = new TurnResolutionService(definitions);
         for (ScenarioObjectiveStatus objectiveStatus : ScenarioObjectiveStatus.values()) {
             GameState gameState = initialState.copy();
@@ -193,7 +193,7 @@ public final class NationalActionPointSmokeTest {
         gameState.requireCityState("chenliu").troops = 1800;
         gameState.requireCityState("runan").troops = 0;
         gameState.requireCityState("runan").publicOrder = 5;
-        StrategicActionResult launchResult = new LaunchExpeditionCommand(definitions, saves)
+        StrategicActionResult launchResult = new LaunchExpeditionCommand(definitions)
             .execute(1, gameState, "chenliu", "runan", BattleTactic.BALANCED);
         check(launchResult.isSuccessful(), "可向低民心空城出征");
         GameState nextState = new TurnResolutionService(definitions).resolve(launchResult.getGameState()).getGameState();
@@ -273,7 +273,7 @@ public final class NationalActionPointSmokeTest {
             "新規則存檔保留已使用點數");
         reloaded.actionPointsRemaining = 0;
         saves.save(2, reloaded);
-        DomesticActionResult rejected = new ExecuteDomesticActionCommand(saves)
+        DomesticActionResult rejected = new ExecuteDomesticActionCommand()
             .execute(2, saves.load(2), "chenliu", DomesticActionType.TRAIN);
         check(!rejected.isSuccessful() && rejected.getFailureReason() == DomesticActionFailureReason.NO_ACTION_POINTS,
             "讀檔後零點仍拒絕操作，不因高民心補點");

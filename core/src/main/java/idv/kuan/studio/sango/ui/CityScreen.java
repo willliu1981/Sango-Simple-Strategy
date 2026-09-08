@@ -51,7 +51,6 @@ import idv.kuan.studio.sango.domain.rule.NationalActionPointRules;
 import idv.kuan.studio.sango.domain.rule.RecruitmentRules;
 import idv.kuan.studio.sango.domain.rule.TroopQualityRules;
 import idv.kuan.studio.sango.ui.support.TroopQualityTextFormatter;
-import idv.kuan.studio.sango.repository.save.SaveGameException;
 import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.ui.flow.MonthEndFlowController;
 import idv.kuan.studio.sango.ui.id.ScreenId;
@@ -160,18 +159,12 @@ public final class CityScreen extends SuiScreen {
     }
 
     @Override
-    public void pause() {
-        saveSilently();
-    }
-
-    @Override
     protected void afterResize(int width, int height) {
         screenBackground.resize(stage);
     }
 
     @Override
     protected void beforeDispose() {
-        saveSilently();
         screenBackground.remove();
         if (contextHelpOverlay != null) {
             contextHelpOverlay.remove();
@@ -334,11 +327,6 @@ public final class CityScreen extends SuiScreen {
                 currentStatusColor = STATUS_ERROR_COLOR;
                 SangoServices.audio().playSound(SoundEffect.COMMAND_ERROR);
             }
-        } catch (SaveGameException exception) {
-            Gdx.app.error("City", "內政命令完成前存檔失敗。", exception);
-            currentStatusMessage = text("city_status_save_failed", "存檔失敗，因此本次命令沒有套用。");
-            currentStatusColor = STATUS_ERROR_COLOR;
-            SangoServices.audio().playSound(SoundEffect.COMMAND_ERROR);
         } catch (RuntimeException exception) {
             Gdx.app.error("City", "執行內政命令失敗。", exception);
             currentStatusMessage = text("city_status_action_failed", "內政命令執行失敗，戰局狀態未更新。");
@@ -594,7 +582,6 @@ public final class CityScreen extends SuiScreen {
 
     private void returnToMap() {
         closeModals();
-        saveSilently();
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);
         Sui.screens.set(ScreenId.STRATEGIC_MAP);
     }
@@ -626,22 +613,6 @@ public final class CityScreen extends SuiScreen {
             )
         );
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);
-    }
-
-    private void saveSilently() {
-        if (!SangoServices.session().hasCurrentState()) {
-            return;
-        }
-        try {
-            SangoServices.saveCurrentGameCommand().execute(
-                SangoServices.session().getCurrentSaveSlot(),
-                SangoServices.session().requireCurrentState()
-            );
-        } catch (RuntimeException exception) {
-            if (Gdx.app != null) {
-                Gdx.app.error("City", "背景保存戰局失敗。", exception);
-            }
-        }
     }
 
     private void refreshView() {

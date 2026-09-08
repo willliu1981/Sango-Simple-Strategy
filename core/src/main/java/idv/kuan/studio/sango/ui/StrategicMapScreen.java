@@ -188,11 +188,6 @@ public final class StrategicMapScreen extends SuiScreen {
     }
 
     @Override
-    public void pause() {
-        saveSilently();
-    }
-
-    @Override
     protected void afterResize(int width, int height) {
         screenBackground.resize(stage);
         resizeMapWidget();
@@ -200,7 +195,6 @@ public final class StrategicMapScreen extends SuiScreen {
 
     @Override
     protected void beforeDispose() {
-        saveSilently();
         screenBackground.remove();
         if (strategicMapWidget != null) {
             strategicMapWidget.setTerrainDrawable(null);
@@ -1453,22 +1447,6 @@ public final class StrategicMapScreen extends SuiScreen {
             return null;
         }
         return SangoServices.session().requireCurrentState();
-    }
-
-    private void saveSilently() {
-        if (!SangoServices.session().hasCurrentState()) {
-            return;
-        }
-        try {
-            SangoServices.saveCurrentGameCommand().execute(
-                SangoServices.session().getCurrentSaveSlot(),
-                SangoServices.session().requireCurrentState()
-            );
-        } catch (RuntimeException exception) {
-            if (Gdx.app != null) {
-                Gdx.app.error("StrategicMap", "背景保存戰局失敗。", exception);
-            }
-        }
     }
 
     private void openModal(Actor mask) {

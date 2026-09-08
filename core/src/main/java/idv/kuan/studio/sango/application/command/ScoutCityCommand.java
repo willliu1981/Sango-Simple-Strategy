@@ -9,7 +9,6 @@ import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
 import idv.kuan.studio.sango.domain.rule.StrategicActionFailureReason;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
-import idv.kuan.studio.sango.repository.SaveGameRepository;
 
 /**
  * 從己方相鄰城池偵察目標，情報維持三個回合。
@@ -20,14 +19,9 @@ public final class ScoutCityCommand {
     public static final int INTELLIGENCE_DURATION_TURNS = 3;
 
     private final GameDefinitionRepository definitionRepository;
-    private final SaveGameRepository saveGameRepository;
 
-    public ScoutCityCommand(
-        GameDefinitionRepository definitionRepository,
-        SaveGameRepository saveGameRepository
-    ) {
+    public ScoutCityCommand(GameDefinitionRepository definitionRepository) {
         this.definitionRepository = definitionRepository;
-        this.saveGameRepository = saveGameRepository;
     }
 
     public StrategicActionResult execute(
@@ -55,7 +49,6 @@ public final class ScoutCityCommand {
         nextState.lastActionCode = "SCOUT_CITY";
 
         GameStateValidator.validate(nextState);
-        saveGameRepository.save(slotNumber, nextState);
         return StrategicActionResult.success("SCOUT", nextState, 0);
     }
 

@@ -43,12 +43,10 @@ import idv.kuan.studio.sango.domain.rule.MilitaryRules;
 import idv.kuan.studio.sango.domain.service.BattleResolutionService;
 import idv.kuan.studio.sango.domain.service.EnemyTurnService;
 import idv.kuan.studio.sango.domain.service.TurnResolutionService;
-import idv.kuan.studio.sango.repository.SaveGameRepository;
 import idv.kuan.studio.sango.repository.definition.AssetJsonGameDefinitionRepository;
 import idv.kuan.studio.sango.repository.save.GameStateMigrator;
 import idv.kuan.studio.sango.repository.save.LocalJsonSaveGameRepository;
 import idv.kuan.studio.sango.repository.save.SaveGameDocument;
-import idv.kuan.studio.sango.repository.save.SaveGameException;
 import idv.kuan.studio.sango.repository.save.SaveSlotInspection;
 
 /**
@@ -77,8 +75,8 @@ public final class NationalCampaignSmokeTest {
         );
         saves = new LocalJsonSaveGameRepository(saveDirectory);
         newGameCommand = new NewGameCommand(definitions, saves);
-        domesticCommand = new ExecuteDomesticActionCommand(saves);
-        launchCommand = new LaunchExpeditionCommand(definitions, saves);
+        domesticCommand = new ExecuteDomesticActionCommand();
+        launchCommand = new LaunchExpeditionCommand(definitions);
         turnService = new TurnResolutionService(definitions);
         endTurnCommand = new EndTurnCommand(saves, turnService);
     }
@@ -186,12 +184,7 @@ public final class NationalCampaignSmokeTest {
         StrategicActionResult expedition = launchCommand.execute(1, nextState, "chenliu", "runan", BattleTactic.BALANCED);
         check(expedition.isSuccessful(), "零士氣仍能出征");
         check(expedition.getGameState().armyStates[0].morale == 0, "出征不可將零士氣重設為 50");
-        check(saves.load(1).armyStates[0].morale == 0, "零士氣存讀一致");
-        ExecuteDomesticActionCommand failingCommand = new ExecuteDomesticActionCommand(new RejectingSaveRepository());
-        expectRuntimeFailure(() -> failingCommand.execute(1, originalState, "chenliu", DomesticActionType.RECRUIT),
-            "保存失敗應回報錯誤");
-        check(originalState.requireCapitalCityState().morale == 3, "保存失敗不可消耗士氣");
-        check(originalState.requireCapitalCityState().troops == previousTroops, "保存失敗不可改變兵力");
+        check(saves.load(1).armyStates.length == 0, "出征後尚未存檔，讀取可回到操作前");
     }
 
     private void validateMilitaryFormulas() {
@@ -256,9 +249,9 @@ public final class NationalCampaignSmokeTest {
                     if (objectiveStatus != ScenarioObjectiveStatus.IN_PROGRESS) {
                         check(gameState.scenarioObjectiveStatus == objectiveStatus, "目標結論不被後續佔領覆寫");
                     }
-                    GameState markedState = new MarkBattleReportReadCommand(saves).execute(1, gameState, battleReport.battleId);
-                    check(markedState.battleReports[0].read && saves.load(1).battleReports[0].read,
-                        "佔領紀錄已讀狀態持久化");
+                    GameState markedState = new MarkBattleReportReadCommand().execute(1, gameState, battleReport.battleId);
+                    check(markedState.battleReports[0].read && !saves.load(1).battleReports[0].read,
+                        "戰報已讀尚未明確存檔，讀取可回到原狀態");
                     check(saves.load(1).requireCityState(targetCityId).morale == 71, "佔領城市存檔士氣保留");
                 }
             }
@@ -475,25 +468,4 @@ public final class NationalCampaignSmokeTest {
         }
     }
 
-    private static final class RejectingSaveRepository implements SaveGameRepository {
-        @Override
-        public SaveSlotInspection inspect(int slotNumber) {
-            throw new UnsupportedOperationException("此測試只允許寫入失敗路徑。");
-        }
-
-        @Override
-        public GameState load(int slotNumber) {
-            throw new UnsupportedOperationException("此測試只允許寫入失敗路徑。");
-        }
-
-        @Override
-        public void save(int slotNumber, GameState gameState) {
-            throw new SaveGameException("測試注入：磁碟寫入失敗。");
-        }
-
-        @Override
-        public void delete(int slotNumber) {
-            throw new UnsupportedOperationException("此測試只允許寫入失敗路徑。");
-        }
-    }
 }
