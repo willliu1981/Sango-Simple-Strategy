@@ -1,13 +1,13 @@
 # Sango 音樂與音效
 
-目前遊戲使用 MP3 背景音樂，以及程序化產生的 OGG 音效。已建置的本機 APK 與 Windows ZIP 包含這些 MP3；Git 是否追蹤音檔，不會決定建置時是否將它們封裝。
+目前遊戲使用 MP3 背景音樂，以及程序化產生的 OGG 音效。這些檔案已納入 repository，並會封裝進 APK 與 Windows ZIP。
 
 ## 程式使用的音樂
 
 - `music/lobby_theme.mp3`：大廳背景音樂，也可在音樂鑑賞中播放。
 - `music/spring_wind_enters_city.mp3`、`summer_counsel.mp3`、`autumn_battlefield.mp3`、`winter_stratagem.mp3`：依月份切換的四季戰局音樂，也可在音樂鑑賞中播放。
 - `music/strategy_theme.mp3`：音樂鑑賞中的曲目；一般戰局使用四季音樂。
-- 舊的 `music/lobby_theme.ogg` 與 `music/strategy_theme.ogg` 已在本機移除，目前程式改用上述 MP3。
+- 舊的 `music/lobby_theme.ogg` 與 `music/strategy_theme.ogg` 已從 repository 移除，目前程式改用上述 MP3。
 - `sfx/*.ogg`：由 `tools/generate-prototype-audio.py` 以基本波形與程序節奏合成的音效。
 
 ## 來源與公開範圍

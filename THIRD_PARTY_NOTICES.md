@@ -12,7 +12,7 @@ Binary location:
 libs/simpleui-1.1.2.jar
 ```
 
-提供的 StudyRoutine snapshot 沒有包含 SimpleUI 授權檔。將此 binary 散布到個人專案範圍之外前，必須先向權利人確認適用授權與再散布條件。
+目前 repository 未附 SimpleUI 1.1.2 的專用授權檔。將此 binary 散布到個人專案範圍之外前，必須先向權利人確認適用授權與再散布條件。
 
 Gradle build 會建立 `simpleui-1.1.2-no-bundled-gdx.jar`，並排除 `com/badlogic/**`，避免 JAR 內 bundled LibGDX classes 與專案宣告的 LibGDX 版本衝突。
 
@@ -33,7 +33,7 @@ assets/font/SIL Open Font License 1.1.md
 
 ## Prototype Audio
 
-`assets/audio/music/*.ogg` 與 `assets/audio/sfx/*.ogg` 由：
+`assets/audio/sfx/*.ogg` 由：
 
 ```text
 tools/generate-prototype-audio.py

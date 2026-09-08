@@ -83,7 +83,7 @@ Windows 存檔位於 `%USERPROFILE%\.sango\save\`。
 
 ## 開發者與原始碼資訊
 
-公開 repository 是排除部分素材與本機依賴的原始碼快照，不包含完整音訊、圖片、中文字型 binary 與 `libs/simpleui-1.1.2.jar`。只下載 Source code ZIP 無法直接建置完整遊戲。
+公開 repository 已包含目前遊戲使用的音訊、圖片、預設介面素材與 `libs/simpleui-1.1.2.jar`。中文字型 binary 未納入 Git；只下載 GitHub 自動產生的 Source code ZIP 後，仍需準備合法的本機中文字型與建置環境，才能建立完整遊戲。
 
 <details>
 <summary>本機建置方式</summary>
@@ -92,12 +92,12 @@ Windows 存檔位於 `%USERPROFILE%\.sango\save\`。
 
 - JDK 17
 - Android SDK 34（僅 Android 建置需要）
-- 專案要求的合法本機素材與 SimpleUI 依賴
+- `SourceHanSansCN-Regular.otf` 與 `SourceHanSansCN-Heavy.otf` 的合法本機來源
 
-準備本機資產：
+準備本機中文字型（來源可為包含上述字型的 ZIP 或目錄）：
 
 ```powershell
-.\tools\prepare-local-assets-0.6.0.ps1 -SourceProject "<原 Sango 專案路徑>"
+.\tools\prepare-local-fonts.ps1 -StudyRoutineSource "<字型來源 ZIP 或目錄>"
 ```
 
 執行桌面版：
