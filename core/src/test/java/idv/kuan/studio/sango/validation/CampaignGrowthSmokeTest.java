@@ -222,11 +222,12 @@ public final class CampaignGrowthSmokeTest {
     private static void testPacify(GameState initial) {
         check(DomesticActionType.PACIFY.getActionPointCost() == 1
             && DomesticActionType.PACIFY.getGoldCost() == 100
-            && DomesticActionType.PACIFY.getFoodCost() == 50, "安民固定消耗 1 AP、100 金、50 糧");
+            && DomesticActionType.PACIFY.getFoodCost() == 50, "巡查固定消耗 1 AP、100 金、50 糧");
         check(DomesticActionRules.pacifyGain(49) == 6 && DomesticActionRules.pacifyGain(50) == 4
             && DomesticActionRules.pacifyGain(69) == 4 && DomesticActionRules.pacifyGain(70) == 2
             && DomesticActionRules.pacifyGain(84) == 2 && DomesticActionRules.pacifyGain(85) == 1
-            && DomesticActionRules.pacifyGain(94) == 1, "安民依民心門檻增加");
+            && DomesticActionRules.pacifyGain(89) == 1
+            && DomesticActionRules.pacifyGain(90) == 0, "巡查依民心門檻增加");
         GameState state = initial.copy();
         CityState city = state.requireCapitalCityState();
         FactionState faction = state.requirePlayerFactionState();
@@ -235,12 +236,12 @@ public final class CampaignGrowthSmokeTest {
         faction.food = 1000;
         DomesticActionService service = new DomesticActionService();
         check(service.apply(state, state.playerFactionId, city.cityId, DomesticActionType.PACIFY, 0, DEFAULT_OFFICER)
-            == DomesticActionFailureReason.NONE, "安民透過共用內政服務成功");
+            == DomesticActionFailureReason.NONE, "巡查透過共用內政服務成功");
         check(city.publicOrder == 55 && faction.gold == 900 && faction.food == 950
-            && state.actionPointsRemaining == 2, "安民同步套用民心與全部成本");
-        city.publicOrder = 95;
+            && state.actionPointsRemaining == 2, "巡查同步套用民心與全部成本");
+        city.publicOrder = 90;
         check(DomesticActionRules.evaluate(state, city.cityId, DomesticActionType.PACIFY)
-            == DomesticActionFailureReason.VALUE_AT_MAXIMUM, "民心 95 時拒絕安民");
+            == DomesticActionFailureReason.VALUE_AT_MAXIMUM, "民心 90 時拒絕巡查");
     }
 
     private static void testPopulation(GameState initial, AssetJsonGameDefinitionRepository definitions,
@@ -404,7 +405,7 @@ public final class CampaignGrowthSmokeTest {
         FactionActionPointRules.refreshAll(state, false);
         TurnResolutionReport report = new TurnResolutionReport(state.currentYear, state.currentMonth);
         enemy.execute(state, definitions.requireMap(state.mapId), report);
-        check(aiCity.publicOrder > 50, "AI 已有情報時透過共用內政流程安民");
+        check(aiCity.publicOrder > 50, "AI 低民心時透過共用內政流程巡查");
         int actionReports = 0;
         for (TurnEvent event : report.getEvents()) {
             if (event.getType() == TurnEventType.AI_ACTIONS_USED) {

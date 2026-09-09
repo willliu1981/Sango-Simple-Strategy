@@ -34,7 +34,7 @@ public final class DomesticActionService {
             cityState.troops += recruitmentAmount;
             cityState.population -= recruitmentAmount;
         } else if (actionType == DomesticActionType.PACIFY) {
-            cityState.publicOrder = Math.min(95,
+            cityState.publicOrder = Math.min(DomesticActionRules.PACIFY_MAX_PUBLIC_ORDER,
                 cityState.publicOrder + DomesticActionRules.pacifyGain(cityState.publicOrder));
         } else if (actionType == DomesticActionType.TRAIN) {
             TroopQualityRules.train(cityState, officer);

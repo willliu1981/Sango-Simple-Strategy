@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.Align;
 
 import idv.kuan.studio.libgdx.simpleui.Sui;
@@ -93,14 +94,24 @@ public final class WorldBattleReportScreen extends SuiScreen {
         scroll.setScrollY(0f);
         scroll.updateVisualScroll();
         stage.setScrollFocus(scroll);
+        stage.addAction(Actions.sequence(Actions.delay(0.01f), Actions.run(() -> {
+            resizeScroll();
+            scroll.setScrollY(0f);
+            scroll.updateVisualScroll();
+        })));
     }
 
     @Override protected void afterResize(int width, int height) { resizeScroll(); }
 
     private void resizeScroll() {
         if (host == null || scroll == null) return;
+        float rowWidth = Math.max(1f, host.getWidth() - 24f);
         scroll.setBounds(0, 0, host.getWidth(), host.getHeight());
+        for (var cell : rows.getCells()) {
+            cell.width(rowWidth);
+        }
         rows.invalidateHierarchy();
+        rows.pack();
         scroll.validate();
     }
 

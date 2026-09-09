@@ -206,6 +206,9 @@ public final class DefenseIntelligenceSmokeTest {
             && !snapshot.observationDateRecorded
             && migrated.requireCityState(target.cityId).scoutedUntilTurn == 0,
             "舊玩家偵察保留原到期日且不偽造偵察年月");
+        check(new CityIntelligenceService().knownView(
+            migrated, migrated.playerFactionId, target.cityId).defensePolicy() == null,
+            "偵察情報不揭露敵城防守方針");
     }
 
     private static void validateUi(Path assets) throws Exception {

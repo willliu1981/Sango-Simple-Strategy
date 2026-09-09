@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.function.Consumer;
 
 import com.badlogic.gdx.Input;
@@ -24,6 +22,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.utils.Timer;
 
 import idv.kuan.studio.sango.domain.definition.CityConnectionDefinition;
 import idv.kuan.studio.sango.domain.definition.MapCityNodeDefinition;
@@ -49,16 +48,17 @@ public final class StrategicMapWidget extends WidgetGroup {
     private final Map<String, String> captionsByCityId = new LinkedHashMap<>();
     private final Map<String, MapNodeTone> tonesByCityId = new LinkedHashMap<>();
     private final Map<String, Integer> unreadBattlesByCityId = new LinkedHashMap<>();
+    private final Map<String, String> factionIdsByCityId = new LinkedHashMap<>();
     private final Map<String, TextButton> buttonsByCityId = new LinkedHashMap<>();
-    private final Set<String> factionCityIds = new HashSet<>();
-    private Drawable factionOutline;
-    private Drawable selectedOutline;
     private final List<Image> roadImages = new ArrayList<>();
     private final List<ClickListener> nodeClickListeners = new ArrayList<>();
     private final Map<Integer, PointerPosition> pointers = new LinkedHashMap<>();
     private StrategicMapDefinition mapDefinition;
     private Drawable terrainDrawable;
     private String selectedCityId;
+    private String playerFactionId;
+    private String neutralFactionId;
+    private String highlightedFactionId;
     private float worldWidth;
     private float worldHeight;
     private boolean initialFocusPending;
@@ -96,11 +96,25 @@ public final class StrategicMapWidget extends WidgetGroup {
         Map<String, String> captionsByCityId,
         Map<String, MapNodeTone> tonesByCityId,
         Map<String, Integer> unreadBattlesByCityId,
-        Set<String> factionCityIds,
+        String selectedCityId
+    ) {
+        setMapData(mapDefinition, captionsByCityId, tonesByCityId, unreadBattlesByCityId,
+            Map.of(), null, null, selectedCityId);
+    }
+
+    public void setMapData(
+        StrategicMapDefinition mapDefinition,
+        Map<String, String> captionsByCityId,
+        Map<String, MapNodeTone> tonesByCityId,
+        Map<String, Integer> unreadBattlesByCityId,
+        Map<String, String> factionIdsByCityId,
+        String playerFactionId,
+        String neutralFactionId,
         String selectedCityId
     ) {
         if (mapDefinition == null || captionsByCityId == null
-            || tonesByCityId == null || unreadBattlesByCityId == null || factionCityIds == null) {
+            || tonesByCityId == null || unreadBattlesByCityId == null
+            || factionIdsByCityId == null) {
             throw new IllegalArgumentException("地圖顯示資料不可為 null。");
         }
         if (this.mapDefinition != mapDefinition) {
@@ -113,9 +127,12 @@ public final class StrategicMapWidget extends WidgetGroup {
         this.tonesByCityId.putAll(tonesByCityId);
         this.unreadBattlesByCityId.clear();
         this.unreadBattlesByCityId.putAll(unreadBattlesByCityId);
+        this.factionIdsByCityId.clear();
+        this.factionIdsByCityId.putAll(factionIdsByCityId);
+        this.playerFactionId = playerFactionId;
+        this.neutralFactionId = neutralFactionId;
+        highlightedFactionId = null;
         this.selectedCityId = selectedCityId;
-        this.factionCityIds.clear();
-        this.factionCityIds.addAll(factionCityIds);
         rebuildChildren();
         invalidate();
     }
@@ -174,7 +191,6 @@ public final class StrategicMapWidget extends WidgetGroup {
         if (clipBegin(0f, 0f, getWidth(), getHeight())) {
             drawTerrain(batch, parentAlpha);
             drawChildren(batch, parentAlpha);
-            drawCityOutlines(batch, parentAlpha);
             batch.flush();
             clipEnd();
         }
@@ -198,30 +214,6 @@ public final class StrategicMapWidget extends WidgetGroup {
         batch.setPackedColor(originalPackedColor);
     }
 
-    private void drawCityOutlines(Batch batch, float parentAlpha) {
-        if (selectedOutline == null || factionOutline == null) return;
-        float originalPackedColor = batch.getPackedColor();
-        batch.setColor(getColor().r, getColor().g, getColor().b, getColor().a * parentAlpha);
-        // Draw separately from the buttons so unread blinking never dims the faction outline.
-        for (Map.Entry<String, TextButton> entry : buttonsByCityId.entrySet()) {
-            boolean selected = entry.getKey().equals(selectedCityId);
-            if (!selected && !factionCityIds.contains(entry.getKey())) continue;
-            TextButton button = entry.getValue();
-            Drawable outline = selected ? selectedOutline : factionOutline;
-            float thickness = selected ? 4f : 2f;
-            float gap = selected ? 3f : 2f;
-            float x = button.getX() - gap - thickness;
-            float y = button.getY() - gap - thickness;
-            float width = button.getWidth() + 2f * (gap + thickness);
-            float height = button.getHeight() + 2f * (gap + thickness);
-            outline.draw(batch, x, y, width, thickness);
-            outline.draw(batch, x, y + height - thickness, width, thickness);
-            outline.draw(batch, x, y + thickness, thickness, height - 2f * thickness);
-            outline.draw(batch, x + width - thickness, y + thickness, thickness, height - 2f * thickness);
-        }
-        batch.setPackedColor(originalPackedColor);
-    }
-
     @Override
     public Actor hit(float localX, float localY, boolean touchable) {
         // 裁切不只限繪圖；視窗外節點也不能攔截右側面板或底部按鈕。
@@ -232,10 +224,6 @@ public final class StrategicMapWidget extends WidgetGroup {
     }
 
     private void rebuildChildren() {
-        if (factionOutline == null) {
-            factionOutline = SangoUiStyles.createMapOutlineDrawable(false);
-            selectedOutline = SangoUiStyles.createMapOutlineDrawable(true);
-        }
         clearChildren();
         buttonsByCityId.clear();
         roadImages.clear();
@@ -262,14 +250,99 @@ public final class StrategicMapWidget extends WidgetGroup {
                 }
             };
             nodeButton.addListener(clickListener);
+            nodeButton.addListener(createFactionHighlightListener(node.cityId));
             nodeClickListeners.add(clickListener);
-            if (unreadBattlesByCityId.getOrDefault(node.cityId, 0) > 0) {
-                nodeButton.addAction(Actions.forever(Actions.sequence(
+            buttonsByCityId.put(node.cityId, nodeButton);
+            addActor(nodeButton);
+        }
+        refreshNodeAnimations();
+    }
+
+    private InputListener createFactionHighlightListener(String cityId) {
+        return new InputListener() {
+            private Timer.Task longPressTask;
+            private float downX;
+            private float downY;
+            private boolean longPressActive;
+
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                if (pointer == -1) activateFactionHighlight(cityId);
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                if (pointer == -1 && (toActor == null || (toActor != event.getListenerActor()
+                    && !toActor.isDescendantOf(event.getListenerActor())))) {
+                    clearFactionHighlight();
+                }
+            }
+
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                if (button != Input.Buttons.LEFT) return false;
+                downX = x;
+                downY = y;
+                longPressActive = false;
+                longPressTask = Timer.schedule(new Timer.Task() {
+                    @Override public void run() {
+                        longPressActive = activateFactionHighlight(cityId);
+                    }
+                }, 0.45f);
+                return true;
+            }
+
+            @Override
+            public void touchDragged(InputEvent event, float x, float y, int pointer) {
+                if (distance(x, y, downX, downY) >= DRAG_THRESHOLD) cancelLongPress();
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                cancelLongPress();
+                if (longPressActive) clearFactionHighlight();
+                longPressActive = false;
+            }
+
+            private void cancelLongPress() {
+                if (longPressTask != null) {
+                    longPressTask.cancel();
+                    longPressTask = null;
+                }
+            }
+        };
+    }
+
+    private boolean activateFactionHighlight(String cityId) {
+        String factionId = factionIdsByCityId.get(cityId);
+        if (factionId == null || factionId.equals(playerFactionId)
+            || factionId.equals(neutralFactionId)) return false;
+        if (!factionId.equals(highlightedFactionId)) {
+            highlightedFactionId = factionId;
+            refreshNodeAnimations();
+        }
+        return true;
+    }
+
+    private void clearFactionHighlight() {
+        if (highlightedFactionId == null) return;
+        highlightedFactionId = null;
+        refreshNodeAnimations();
+    }
+
+    private void refreshNodeAnimations() {
+        for (Map.Entry<String, TextButton> entry : buttonsByCityId.entrySet()) {
+            TextButton button = entry.getValue();
+            button.clearActions();
+            button.getColor().a = 1f;
+            boolean shouldFlash = highlightedFactionId == null
+                ? unreadBattlesByCityId.getOrDefault(entry.getKey(), 0) > 0
+                : highlightedFactionId.equals(factionIdsByCityId.get(entry.getKey()));
+            if (shouldFlash) {
+                button.addAction(Actions.forever(Actions.sequence(
                     Actions.alpha(0.52f, 0.48f), Actions.alpha(1f, 0.48f)
                 )));
             }
-            buttonsByCityId.put(node.cityId, nodeButton);
-            addActor(nodeButton);
         }
     }
 

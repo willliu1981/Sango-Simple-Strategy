@@ -7,6 +7,8 @@ import idv.kuan.studio.sango.domain.model.GameStateValidator;
 
 /** 玩家、AI、Command 與預覽共用的內政可執行性檢查。 */
 public final class DomesticActionRules {
+    public static final int PACIFY_MAX_PUBLIC_ORDER = 90;
+
     private DomesticActionRules() {
     }
 
@@ -81,7 +83,7 @@ public final class DomesticActionRules {
         if (publicOrder < 85) {
             return 2;
         }
-        if (publicOrder < 95) {
+        if (publicOrder < PACIFY_MAX_PUBLIC_ORDER) {
             return 1;
         }
         return 0;
@@ -100,7 +102,7 @@ public final class DomesticActionRules {
         if (actionType.getDefenseGain() > 0 && cityState.defense >= 100) {
             return true;
         }
-        if (actionType == DomesticActionType.PACIFY && cityState.publicOrder >= 95) {
+        if (actionType == DomesticActionType.PACIFY && cityState.publicOrder >= PACIFY_MAX_PUBLIC_ORDER) {
             return true;
         }
         if (actionType == DomesticActionType.TRAIN) {

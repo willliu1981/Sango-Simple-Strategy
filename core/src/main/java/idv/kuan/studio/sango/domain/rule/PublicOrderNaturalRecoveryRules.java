@@ -6,7 +6,7 @@ import idv.kuan.studio.sango.domain.model.CityState;
  * 月底民心自然恢復規則。連續三個合格月底起每月恢復一點，民心與連續月數皆有上限。
  */
 public final class PublicOrderNaturalRecoveryRules {
-    public static final int MINIMUM_QUALIFYING_PUBLIC_ORDER = 95;
+    public static final int MINIMUM_QUALIFYING_PUBLIC_ORDER = DomesticActionRules.PACIFY_MAX_PUBLIC_ORDER;
     public static final int REQUIRED_STREAK_MONTHS = 3;
     public static final int MAXIMUM_PUBLIC_ORDER = 100;
 

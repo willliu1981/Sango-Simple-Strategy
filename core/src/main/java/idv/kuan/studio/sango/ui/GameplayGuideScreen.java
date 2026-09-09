@@ -79,6 +79,11 @@ public final class GameplayGuideScreen extends SuiScreen {
         scrollPane.setScrollY(0f);
         scrollPane.updateVisualScroll();
         stage.setScrollFocus(scrollPane);
+        stage.addAction(Actions.sequence(Actions.delay(0.01f), Actions.run(() -> {
+            resizeScrollPane();
+            scrollPane.setScrollY(0f);
+            scrollPane.updateVisualScroll();
+        })));
     }
 
     @Override

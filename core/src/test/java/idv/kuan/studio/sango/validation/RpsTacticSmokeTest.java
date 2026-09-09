@@ -197,15 +197,16 @@ public final class RpsTacticSmokeTest {
         origin.training = 60;
         origin.morale = 60;
         base.enemyAttackCountdown = 1;
+        BattleTactic blindChoice = null;
         for (int d = 0; d < 3; d++) {
             GameState known = base.copy();
             known.requireCityState(route[1]).defensePolicy = DEFENSE[d];
             new CityIntelligenceService().observe(known, factionId, route[1]);
-            // Deliberately change the truth after scouting; AI must use the stored observation.
+            // Deliberately change the truth after scouting; the observed policy must stay hidden.
             known.requireCityState(route[1]).defensePolicy = DEFENSE[(d + 1) % 3];
             BattleTactic choice = march(known, map, factionId).tactic;
-            int row = Arrays.asList(ATTACK).indexOf(choice);
-            check(row >= 0 && ADVANTAGE[row][d] == 1, "AI counters own stale but valid snapshot");
+            if (blindChoice == null) blindChoice = choice;
+            check(choice == blindChoice, "AI cannot counter a defense policy hidden from scouting");
             check(known.requireFactionState(factionId).cityIntelligence[0].defensePolicy == DEFENSE[d],
                 "AI decision does not refresh observation");
         }

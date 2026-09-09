@@ -59,6 +59,7 @@ import idv.kuan.studio.sango.domain.rule.StrategicActionFailureReason;
 import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.ui.flow.MonthEndFlowController;
 import idv.kuan.studio.sango.ui.id.ScreenId;
+import idv.kuan.studio.sango.ui.support.BattleReportCatalog;
 import idv.kuan.studio.sango.ui.support.ContextHelpOverlay;
 import idv.kuan.studio.sango.ui.support.DispatchPanelRules;
 import idv.kuan.studio.sango.ui.support.ScreenBackground;
@@ -446,7 +447,8 @@ public final class StrategicMapScreen extends SuiScreen {
             button("show_last_report_button"),
             lastTurnReport != null
         );
-        int unreadBattleCount = (int) BattleReportCatalog.world(gameState).stream().filter(report -> !report.read).count();
+        BattleReport latestWorldBattle = BattleReportCatalog.latest(gameState);
+        int unreadBattleCount = latestWorldBattle != null && !latestWorldBattle.read ? 1 : 0;
         button("show_unread_battle_button").setText(
             text("button_world_battle_reports_format", "天下戰報（未讀{0}）", unreadBattleCount)
         );
@@ -539,15 +541,17 @@ public final class StrategicMapScreen extends SuiScreen {
     }
 
     private void refreshUnreadBattleLabel(GameState gameState) {
-        int unreadBattleCount = (int) BattleReportCatalog.latestCities(gameState).stream().filter(report -> !report.read).count();
+        int unreadBattleCount = (int) BattleReportCatalog.latestCities(gameState).stream()
+            .filter(report -> !report.read && report.resolvedTurn == gameState.currentTurn - 1)
+            .count();
         label("map_unread_battle_label").setText(
             unreadBattleCount > 0
                 ? text(
                     "map_unread_battle_alert_format",
-                    "戰事通報：有 {0} 份未讀戰報；發生戰鬥的城池正在閃爍。",
+                    "本回合戰事：有 {0} 份新戰報；發生戰鬥的城池正在閃爍。",
                     unreadBattleCount
                 )
-                : text("map_unread_battle_none", "戰事通報：目前沒有未讀戰報。")
+                : text("map_unread_battle_none", "本回合沒有新的戰報提示。")
         );
     }
 
@@ -558,21 +562,16 @@ public final class StrategicMapScreen extends SuiScreen {
     ) {
         Map<String, String> captionsByCityId = new LinkedHashMap<>();
         Map<String, MapNodeTone> tonesByCityId = new LinkedHashMap<>();
-        java.util.Set<String> factionCityIds = new java.util.HashSet<>();
-        String selectedOwner = gameState.requireCityState(selectedCityId).ownerFactionId;
         Map<String, Integer> unreadBattlesByCityId = new LinkedHashMap<>();
+        Map<String, String> factionIdsByCityId = new LinkedHashMap<>();
         for (BattleReport battleReport : BattleReportCatalog.latestCities(gameState)) {
-            if (!battleReport.read) {
+            if (!battleReport.read && battleReport.resolvedTurn == gameState.currentTurn - 1) {
                 unreadBattlesByCityId.merge(battleReport.targetCityId, 1, Integer::sum);
             }
         }
         for (MapCityNodeDefinition nodeDefinition : mapDefinition.nodes) {
             CityState cityState = gameState.requireCityState(nodeDefinition.cityId);
-            if (!gameState.neutralFactionId.equals(selectedOwner)
-                && !gameState.playerFactionId.equals(selectedOwner)
-                && selectedOwner.equals(cityState.ownerFactionId)) {
-                factionCityIds.add(cityState.cityId);
-            }
+            factionIdsByCityId.put(cityState.cityId, cityState.ownerFactionId);
             MapNodeTone nodeTone = toneForOwner(gameState, cityState.ownerFactionId);
             FactionDefinition ownerDefinition = SangoServices.definitions().requireFaction(cityState.ownerFactionId);
             String marker = localized(ownerDefinition.nameKey, ownerDefinition.id);
@@ -596,7 +595,9 @@ public final class StrategicMapScreen extends SuiScreen {
             captionsByCityId,
             tonesByCityId,
             unreadBattlesByCityId,
-            factionCityIds,
+            factionIdsByCityId,
+            gameState.playerFactionId,
+            gameState.neutralFactionId,
             selectedCityId
         );
         resizeMapWidget();
@@ -650,7 +651,8 @@ public final class StrategicMapScreen extends SuiScreen {
             buildRouteText(gameState, selectedCityState, routeOriginCityState)
         );
 
-        int cityBattleCount = BattleReportCatalog.city(gameState, selectedCityState.cityId).size();
+        int cityBattleCount = BattleReportCatalog.latestForCity(
+            gameState, selectedCityState.cityId) == null ? 0 : 1;
         button("view_city_battle_button").setText(
             text("button_city_battles_format", "查看此城戰報（{0}）", cityBattleCount)
         );
@@ -1450,7 +1452,8 @@ public final class StrategicMapScreen extends SuiScreen {
         if (gameState == null) {
             return;
         }
-        BattleReport latestReport = gameState.findLatestBattleReportForCity(
+        BattleReport latestReport = BattleReportCatalog.latestForCity(
+            gameState,
             SangoServices.session().getSelectedCityId()
         );
         if (latestReport == null) {
@@ -1469,7 +1472,7 @@ public final class StrategicMapScreen extends SuiScreen {
             text("help_map_title", "戰略圖操作說明"),
             text(
                 "help_map_body",
-                "金與糧由整個勢力共用；行動力（AP）則限制本月可下達的命令。\n\n城池之間必須有道路才能偵察、出征或運兵；出征只能選與目標相鄰的我方城，運兵可選任何沿道路可達的我方城。偵察消耗 1 AP 與 20 金，取得三個月且包含當月的快照；目標之後的變動不會自動更新。\n\n我方城可設定持續生效的防守方針；出征戰術只在派兵視窗選擇並套用本次攻擊。\n\n使用＋、－縮放地圖，「全圖」重設視野，「定位」回到目前選取城；連按地圖空白處可進入或退出全螢幕。全螢幕時連按城池仍只會選取城池。"
+                "金與糧由整個勢力共用；行動力（AP）則限制本月可下達的命令。\n\n城池之間必須有道路才能偵察、出征或運兵；出征只能選與目標相鄰的我方城，運兵可選任何沿道路可達的我方城。偵察消耗 1 AP 與 20 金，取得三個月且包含當月的快照，但不會揭露防守方針。\n\n我方城可設定持續生效的防守方針；出征戰術只在派兵視窗選擇並套用本次攻擊。強攻剋固守、固守剋誘敵、誘敵剋強攻。\n\n桌機將滑鼠停在敵城，或按住敵城；Android 長按敵城時，同勢力城池會一起閃爍。我方與中立城不啟動此提示；提示期間會暫停戰報閃爍，放開或移開後恢復。\n\n使用＋、－縮放地圖，「全圖」重設視野，「定位」回到目前選取城；連按地圖空白處可進入或退出全螢幕。全螢幕時連按城池仍只會選取城池。"
             )
         );
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);

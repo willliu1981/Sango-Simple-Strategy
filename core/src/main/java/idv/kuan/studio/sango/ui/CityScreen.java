@@ -207,15 +207,10 @@ public final class CityScreen extends SuiScreen {
     }
 
     private void applyDomesticActionButtonTexts() {
-        button("pacify_button").setText(multilineText(
-            "button_pacify", "安民｜100 金、50 糧\\n民心最高 95"));
-        button("recruit_button").setText(multilineText("button_recruit", "徵兵｜選擇人數\\n按實際人數計算金糧"));
-        button("train_button").setText(text("button_train_format", "訓練｜{0} 金\\n最多覆蓋 {1} 兵",
-            DomesticActionType.TRAIN.getGoldCost(), numberFormat.format(OfficerCommandProfile.DEFAULT.trainingCoverage())));
-    }
-
-    private String multilineText(String key, String fallbackText) {
-        return text(key, fallbackText).replace("\\n", "\n");
+        button("pacify_button").setText(text("button_pacify", "巡查｜100 金、50 糧"));
+        button("recruit_button").setText(text("button_recruit", "徵兵｜金糧依人數計算"));
+        button("train_button").setText(text("button_train_format", "訓練｜{0} 金",
+            DomesticActionType.TRAIN.getGoldCost()));
     }
 
     private void bindActions() {
@@ -353,7 +348,7 @@ public final class CityScreen extends SuiScreen {
         if (actionType == DomesticActionType.PACIFY) {
             return text(
                 "city_status_pacify_result_format",
-                "完成安民：民心 {0} → {1}。金 -100、糧 -50。",
+                "完成巡查：民心 {0} → {1}。金 -100、糧 -50。",
                 before.publicOrder,
                 after.publicOrder
             );
@@ -598,7 +593,7 @@ public final class CityScreen extends SuiScreen {
             text("help_city_title", "內政操作說明"),
             text(
                 "help_city_body",
-                "金、糧是全勢力共用資源；人口屬於本城，會限制徵兵並受人口容量影響。農業提高秋收，商業提高季末商稅，治水降低夏季洪災風險與損失，城防影響守城。訓練與士氣會影響部隊作戰表現。\n\n民心會影響治理與新兵素質；安民可提升民心但最高只到 95。民心至少 95，且沒有缺糧、洪災或易主時，每次月底累計一個合格月；連續第 3 次月底起回復 1 點，之後每個合格月底再回復 1 點，最高 100。\n\n例：1 月安民到 95，若 1、2、3 月月底都符合條件，3 月月底升到 96；期間跌破 95 或發生不合格事件，累計會歸零。"
+                "金、糧是全勢力共用資源；人口屬於本城，會限制徵兵並受人口容量影響。農業提高秋收，商業提高季末商稅，治水降低夏季洪災風險與損失，城防影響守城。訓練與士氣會影響部隊作戰表現。\n\n巡查消耗 1 AP、100 金與 50 糧，可提升民心但最高只到 90；徵兵的金糧成本依人數計算；訓練消耗 1 AP 與 50 金，單次最多覆蓋 20,000 兵。徵兵不會降低民心。\n\n民心至少 90，且沒有缺糧、洪災或易主時，每次月底累計一個合格月；連續第 3 次月底起回復 1 點，之後每個合格月底再回復 1 點，最高 100。\n\n例：1 月巡查到 90，若 1、2、3 月月底都符合條件，3 月月底升到 91；期間跌破 90 或發生不合格事件，累計會歸零。"
             )
         );
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);
@@ -827,7 +822,7 @@ public final class CityScreen extends SuiScreen {
             );
             case PACIFY -> text(
                 "city_status_pacify_success",
-                "完成安民，民心已提升。"
+                "完成巡查，民心已提升。"
             );
             case FORTIFY -> text(
                 "city_status_fortify_success",

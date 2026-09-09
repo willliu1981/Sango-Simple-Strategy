@@ -72,7 +72,7 @@ public final class CityIntelligenceService {
                 snapshot.troops, snapshot.population,
                 snapshot.agriculture, snapshot.commerce, snapshot.waterControl,
                 snapshot.defense, snapshot.training, snapshot.morale, snapshot.publicOrder,
-                snapshot.defensePolicy);
+                null);
         }
         int estimate = 800 + Math.floorMod(cityId.hashCode(), 13) * 100;
         return new KnownCityView(cityId, city.ownerFactionId, false, 0, 0, 0, false, 0,

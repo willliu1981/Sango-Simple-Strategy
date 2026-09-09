@@ -17,7 +17,7 @@ public final class ReportCatalogSmokeTest {
         BattleReport attack = battle("attack", "player", "enemy-b", 11);
         state.battleReports = new BattleReport[] { other, defense, attack };
         List<BattleReport> world = BattleReportCatalog.world(state);
-        require(world.equals(List.of(other)), "World must show only the latest battle, regardless of faction");
+        require(world.equals(List.of(other)), "World must show the latest battle month");
         require(state.battleReports[0] == other, "Sorting must not reorder saved history");
         other.read = true;
         require(BattleReportCatalog.world(state).get(0).read, "Read state must be shared, not copied or removed");
@@ -29,7 +29,10 @@ public final class ReportCatalogSmokeTest {
         require(BattleReportCatalog.latestCities(state).size() == 2, "Old city battles must not inflate alerts");
         BattleReport sameTurn = battle("same-turn", "player", "enemy-b", 12);
         state.battleReports = new BattleReport[] {other, defense, attack, sameTurn};
-        require(BattleReportCatalog.world(state).equals(List.of(sameTurn)), "Same turn must prefer last recorded battle");
+        require(BattleReportCatalog.world(state).equals(List.of(sameTurn)),
+            "Same turn must prefer the player's latest battle");
+        require(BattleReportCatalog.latestForCity(state, "city-a") == attack,
+            "City reports must resolve to that city's latest battle");
         state.battleReports = new BattleReport[] {other, defense, attack};
 
         TurnResolutionReport month = new TurnResolutionReport(190, 1);
