@@ -1,6 +1,7 @@
 package idv.kuan.studio.sango.ui.support;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
@@ -12,17 +13,25 @@ public final class BattleReportCatalog {
     private BattleReportCatalog() { }
 
     public static List<BattleReport> world(GameState state) {
-        BattleReport latest = latest(state);
-        return latest == null ? List.of() : List.of(latest);
+        if (state == null || state.battleReports == null) return List.of();
+        int latestTurn = -1;
+        for (BattleReport report : state.battleReports) {
+            if (report != null) latestTurn = Math.max(latestTurn, report.resolvedTurn);
+        }
+        if (latestTurn < 0) return List.of();
+        List<BattleReport> reports = new ArrayList<>();
+        for (BattleReport report : state.battleReports) {
+            if (report != null && report.resolvedTurn == latestTurn) reports.add(report);
+        }
+        reports.sort(Comparator
+            .comparing((BattleReport report) -> !report.involvesFaction(state.playerFactionId))
+            .thenComparing(report -> report.battleId, Comparator.reverseOrder()));
+        return reports;
     }
 
     public static BattleReport latest(GameState state) {
-        BattleReport latest = null;
-        if (state.battleReports == null) return null;
-        for (BattleReport report : state.battleReports) {
-            if (isNewerForWorld(state, report, latest)) latest = report;
-        }
-        return latest;
+        List<BattleReport> reports = world(state);
+        return reports.isEmpty() ? null : reports.get(0);
     }
 
     public static BattleReport latestForCity(GameState state, String cityId) {
@@ -55,19 +64,6 @@ public final class BattleReportCatalog {
         return candidate != null && (current == null || candidate.resolvedTurn > current.resolvedTurn
             || (candidate.resolvedTurn == current.resolvedTurn
                 && candidate.battleId.compareTo(current.battleId) > 0));
-    }
-
-    private static boolean isNewerForWorld(
-        GameState state, BattleReport candidate, BattleReport current
-    ) {
-        if (candidate == null) return false;
-        if (current == null || candidate.resolvedTurn != current.resolvedTurn) {
-            return current == null || candidate.resolvedTurn > current.resolvedTurn;
-        }
-        boolean candidateInvolvesPlayer = candidate.involvesFaction(state.playerFactionId);
-        boolean currentInvolvesPlayer = current.involvesFaction(state.playerFactionId);
-        if (candidateInvolvesPlayer != currentInvolvesPlayer) return candidateInvolvesPlayer;
-        return candidate.battleId.compareTo(current.battleId) > 0;
     }
 
     public static List<BattleReport> playerMonth(GameState state, TurnResolutionReport month) {

@@ -59,10 +59,10 @@
                     <label id="selected_city_name_label" fontKey="title" fontSize="45" width="590" height="56"
                         color="0.92,0.74,0.40,1">${text:map_selected_city_placeholder}</label>
                     <row />
-                    <label id="selected_city_owner_label" fontSize="26" width="590" height="34"
+                    <label id="selected_city_owner_label" fontSize="26" width="590" height="44"
                         align="left" textAlign="left">${text:map_owner_placeholder}</label>
                     <row />
-                    <label id="selected_city_intel_label" fontSize="24" width="590" height="76"
+                    <label id="selected_city_intel_label" fontSize="24" width="590" height="64"
                         align="left" textAlign="left" wrap="true" color="0.79,0.73,0.63,1">${text:map_intel_placeholder}</label>
                     <row />
                     <label id="selected_city_stats_label" fontSize="24" width="590" height="66"
@@ -71,9 +71,12 @@
                     <label id="selected_city_route_label" fontSize="23" width="590" height="58"
                         align="left" textAlign="left" wrap="true" color="0.68,0.62,0.54,1">${text:map_route_placeholder}</label>
                     <row />
-                    <table id="defense_policy_panel" width="590" height="106">
-                        <label fontKey="title" fontSize="30" width="590" height="40"
+                    <table id="defense_policy_panel" width="590" height="140">
+                        <label fontKey="title" fontSize="30" width="590" height="34"
                             color="0.86,0.68,0.37,1">${text:map_defense_policy_heading}</label>
+                        <row />
+                        <label id="defense_policy_result_label" fontSize="21" width="590" height="28"
+                            align="left" textAlign="left" color="0.79,0.73,0.63,1">${text:map_defense_policy_result_placeholder}</label>
                         <row />
                         <table width="590" height="62">
                             <textButton id="defense_assault_button" fontSize="24" width="182" height="58">${text:tactic_assault}</textButton>

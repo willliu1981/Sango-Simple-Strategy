@@ -90,6 +90,9 @@
                     <label fontSize="25" width="1020" height="58" wrap="true"
                         color="0.70,0.65,0.56,1">${text:city_actions_note}</label>
                     <row />
+                    <label id="city_faction_resources_label" fontSize="25" width="1020" height="36"
+                        align="left" textAlign="left" color="0.94,0.78,0.44,1">${text:city_faction_resources_placeholder}</label>
+                    <row />
                     <table width="1020" height="390" padTop="8">
                         <textButton id="agriculture_button" fontSize="29" width="485" height="82">${text:button_agriculture}</textButton>
                         <textButton id="commerce_button" fontSize="29" width="485" height="82" padLeft="24">${text:button_commerce}</textButton>

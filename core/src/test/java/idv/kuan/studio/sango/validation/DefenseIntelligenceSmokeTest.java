@@ -25,6 +25,7 @@ import idv.kuan.studio.sango.domain.rule.MilitaryRules;
 import idv.kuan.studio.sango.domain.service.BattleResolutionService;
 import idv.kuan.studio.sango.domain.service.CityIntelligenceService;
 import idv.kuan.studio.sango.domain.service.EnemyTurnService;
+import idv.kuan.studio.sango.domain.service.FactionIntelligenceEstimateService;
 import idv.kuan.studio.sango.domain.service.KnownCityView;
 import idv.kuan.studio.sango.repository.definition.AssetJsonGameDefinitionRepository;
 import idv.kuan.studio.sango.repository.save.GameStateMigrator;
@@ -108,6 +109,24 @@ public final class DefenseIntelligenceSmokeTest {
             "三個月情報包含偵察當月");
         check(scouted.requireFactionState(target.ownerFactionId).cityIntelligence.length == 0,
             "各勢力情報彼此隔離");
+        FactionIntelligenceEstimateService estimateService = new FactionIntelligenceEstimateService();
+        FactionIntelligenceEstimateService.FactionEstimate estimate = estimateService.estimate(
+            scouted, scouted.playerFactionId, target.ownerFactionId);
+        int estimatedGoldUpper = estimate.goldUpper();
+        scouted.requireFactionState(target.ownerFactionId).gold += 99_999;
+        scouted.requireFactionState(target.ownerFactionId).food += 99_999;
+        scouted.requireFactionState(target.ownerFactionId).aiActionPointsRemaining = 9;
+        check(estimateService.estimate(scouted, scouted.playerFactionId, target.ownerFactionId)
+            .goldUpper() == estimatedGoldUpper,
+            "勢力估算不讀取敵方真實國庫或行動力");
+        GameState fullyScouted = result.getGameState().copy();
+        for (CityState city : fullyScouted.cityStates) {
+            if (target.ownerFactionId.equals(city.ownerFactionId)) {
+                intelligence.observe(fullyScouted, fullyScouted.playerFactionId, city.cityId);
+            }
+        }
+        check(estimateService.estimate(fullyScouted, fullyScouted.playerFactionId, target.ownerFactionId)
+            .allCitiesExact(), "偵察該勢力全部城池後可完成城池情報合計");
         scouted.requireCityState(targetId).troops += 777;
         check(intelligence.knownView(scouted, scouted.playerFactionId, targetId).troops()
             == observedTroops, "情報快照不隨真值變動");
@@ -207,8 +226,8 @@ public final class DefenseIntelligenceSmokeTest {
             && migrated.requireCityState(target.cityId).scoutedUntilTurn == 0,
             "舊玩家偵察保留原到期日且不偽造偵察年月");
         check(new CityIntelligenceService().knownView(
-            migrated, migrated.playerFactionId, target.cityId).defensePolicy() == null,
-            "偵察情報不揭露敵城防守方針");
+            migrated, migrated.playerFactionId, target.cityId).defensePolicy() == DefensePolicy.FEINT,
+            "偵察情報保留敵城防守方針");
     }
 
     private static void validateUi(Path assets) throws Exception {

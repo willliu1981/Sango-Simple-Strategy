@@ -8,7 +8,7 @@
         <entry name="report_retreat_disbanded" value="{0} 一帶部隊無可撤往的安全我方城池，{1} 兵潰散。" />
         <entry name="map_army_retreat_summary" value="{0} {1} 兵・士氣 {2}｜撤往 {3}（尚需 {4} 個月）" />
         <entry name="world_battle_heading" value="天下戰報" />
-        <entry name="world_battle_description" value="只顯示最新月份的一份戰報；同月優先我方戰事。已讀後仍可查看，各城入口則顯示該城最近一戰。" />
+        <entry name="world_battle_description" value="顯示最新月份的全部戰報；同月我方戰事排在前面。已讀後仍可查看，各城入口則顯示該城最近一戰。" />
         <entry name="world_battle_player" value="我方戰事" />
         <entry name="world_battle_other" value="其他勢力" />
         <entry name="world_battle_read" value="已讀" />
@@ -47,7 +47,7 @@
         <entry name="dispatch_status_insufficient_food_format" value="糧不足：本次需 {0} 糧，目前只有 {1}。" />
         <entry name="dispatch_status_army_active" value="我方已有部隊行軍中，需等待其抵達。" />
         <entry name="help_map_title" value="戰略圖操作說明" />
-        <entry name="help_map_body" value="金與糧由整個勢力共用；行動力（AP）限制本月可下達的命令。\n\n偵察與出征的目標必須和至少一座我方城有直接道路連接；運兵則可沿道路前往我方城池。偵察非我方城消耗 1 AP 與 20 金，情報維持三個月並包含偵察當月，但不會揭露防守方針。\n\n我方城可設定防守方針；出征戰術在派兵視窗選擇，只套用本次出征。雙方都可選強攻、誘敵或固守：強攻剋固守、固守剋誘敵、誘敵剋強攻。相剋方戰力加成 10%，同種無加成。\n\n桌機將滑鼠停在敵城，或按住敵城；Android 長按敵城時，同勢力城池會一起閃爍。我方與中立城不啟動此提示；提示期間會暫停戰報閃爍，放開或移開後恢復。\n\n使用＋、－縮放，「全圖」重設視野，「定位」回到選取城。快速點兩下地圖空白處可進入或退出全螢幕；全螢幕時單擊或雙擊城池都只會選取城池。\n\n勢力月報記錄我方收支、缺糧、災害與戰事；天下戰報顯示最新月份的一份戰報，同月優先我方戰事；城池戰報顯示此城最近一次戰鬥。" />
+        <entry name="help_map_body" value="金與糧由整個勢力共用；行動力（AP）限制本月可下達的命令。\n\n偵察與出征的目標必須和至少一座我方城有直接道路連接；運兵則可沿道路前往我方城池。偵察非我方城消耗 1 AP 與 20 金，情報維持三個月並包含偵察當月，可查看偵察當下的防守方針。點擊非我方勢力名稱可查看勢力情報；總金、糧、兵力與下月行動力皆為估算。\n\n我方城可設定防守方針；出征戰術在派兵視窗選擇，只套用本次出征。雙方都可選強攻、誘敵或固守：強攻剋固守、固守剋誘敵、誘敵剋強攻。相剋方戰力加成 10%，同種無加成。\n\n桌機將滑鼠停在敵城，或按住敵城；Android 長按敵城時，同勢力城池會一起閃爍。我方與中立城不啟動此提示；提示期間會暫停戰報閃爍，放開或移開後恢復。\n\n使用＋、－縮放，「全圖」重設視野，「定位」回到選取城。快速點兩下地圖空白處可進入或退出全螢幕；全螢幕時單擊或雙擊城池都只會選取城池。\n\n勢力月報記錄我方收支、缺糧、災害與戰事；天下戰報顯示最新月份的全部戰報，同月我方戰事排在前面；城池戰報顯示此城最近一次戰鬥。" />
         <entry name="help_city_title" value="內政操作說明" />
         <entry name="help_city_body" value="金、糧是全勢力共用資源；人口屬於本城。農業提高秋收，商業提高季末商稅，治水降低夏季洪災風險與損失，城防影響守城；訓練與士氣影響作戰表現。\n\n巡查消耗 1 AP、100 金與 50 糧，可提高民心，最高到 90。徵兵的金糧成本依人數計算，且不會降低民心。訓練消耗 1 AP 與 50 金，單次最多覆蓋 20,000 兵。\n\n民心至少 90，且沒有缺糧、洪災或易主時，月底累計一個穩定月；連續第 3 個合格月底起，每月自然提高 1 點，最高 100。不合格時累計歸零，不代表直接扣除民心。\n\n缺軍糧會造成逃兵，並依缺口比例降低駐軍與行軍部隊士氣。缺一半軍糧扣 10 點，完全缺糧扣 20 點；士氣最低 0。補足軍糧不會立即回復已失去的士氣。" />
         <entry name="help_recruit_title" value="徵兵說明" />
@@ -176,13 +176,15 @@
         <entry name="stat_harvest" value="預估秋收" description="stat_harvest" />
         <entry name="city_season_forecast_placeholder" value="季節預估尚未載入。" description="city_season_forecast_placeholder" />
         <entry name="city_season_forecast_format" value="距季末商稅 {0} 個月｜距九月秋收 {1} 個月｜夏季洪災風險 {2}%｜每月軍糧依總兵力結算" description="city_season_forecast_format" />
-        <entry name="button_agriculture" value="開墾（50 金）" description="button_agriculture" />
-        <entry name="button_commerce" value="商業開發（50 金）" description="button_commerce" />
-        <entry name="button_water_control" value="治水（80 金）" description="button_water_control" />
-        <entry name="button_fortify" value="修築城防（100 金）" description="button_fortify" />
-        <entry name="button_recruit" value="徵兵｜金糧依人數計算" description="button_recruit" />
-        <entry name="button_train" value="訓練｜50 金\n最多覆蓋 20,000 兵" description="button_train" />
+        <entry name="button_agriculture" value="開墾｜50 金" description="button_agriculture" />
+        <entry name="button_commerce" value="商業開發｜50 金" description="button_commerce" />
+        <entry name="button_water_control" value="治水｜80 金" description="button_water_control" />
+        <entry name="button_fortify" value="修築城防｜100 金" description="button_fortify" />
+        <entry name="button_recruit" value="徵兵" description="button_recruit" />
+        <entry name="button_train" value="訓練｜50 金" description="button_train" />
         <entry name="city_status_ready" value="內政投資不會立即產生金糧；收益會在季末或秋收結算。" description="city_status_ready" />
+        <entry name="city_faction_resources_placeholder" value="金 0｜糧 0" description="city_faction_resources_placeholder" />
+        <entry name="city_faction_resources_format" value="金 {0}｜糧 {1}" description="city_faction_resources_format" />
         <entry name="city_status_load_failed" value="無法載入戰局；請返回 Lobby 並建立新局。" description="city_status_load_failed" />
         <entry name="city_status_save_failed" value="存檔失敗，因此本次命令沒有套用。" description="city_status_save_failed" />
         <entry name="city_status_action_failed" value="內政命令執行失敗，戰局狀態未更新。" description="city_status_action_failed" />
@@ -209,6 +211,7 @@
         <entry name="map_army_none" value="目前沒有行軍中的部隊。" description="map_army_none" />
         <entry name="map_selected_city_placeholder" value="尚未選取城池" description="map_selected_city_placeholder" />
         <entry name="map_owner_placeholder" value="所屬：尚未載入" description="map_owner_placeholder" />
+        <entry name="map_owner_intelligence_hint" value="（點擊查看勢力情報）" description="map_owner_intelligence_hint" />
         <entry name="map_intel_placeholder" value="情報尚未載入。" description="map_intel_placeholder" />
         <entry name="map_stats_placeholder" value="城池狀態尚未載入。" description="map_stats_placeholder" />
         <entry name="map_route_placeholder" value="道路資訊尚未載入。" description="map_route_placeholder" />
@@ -244,10 +247,17 @@
         <entry name="map_intel_own_city" value="本城即時資料" description="map_intel_own_city" />
         <entry name="map_intel_scout_date_format" value="{0} 年 {1} 月偵察" description="map_intel_scout_date_format" />
         <entry name="map_intel_legacy" value="舊存檔情報" description="map_intel_legacy" />
-        <entry name="map_intel_estimate_format" value="兵力：約 {0}～{1}｜情報不足；偵察可取得三個月快照（含當月）。" description="map_intel_estimate_format" />
-        <entry name="map_stats_unknown" value="城防、訓練、士氣、民心、內政與防守方針尚未掌握。" description="map_stats_unknown" />
-        <entry name="map_stats_format" value="城防 {0}｜訓練 {1}｜士氣 {2}｜民心 {3}　農業 {4}｜商業 {5}｜治水 {6}｜防守 {7}" description="map_stats_format" />
+        <entry name="map_intel_estimate_format" value="兵力：約 {0}～{1}｜尚未取得偵察情報。" description="map_intel_estimate_format" />
+        <entry name="map_stats_unknown" value="城防、訓練、士氣、民心與內政尚未掌握。" description="map_stats_unknown" />
+        <entry name="map_stats_format" value="城防 {0}｜訓練 {1}｜士氣 {2}｜民心 {3}　農業 {4}｜商業 {5}｜治水 {6}" description="map_stats_format" />
         <entry name="defense_policy_unknown" value="未知" description="defense_policy_unknown" />
+        <entry name="map_defense_policy_result_placeholder" value="尚未取得防守方針情報。" description="map_defense_policy_result_placeholder" />
+        <entry name="map_defense_policy_current_format" value="目前設定：{0}" description="map_defense_policy_current_format" />
+        <entry name="map_defense_policy_scouted_format" value="偵察結果：{0}" description="map_defense_policy_scouted_format" />
+        <entry name="faction_intelligence_title_format" value="{0}・勢力情報" description="faction_intelligence_title_format" />
+        <entry name="faction_intelligence_complete" value="全部城池已有有效偵察快照。" description="faction_intelligence_complete" />
+        <entry name="faction_intelligence_partial_format" value="已掌握 {0}／{1} 座城池；未掌握城池會擴大估算範圍。" description="faction_intelligence_partial_format" />
+        <entry name="faction_intelligence_body_format" value="{0}\n\n兵力估算：{1}～{2}\n國庫估算：金 {3}～{4}｜糧 {5}～{6}\n下月行動力估算：{7}～{8} AP\n\n估算依有效偵察快照、已知城池數與公開規則推算；不會讀取敵方實際國庫、行軍部隊或本月剩餘行動力。" description="faction_intelligence_body_format" />
         <entry name="defense_policy_balanced" value="均衡防守" description="defense_policy_balanced" />
         <entry name="defense_policy_aggressive" value="積極迎戰" description="defense_policy_aggressive" />
         <entry name="defense_policy_hold" value="固守城池" description="defense_policy_hold" />
@@ -455,7 +465,7 @@
         <entry name="settings_save_before_exit_failed" value="保存失敗，已取消返回或退出。" description="settings_save_before_exit_failed" />
         <entry name="gameplay_guide_title" value="玩法說明" description="gameplay_guide_title" />
         <entry name="gameplay_guide_description" value="從每月流程開始，快速掌握經營、軍事、情報與存檔。" description="gameplay_guide_description" />
-        <entry name="gameplay_guide_content" value="【遊戲目標】\n選擇一方勢力，在期限內完成劇本指定的攻城目標。目標達成或失敗後仍可繼續自由征戰；失去所有城池則無法再推進月份。\n\n【每月怎麼玩】\n先在戰略地圖查看城池、道路、目標與共用資源，再進入我方城池執行內政或徵兵；需要時可偵察敵城、運兵增援或出征。安排完成後按「結束月份」，統一結算收入、軍糧、行軍、戰鬥、災害與敵軍行動。未使用的行動力不會保留。\n\n【資源與城池】\n金與糧由全勢力共用，人口、城防、訓練、士氣與民心則屬於各城。農業提高九月秋收，商業提高季末稅金，治水降低六月洪災風險，城防強化守城。徵兵會消耗人口與資源，但不會降低民心；訓練和士氣會影響部隊戰力。\n\n【軍糧與民心】\n駐軍和行軍部隊每月都需要軍糧。缺糧會造成逃兵與士氣下降，也會中斷高民心的自然恢復。巡查可直接提升民心至 90；維持民心、供糧與城市安全，之後可逐步自然提升至 100。\n\n【情報與道路】\n偵察非我方城消耗 1 行動力與 20 金，取得三個月情報並包含當月。情報是偵察當下的快照，不會隨目標之後的調兵自動更新，也不會揭露敵城防守方針。玩家與電腦遵守相同規則，各勢力情報互不相通。\n\n【出征、防守與戰報】\n出征時在派兵視窗選擇本次戰術；運兵不使用戰術。我方每座城可設定強攻、誘敵或固守。強攻剋固守、固守剋誘敵、誘敵剋強攻；相剋方戰力加成 10%，同種無加成。戰敗生還者需要沿安全道路撤退。勢力月報整理我方收支、缺糧、災害與戰事；天下戰報顯示最新月份的一份戰報，同月優先我方戰事；城池戰報顯示此城最近一次戰鬥。\n\n【存檔與反悔】\n一般內政、偵察、運兵與出征不會立即存檔；想取消尚未保存的操作，可讀取存檔回到上次保存狀態。建立新局、月份結算、手動存檔，以及從遊戲選單返回大廳或離開遊戲時會保存。\n\n【操作提示】\n各主要畫面的「操作說明」會補充當前功能、成本與限制；實際消耗以確認畫面顯示為準。" description="gameplay_guide_content" />
+        <entry name="gameplay_guide_content" value="【遊戲目標】\n選擇一方勢力，在期限內完成劇本指定的攻城目標。目標達成或失敗後仍可繼續自由征戰；失去所有城池則無法再推進月份。\n\n【每月怎麼玩】\n先在戰略地圖查看城池、道路、目標與共用資源，再進入我方城池執行內政或徵兵；需要時可偵察敵城、運兵增援或出征。安排完成後按「結束月份」，統一結算收入、軍糧、行軍、戰鬥、災害與敵軍行動。未使用的行動力不會保留。\n\n【資源與城池】\n金與糧由全勢力共用，人口、城防、訓練、士氣與民心則屬於各城。農業提高九月秋收，商業提高季末稅金，治水降低六月洪災風險，城防強化守城。徵兵會消耗人口與資源，但不會降低民心；訓練和士氣會影響部隊戰力。\n\n【軍糧與民心】\n駐軍和行軍部隊每月都需要軍糧。缺糧會造成逃兵與士氣下降，也會中斷高民心的自然恢復。巡查可直接提升民心至 90；維持民心、供糧與城市安全，之後可逐步自然提升至 100。\n\n【情報與道路】\n偵察非我方城消耗 1 行動力與 20 金，取得三個月情報並包含當月。情報是偵察當下的快照，可查看當時的防守方針；目標之後的調兵或改變方針不會自動更新。點擊非我方勢力名稱可查看勢力的金、糧、兵力與下月行動力估算；數值不會讀取敵方真實國庫、行軍部隊或本月剩餘行動力。玩家與電腦遵守相同規則，各勢力情報互不相通。\n\n【出征、防守與戰報】\n出征時在派兵視窗選擇本次戰術；運兵不使用戰術。我方每座城可設定強攻、誘敵或固守。強攻剋固守、固守剋誘敵、誘敵剋強攻；相剋方戰力加成 10%，同種無加成。戰敗生還者需要沿安全道路撤退。勢力月報整理我方收支、缺糧、災害與戰事；天下戰報顯示最新月份的全部戰報，同月我方戰事排在前面；城池戰報顯示此城最近一次戰鬥。\n\n【存檔與反悔】\n一般內政、偵察、運兵與出征不會立即存檔；想取消尚未保存的操作，可讀取存檔回到上次保存狀態。建立新局、月份結算、手動存檔，以及從遊戲選單返回大廳或離開遊戲時會保存。\n\n【操作提示】\n各主要畫面的「操作說明」會補充當前功能、成本與限制；實際消耗以確認畫面顯示為準。" description="gameplay_guide_content" />
         <entry name="button_back_to_settings" value="返回設定" description="button_back_to_settings" />
         <entry name="city_status_player_eliminated" value="我方已失去全部城池，不能再下達命令或推進月份。" description="city_status_player_eliminated" />
         <entry name="scenario_china_name" value="漢末群雄・全國征戰" description="scenario_china_name" />
@@ -553,7 +563,7 @@
         <entry name="recruitment_placeholder" value="--" description="recruitment_placeholder" />
         <entry name="recruitment_limit_format" value="人口 {0}｜至少保留 {1}｜人口徵兵上限 {2}｜資源允許 {3} 人" description="recruitment_limit_format" />
         <entry name="recruitment_order_format" value="本城民心 {0}｜全勢力平均 {1}｜有效民心 {2}｜新兵訓練 {3}、士氣 {4}" description="recruitment_order_format" />
-        <entry name="recruitment_preview_format" value="徵兵 {0} 人；人口剩餘 {1}\n金 -{2}、糧 -{3}；消耗 1 AP\n全軍訓練 {4} → {5}；士氣 {6} → {7}" description="recruitment_preview_format" />
+        <entry name="recruitment_preview_format" value="徵兵 {0} 人；人口剩餘 {1}\n金 -{2}、糧 -{3}；剩餘：金 {4}、糧 {5}；消耗 1 AP\n全軍訓練 {6} → {7}；士氣 {8} → {9}" description="recruitment_preview_format" />
         <entry name="recruitment_ready" value="確認後才會扣除人口、金糧與行動力；取消不消耗資源。" description="recruitment_ready" />
         <entry name="recruitment_invalid_amount" value="請輸入 1 到 10000 之間的徵兵數量。" description="recruitment_invalid_amount" />
         <entry name="recruitment_limit_exceeded" value="超過本城本次可徵兵上限。" description="recruitment_limit_exceeded" />

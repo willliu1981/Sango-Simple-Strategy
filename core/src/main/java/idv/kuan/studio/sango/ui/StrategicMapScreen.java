@@ -15,6 +15,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -22,6 +23,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
 import idv.kuan.studio.libgdx.simpleui.Sui;
@@ -53,6 +55,7 @@ import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.domain.rule.DefensePolicy;
 import idv.kuan.studio.sango.domain.service.CityIntelligenceService;
+import idv.kuan.studio.sango.domain.service.FactionIntelligenceEstimateService;
 import idv.kuan.studio.sango.domain.service.KnownCityView;
 import idv.kuan.studio.sango.domain.rule.SeasonalEconomyRules;
 import idv.kuan.studio.sango.domain.rule.StrategicActionFailureReason;
@@ -84,6 +87,8 @@ public final class StrategicMapScreen extends SuiScreen {
     private final NumberFormat numberFormat = NumberFormat.getIntegerInstance(Locale.TAIWAN);
     private final MonthEndFlowController monthEndFlowController = new MonthEndFlowController();
     private final CityIntelligenceService intelligenceService = new CityIntelligenceService();
+    private final FactionIntelligenceEstimateService factionIntelligenceEstimateService =
+        new FactionIntelligenceEstimateService();
     private final SetDefensePolicyCommand setDefensePolicyCommand = new SetDefensePolicyCommand();
 
     private Actor endMonthConfirmMask;
@@ -154,6 +159,13 @@ public final class StrategicMapScreen extends SuiScreen {
             text("context_help_close", "關閉")
         );
         bindActions();
+        label("selected_city_owner_label").setTouchable(Touchable.enabled);
+        label("selected_city_owner_label").addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                showSelectedFactionIntelligence();
+            }
+        });
         currentStatusMessage = text("map_status_ready", "選擇城池以管理、偵察或出征。");
         animateEntrance();
     }
@@ -447,8 +459,9 @@ public final class StrategicMapScreen extends SuiScreen {
             button("show_last_report_button"),
             lastTurnReport != null
         );
-        BattleReport latestWorldBattle = BattleReportCatalog.latest(gameState);
-        int unreadBattleCount = latestWorldBattle != null && !latestWorldBattle.read ? 1 : 0;
+        int unreadBattleCount = (int) BattleReportCatalog.world(gameState).stream()
+            .filter(report -> !report.read)
+            .count();
         button("show_unread_battle_button").setText(
             text("button_world_battle_reports_format", "天下戰報（未讀{0}）", unreadBattleCount)
         );
@@ -637,10 +650,13 @@ public final class StrategicMapScreen extends SuiScreen {
             ? dispatchOriginCityState : scoutOriginCityState;
 
         label("selected_city_name_label").setText(cityName(selectedCityState.cityId));
-        label("selected_city_owner_label").setText(
+        Label ownerLabel = label("selected_city_owner_label");
+        ownerLabel.setText(
             text("map_owner_prefix", "所屬：")
                 + localized(ownerDefinition.nameKey, ownerDefinition.id)
+                + (playerOwned ? "" : text("map_owner_intelligence_hint", "（點擊查看勢力情報）"))
         );
+        ownerLabel.setTouchable(playerOwned ? Touchable.disabled : Touchable.enabled);
         label("selected_city_intel_label").setText(
             buildIntelligenceText(gameState, knownCity, playerOwned)
         );
@@ -660,12 +676,27 @@ public final class StrategicMapScreen extends SuiScreen {
 
         boolean gameplayActive = gameState.gameplayStatus == GameplayStatus.ACTIVE;
         Actor defensePolicyPanel = ui.getActor("defense_policy_panel");
-        defensePolicyPanel.setVisible(playerOwned);
+        DefensePolicy visibleDefensePolicy = playerOwned
+            ? selectedCityState.defensePolicy
+            : knownCity.exact() ? knownCity.defensePolicy() : null;
+        boolean showDefensePolicy = visibleDefensePolicy != null;
+        defensePolicyPanel.setVisible(showDefensePolicy);
         defensePolicyPanel.setTouchable(playerOwned ? Touchable.enabled : Touchable.disabled);
-        refreshDefensePolicyStyles(playerOwned ? selectedCityState.defensePolicy : null);
-        setButtonEnabled(button("defense_feint_button"), gameplayActive && playerOwned);
-        setButtonEnabled(button("defense_assault_button"), gameplayActive && playerOwned);
-        setButtonEnabled(button("defense_hold_button"), gameplayActive && playerOwned);
+        refreshDefensePolicyStyles(visibleDefensePolicy);
+        label("defense_policy_result_label").setText(showDefensePolicy
+            ? text(
+                playerOwned ? "map_defense_policy_current_format" : "map_defense_policy_scouted_format",
+                playerOwned ? "目前設定：{0}" : "偵察結果：{0}",
+                defensePolicyName(visibleDefensePolicy))
+            : "");
+        setButtonEnabled(button("defense_feint_button"), playerOwned && gameplayActive);
+        setButtonEnabled(button("defense_assault_button"), playerOwned && gameplayActive);
+        setButtonEnabled(button("defense_hold_button"), playerOwned && gameplayActive);
+        if (!playerOwned) {
+            button("defense_feint_button").setDisabled(false);
+            button("defense_assault_button").setDisabled(false);
+            button("defense_hold_button").setDisabled(false);
+        }
         setButtonEnabled(button("manage_city_button"), gameplayActive && playerOwned);
         setButtonEnabled(
             button("scout_city_button"),
@@ -713,27 +744,57 @@ public final class StrategicMapScreen extends SuiScreen {
         int upperBound = Math.max(100, (city.troops() * 125 / 100 + 99) / 100 * 100);
         return text(
             "map_intel_estimate_format",
-            "兵力：約 {0}～{1}｜情報不足；偵察可取得三個月快照（含當月）。",
+            "兵力：約 {0}～{1}｜尚未取得偵察情報。",
             numberFormat.format(lowerBound),
             numberFormat.format(upperBound)
         );
     }
 
+    private void showSelectedFactionIntelligence() {
+        GameState gameState = requireCurrentState();
+        if (gameState == null || !SangoServices.session().hasCurrentState()) {
+            return;
+        }
+        CityState selectedCity = gameState.requireCityState(SangoServices.session().getSelectedCityId());
+        if (gameState.playerFactionId.equals(selectedCity.ownerFactionId)) {
+            return;
+        }
+        FactionDefinition faction = SangoServices.definitions().requireFaction(selectedCity.ownerFactionId);
+        FactionIntelligenceEstimateService.FactionEstimate estimate = factionIntelligenceEstimateService.estimate(
+            gameState, gameState.playerFactionId, selectedCity.ownerFactionId);
+        String intelligenceState = estimate.allCitiesExact()
+            ? text("faction_intelligence_complete", "全部城池已有有效偵察快照。")
+            : text("faction_intelligence_partial_format", "已掌握 {0}／{1} 座城池；未掌握城池會擴大估算範圍。",
+                estimate.exactCityCount(), estimate.cityCount());
+        contextHelpOverlay.show(
+            text("faction_intelligence_title_format", "{0}・勢力情報", localized(faction.nameKey, faction.id)),
+            text(
+                "faction_intelligence_body_format",
+                "{0}\n\n兵力估算：{1}～{2}\n國庫估算：金 {3}～{4}｜糧 {5}～{6}\n下月行動力估算：{7}～{8} AP\n\n估算依有效偵察快照、已知城池數與公開規則推算；不會讀取敵方實際國庫、行軍部隊或本月剩餘行動力。",
+                intelligenceState,
+                numberFormat.format(estimate.troopsLower()), numberFormat.format(estimate.troopsUpper()),
+                numberFormat.format(estimate.goldLower()), numberFormat.format(estimate.goldUpper()),
+                numberFormat.format(estimate.foodLower()), numberFormat.format(estimate.foodUpper()),
+                estimate.actionPointsLower(), estimate.actionPointsUpper()
+            )
+        );
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
+    }
+
     private String buildSelectedCityStats(KnownCityView city) {
         if (!city.exact()) {
-            return text("map_stats_unknown", "城防、訓練、士氣、民心、內政與防守方針尚未掌握。");
+            return text("map_stats_unknown", "城防、訓練、士氣、民心與內政尚未掌握。");
         }
         return text(
             "map_stats_format",
-            "城防 {0}｜訓練 {1}｜士氣 {2}｜民心 {3}　農業 {4}｜商業 {5}｜治水 {6}｜防守 {7}",
+            "城防 {0}｜訓練 {1}｜士氣 {2}｜民心 {3}　農業 {4}｜商業 {5}｜治水 {6}",
             city.defense(),
             city.training(),
             city.morale(),
             city.publicOrder(),
             city.agriculture(),
             city.commerce(),
-            city.waterControl(),
-            defensePolicyName(city.defensePolicy())
+            city.waterControl()
         );
     }
 
@@ -1472,7 +1533,7 @@ public final class StrategicMapScreen extends SuiScreen {
             text("help_map_title", "戰略圖操作說明"),
             text(
                 "help_map_body",
-                "金與糧由整個勢力共用；行動力（AP）則限制本月可下達的命令。\n\n城池之間必須有道路才能偵察、出征或運兵；出征只能選與目標相鄰的我方城，運兵可選任何沿道路可達的我方城。偵察消耗 1 AP 與 20 金，取得三個月且包含當月的快照，但不會揭露防守方針。\n\n我方城可設定持續生效的防守方針；出征戰術只在派兵視窗選擇並套用本次攻擊。強攻剋固守、固守剋誘敵、誘敵剋強攻。\n\n桌機將滑鼠停在敵城，或按住敵城；Android 長按敵城時，同勢力城池會一起閃爍。我方與中立城不啟動此提示；提示期間會暫停戰報閃爍，放開或移開後恢復。\n\n使用＋、－縮放地圖，「全圖」重設視野，「定位」回到目前選取城；連按地圖空白處可進入或退出全螢幕。全螢幕時連按城池仍只會選取城池。"
+                "金與糧由整個勢力共用；行動力（AP）則限制本月可下達的命令。\n\n城池之間必須有道路才能偵察、出征或運兵；出征只能選與目標相鄰的我方城，運兵可選任何沿道路可達的我方城。偵察消耗 1 AP 與 20 金，取得三個月且包含當月的快照，可查看偵察當下的防守方針。\n\n我方城可設定持續生效的防守方針；出征戰術只在派兵視窗選擇並套用本次攻擊。強攻剋固守、固守剋誘敵、誘敵剋強攻。\n\n桌機將滑鼠停在敵城，或按住敵城；Android 長按敵城時，同勢力城池會一起閃爍。我方與中立城不啟動此提示；提示期間會暫停戰報閃爍，放開或移開後恢復。\n\n使用＋、－縮放地圖，「全圖」重設視野，「定位」回到目前選取城；連按地圖空白處可進入或退出全螢幕。全螢幕時連按城池仍只會選取城池。"
             )
         );
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);

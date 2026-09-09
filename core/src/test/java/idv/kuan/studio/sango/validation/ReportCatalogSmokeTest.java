@@ -29,8 +29,8 @@ public final class ReportCatalogSmokeTest {
         require(BattleReportCatalog.latestCities(state).size() == 2, "Old city battles must not inflate alerts");
         BattleReport sameTurn = battle("same-turn", "player", "enemy-b", 12);
         state.battleReports = new BattleReport[] {other, defense, attack, sameTurn};
-        require(BattleReportCatalog.world(state).equals(List.of(sameTurn)),
-            "Same turn must prefer the player's latest battle");
+        require(BattleReportCatalog.world(state).equals(List.of(sameTurn, other)),
+            "World must retain every battle from the latest turn, with player battles first");
         require(BattleReportCatalog.latestForCity(state, "city-a") == attack,
             "City reports must resolve to that city's latest battle");
         state.battleReports = new BattleReport[] {other, defense, attack};

@@ -208,7 +208,7 @@ public final class CityScreen extends SuiScreen {
 
     private void applyDomesticActionButtonTexts() {
         button("pacify_button").setText(text("button_pacify", "巡查｜100 金、50 糧"));
-        button("recruit_button").setText(text("button_recruit", "徵兵｜金糧依人數計算"));
+        button("recruit_button").setText(text("button_recruit", "徵兵"));
         button("train_button").setText(text("button_train_format", "訓練｜{0} 金",
             DomesticActionType.TRAIN.getGoldCost()));
     }
@@ -441,6 +441,7 @@ public final class CityScreen extends SuiScreen {
         int amount = requestedRecruitmentAmount();
         int previewAmount = Math.max(0, Math.min(CampaignBalance.MAXIMUM_RECRUITMENT, amount));
         RecruitmentRules.Quote quote = RecruitmentRules.quote(gameState, cityState, previewAmount, OfficerCommandProfile.DEFAULT);
+        FactionState factionState = gameState.requirePlayerFactionState();
         NationalActionPointRules.PublicOrderSummary national = NationalActionPointRules.summarizePlayer(gameState);
         label("recruitment_title_label").setText(text("recruitment_title_format", "{0} · 徵兵", cityName(cityState.cityId)));
         label("recruitment_limit_label").setText(text("recruitment_limit_format", "人口 {0}｜至少保留 {1}｜人口徵兵上限 {2}｜資源允許 {3} 人",
@@ -450,9 +451,10 @@ public final class CityScreen extends SuiScreen {
             cityState.publicOrder, NationalOrderTextFormatter.formatAverage(national.averagePublicOrderTenths()),
             NationalOrderTextFormatter.formatAverage(PublicOrderRules.effectiveOrderHundredths(gameState, cityState) / 10),
             quote.recruitTraining(), quote.recruitMorale()));
-        label("recruitment_preview_label").setText(text("recruitment_preview_format", "徵兵 {0} 人；人口剩餘 {1}\\n金 -{2}、糧 -{3}；消耗 1 AP\\n全軍訓練 {4} → {5}；士氣 {6} → {7}",
+        label("recruitment_preview_label").setText(text("recruitment_preview_format", "徵兵 {0} 人；人口剩餘 {1}\\n金 -{2}、糧 -{3}；剩餘：金 {4}、糧 {5}；消耗 1 AP\\n全軍訓練 {6} → {7}；士氣 {8} → {9}",
             numberFormat.format(previewAmount), numberFormat.format(cityState.population - previewAmount),
             numberFormat.format(quote.goldCost()), numberFormat.format(quote.foodCost()),
+            numberFormat.format(factionState.gold - quote.goldCost()), numberFormat.format(factionState.food - quote.foodCost()),
             quality(TroopQualityRules.training(cityState)), quality(quote.resultingTraining()),
             quality(TroopQualityRules.morale(cityState)), quality(quote.resultingMorale())));
         DomesticActionFailureReason failure = DomesticActionRules.evaluate(gameState, recruitmentCityId, DomesticActionType.RECRUIT, amount);
@@ -662,6 +664,10 @@ public final class CityScreen extends SuiScreen {
 
         label("gold_value_label").setText(numberFormat.format(factionState.gold));
         label("food_value_label").setText(numberFormat.format(factionState.food));
+        label("city_faction_resources_label").setText(text(
+            "city_faction_resources_format", "金 {0}｜糧 {1}",
+            numberFormat.format(factionState.gold), numberFormat.format(factionState.food)
+        ));
         label("population_value_label").setText(numberFormat.format(cityState.population));
         label("troops_value_label").setText(numberFormat.format(cityState.troops));
         label("agriculture_value_label").setText(cityState.agriculture + " / 100");
