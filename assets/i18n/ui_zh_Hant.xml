@@ -62,7 +62,7 @@
         <entry name="lobby_intro" value="六大勢力逐鹿 42 城。治理人口、按需徵兵、分批訓練，在四季樂聲中自由征戰。" description="lobby_intro" />
         <entry name="lobby_main_menu" value="主選單" description="lobby_main_menu" />
         <entry name="lobby_vertical_slice" value="六勢力 · 全國 42 城 · 自由征戰" description="lobby_vertical_slice" />
-        <entry name="lobby_version" value="Strategy Prototype 0.6.0" description="lobby_version" />
+        <entry name="lobby_version" value="Strategy Prototype 0.6.2" description="lobby_version" />
         <entry name="button_continue" value="繼續遊戲" description="button_continue" />
         <entry name="button_new_game" value="開始新局" description="button_new_game" />
         <entry name="button_load_game" value="讀取存檔" description="button_load_game" />
