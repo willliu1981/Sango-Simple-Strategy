@@ -1,8 +1,8 @@
 # Sango 策略模組包
 
-這套工具把 Sango 的策略玩法來源整理成可稽核、可重現的 ZIP，供 Curated 的「群島紀元」同步工具讀取。它不是把 Curated 當成另一套規則維護；Sango 仍是玩法、UI、AI、存檔格式與回歸測試的唯一上游。
+這套工具把 Sango 的策略玩法來源整理成可稽核、可重現的 ZIP，供 Curated 端 Codex 協助同步「群島紀元」。它不是把 Curated 當成另一套規則維護；Sango 仍是玩法、UI、AI、存檔格式與回歸測試的唯一上游。
 
-目前是第一階段安全邊界，契約的 `installationMode` 固定為 `preflight-only`。Curated 安裝器可以驗證、列出差異與產生報告，但必須拒絕 live overwrite。待 Curated 的主程式接線、名詞轉換、島嶼資料與存檔隔離都形成可測試的明確 adapter 後，才可另行升級契約。
+目前契約的 `installationMode` 固定為 `preflight-only`，表示同步包本身不能直接覆寫 Curated。匯出器會另外產生已填好完整路徑的兩階段 Codex prompt；Codex 必須先實際比對並提出方案，取得使用者確認後才可修改 Curated。
 
 ## 內容與邊界
 
@@ -36,13 +36,19 @@ python tools/sango-module/export-sango-module.py --dry-run
 python tools/sango-module/export-sango-module.py --list
 ```
 
-建立模組包及旁置 SHA-256：
+建立模組包、旁置 SHA-256 及 Codex prompt：
 
 ```powershell
 python tools/sango-module/export-sango-module.py
 ```
 
-預設輸出為 `dist/sango-module-<gameVersion>.zip` 與同名 `.sha256`。也可用 `--output <path>` 指定位置。
+預設輸出為：
+
+- `dist/sango-module-<gameVersion>.zip`
+- `dist/sango-module-<gameVersion>.zip.sha256`
+- `dist/sango-module-<gameVersion>-codex-prompt.md`
+
+Prompt 內會直接寫入 ZIP 與 SHA-256 的絕對路徑，分成只盤點的 `!plan` 與確認後執行的 `!exec` 兩段。使用 `--output <path>` 指定其他 ZIP 位置時，另外兩個檔案也會產生在該 ZIP 的同一目錄。
 
 匯出器只取 Git 已追蹤的契約範圍，並在這些 tracked 來源有 staged 或 unstaged 變更時拒絕匯出；契約外的 untracked 檔案不會阻擋，也不會進包。這可避免 manifest 宣稱某個 commit，內容卻混入尚未提交的玩法修改。
 

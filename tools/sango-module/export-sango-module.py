@@ -301,6 +301,67 @@ def export_package(output: Path, contract_bytes: bytes, manifest: dict[str, Any]
     return digest
 
 
+def codex_prompt_path(output: Path) -> Path:
+    return output.with_name(f"{output.stem}-codex-prompt.md")
+
+
+def write_codex_prompt(output: Path) -> Path:
+    zip_path = str(output.resolve())
+    sha256_path = str(output.with_name(output.name + ".sha256").resolve())
+    prompt_path = codex_prompt_path(output)
+    content = f"""# Curated「群島紀元」同步 Sango 策略核心
+
+此檔由 Sango exporter 產生。請先把第一階段貼到 Curated 專案的 Codex；確認盤點方案後，再於同一個任務貼上第二階段。
+
+## 第一階段：只盤點
+
+```text
+!plan
+
+請協助把 Sango 策略核心同步到目前的 Curated「群島紀元」。
+
+Sango 同步來源包：
+{zip_path}
+
+SHA-256 驗證檔：
+{sha256_path}
+
+請先使用同名 .sha256 驗證 ZIP 完整性；不符時停止。接著讀取 ZIP 內的 manifest.json、package-contract.json 與 payload，並實際比對目前 Curated 程式、UI、資料、存檔及測試。
+
+同步原則：
+1. Sango 是玩法、UI 行為、AI、戰鬥、月份結算、存檔 schema 與回歸測試的唯一上游。
+2. Curated 不保留自行分岔的玩法；需要時以 Sango 現況重建群島策略核心。
+3. Curated 只保留群島名詞、島民人口尺度、島嶼地圖／劇本／素材、宿主導航與獨立存檔／偏好路徑。
+4. 不可直接覆寫 Curadia、塔防、學習功能、宿主 provider、全域字型、Skin、圖片、音訊或玩家資料。
+5. 不要只做文字取代；必須辨識資料模型、資源路徑、畫面生命週期及存檔差異。
+6. 先提出可直接同步、需要 adapter、需要遷移及需要我決定的項目。
+7. 本次只盤點與提出方案，不修改、不 commit。
+```
+
+## 第二階段：確認後執行
+
+```text
+!exec
+
+依照剛才確認的同步方案，把以下 Sango 同步來源包套用到 Curated「群島紀元」：
+{zip_path}
+
+請：
+1. 再次驗證 {sha256_path}；驗證不符時停止。
+2. 保留 Curated 專用名詞、人口尺度、島嶼資料、素材、宿主接線及獨立存檔位置。
+3. 其餘玩法以 Sango 為準，不保留 Curated 舊有玩法分岔。
+4. 完成必要的 package、資源路徑及資料 adapter。
+5. 處理舊存檔遷移，但不得修改或刪除實際玩家存檔。
+6. 移植並執行 Sango 回歸測試，再執行 Curated 編譯與既有測試。
+7. 記錄實際套用的 Sango gameVersion、sourceCommit、adapter 版本及未套用差異。
+8. 報告無法自動判斷的差異及剩餘風險。
+9. 不要自動 commit，等我確認後再 commit。
+```
+"""
+    prompt_path.write_text(content, encoding="utf-8", newline="\n")
+    return prompt_path
+
+
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="匯出可稽核、可重現的 Sango 策略模組包")
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[2], help="Sango repository 根目錄")
@@ -344,7 +405,9 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         output = (args.output or repo / f"dist/sango-module-{manifest['gameVersion']}.zip").resolve()
         digest = export_package(output, contract_bytes, manifest, files)
+        prompt_path = write_codex_prompt(output)
         print(f"已輸出：{output}")
+        print(f"Codex prompt：{prompt_path}")
         print(f"SHA-256：{digest}")
         print("安裝模式：preflight-only（Curated 不得 live overwrite）")
         return 0

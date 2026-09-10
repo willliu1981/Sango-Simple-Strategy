@@ -125,6 +125,16 @@ class ExporterTest(unittest.TestCase):
 
         digest = hashlib.sha256(first.read_bytes()).hexdigest()
         self.assertEqual(f"{digest}  first.zip\n", Path(str(first) + ".sha256").read_text(encoding="utf-8"))
+        first_prompt = first.with_name("first-codex-prompt.md")
+        prompt_text = first_prompt.read_text(encoding="utf-8")
+        self.assertIn(str(first.resolve()), prompt_text)
+        self.assertIn(str(Path(str(first) + ".sha256").resolve()), prompt_text)
+        self.assertIn("!plan", prompt_text)
+        self.assertIn("!exec", prompt_text)
+        self.assertNotEqual(
+            prompt_text,
+            second.with_name("second-codex-prompt.md").read_text(encoding="utf-8"),
+        )
 
     def test_list_and_dry_run_do_not_write_package(self) -> None:
         output = self.repo / "should-not-exist.zip"
@@ -132,10 +142,12 @@ class ExporterTest(unittest.TestCase):
         self.assertEqual(0, listed.returncode, listed.stderr)
         self.assertIn("domain/Rule.java", listed.stdout)
         self.assertFalse(output.exists())
+        self.assertFalse(output.with_name("should-not-exist-codex-prompt.md").exists())
         dry_run = self._run("--dry-run", "--output", str(output))
         self.assertEqual(0, dry_run.returncode, dry_run.stderr)
         self.assertIn("preflight-only", dry_run.stdout)
         self.assertFalse(output.exists())
+        self.assertFalse(output.with_name("should-not-exist-codex-prompt.md").exists())
 
     def test_unrelated_untracked_file_is_ignored_but_tracked_scope_change_fails(self) -> None:
         self._write("notes/untracked.txt", "not part of package\n")
