@@ -2,6 +2,7 @@ package idv.kuan.studio.sango.domain.model;
 
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.domain.rule.DefensePolicy;
+import idv.kuan.studio.sango.domain.rule.PostEncounterOrder;
 
 /**
  * 可持久化的單場戰鬥紀錄。
@@ -18,6 +19,12 @@ public final class BattleReport {
     public String attackerFactionId;
     public String defenderFactionId;
     public BattleTactic attackerTactic;
+    public boolean routeEncounter;
+    public BattleTactic defenderTactic;
+    public PostEncounterOrder attackerPostEncounterOrder;
+    public PostEncounterOrder defenderPostEncounterOrder;
+    public boolean attackerContinued;
+    public boolean defenderContinued;
     /** schema 10 起記錄守城當下的方針；舊戰報為 null。 */
     public DefensePolicy defenderPolicy;
     public boolean defenderPolicyRecorded;
@@ -61,6 +68,12 @@ public final class BattleReport {
         copiedReport.attackerFactionId = attackerFactionId;
         copiedReport.defenderFactionId = defenderFactionId;
         copiedReport.attackerTactic = attackerTactic;
+        copiedReport.routeEncounter = routeEncounter;
+        copiedReport.defenderTactic = defenderTactic;
+        copiedReport.attackerPostEncounterOrder = attackerPostEncounterOrder;
+        copiedReport.defenderPostEncounterOrder = defenderPostEncounterOrder;
+        copiedReport.attackerContinued = attackerContinued;
+        copiedReport.defenderContinued = defenderContinued;
         copiedReport.defenderPolicy = defenderPolicy;
         copiedReport.defenderPolicyRecorded = defenderPolicyRecorded;
         copiedReport.attackerTroopsBefore = attackerTroopsBefore;

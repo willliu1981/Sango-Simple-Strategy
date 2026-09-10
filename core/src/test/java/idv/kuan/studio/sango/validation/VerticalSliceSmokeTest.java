@@ -418,19 +418,14 @@ public final class VerticalSliceSmokeTest {
         gameState = commands.endTurnCommand.execute(SAVE_SLOT, gameState).getGameState();
         gameState = commands.endTurnCommand.execute(SAVE_SLOT, gameState).getGameState();
         gameState = commands.endTurnCommand.execute(SAVE_SLOT, gameState).getGameState();
+        gameState.requireCityState("guangling").ownerFactionId = PLAYER_FACTION_ID;
         TurnResolutionResult aprilResult = commands.endTurnCommand.execute(SAVE_SLOT, gameState);
         gameState = aprilResult.getGameState();
         assertContainsEvent(aprilResult, TurnEventType.ENEMY_MARCHING, "四月敵軍出征");
-        assertEquals(1, gameState.armyStates.length, "敵軍行軍部隊數");
+        assertEquals(0, gameState.armyStates.length,
+            "一個月道路的敵軍會在同次月結完成規劃與抵達");
 
-        gameState.requireCityState(PLAYER_CAPITAL_ID).troops = 1;
-        gameState.requireCityState("guangling").ownerFactionId = PLAYER_FACTION_ID;
-
-        TurnResolutionResult defeatResult = commands.endTurnCommand.execute(
-            SAVE_SLOT,
-            gameState
-        );
-        gameState = defeatResult.getGameState();
+        TurnResolutionResult defeatResult = aprilResult;
         assertTurnEventCityReferencesValid(
             definitionRepository,
             defeatResult,
@@ -451,7 +446,7 @@ public final class VerticalSliceSmokeTest {
         assertEquals("guangling", gameState.requirePlayerFactionState().capitalCityId, "敗北後替代主城");
         assertEquals(NationalActionPointRules.calculateMonthlyActionPoints(gameState), gameState.actionPointsRemaining, "遷都後恢復下月行動力");
         TurnResolutionResult continuedResult = commands.endTurnCommand.execute(SAVE_SLOT, gameState);
-        assertEquals(7, continuedResult.getGameState().currentMonth, "遷都後仍可繼續推進月份");
+        assertEquals(6, continuedResult.getGameState().currentMonth, "遷都後仍可繼續推進月份");
     }
 
     private static void validateTurnLimitFreePlay(
@@ -499,13 +494,10 @@ public final class VerticalSliceSmokeTest {
         );
         gameState = marchResult.getGameState();
         assertContainsEvent(marchResult, TurnEventType.ENEMY_MARCHING, "敵軍應建立行軍部隊");
-        assertEquals(1, gameState.armyStates.length, "敵軍行軍部隊數");
+        assertEquals(0, gameState.armyStates.length,
+            "一個月道路的敵軍會在同次月結完成抵達");
 
-        TurnResolutionResult eliminationResult = commands.endTurnCommand.execute(
-            SAVE_SLOT,
-            gameState
-        );
-        gameState = eliminationResult.getGameState();
+        TurnResolutionResult eliminationResult = marchResult;
         assertTurnEventCityReferencesValid(
             definitionRepository,
             eliminationResult,

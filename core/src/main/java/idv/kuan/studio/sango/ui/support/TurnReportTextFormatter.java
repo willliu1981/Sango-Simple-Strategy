@@ -34,6 +34,21 @@ public final class TurnReportTextFormatter {
         for (BattleReport battle : BattleReportCatalog.playerMonth(state, report)) {
             if (reportBuilder.length() > 0) reportBuilder.append('\n');
             boolean attacking = state.playerFactionId.equals(battle.attackerFactionId);
+            if (battle.routeEncounter) {
+                String result = battle.outcome == idv.kuan.studio.sango.domain.model.BattleOutcome.DRAW
+                    ? text("report_player_encounter_draw", "平手，雙方返城")
+                    : text(state.playerFactionId.equals(battle.winnerFactionId)
+                        ? "report_player_encounter_win" : "report_player_encounter_loss",
+                        state.playerFactionId.equals(battle.winnerFactionId)
+                            ? "我方獲勝" : "我方戰敗");
+                reportBuilder.append("• ").append(text("report_player_encounter_summary",
+                    "{0}—{1} 道路接戰：{2}；我方戰損 {3}，戰後兵力 {4}。",
+                    optionalCityName(battle.originCityId), optionalCityName(battle.targetCityId),
+                    result,
+                    numberFormat.format(attacking ? battle.attackerLosses : battle.defenderLosses),
+                    numberFormat.format(attacking ? battle.attackerSurvivors : battle.defenderSurvivors)));
+                continue;
+            }
             reportBuilder.append("• ").append(text("report_player_battle_summary",
                 "{0}：{1}；我方戰損 {2}，戰後兵力 {3}。可由下方查看詳細戰報。",
                 optionalCityName(battle.targetCityId),

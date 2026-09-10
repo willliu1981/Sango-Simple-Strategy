@@ -14,7 +14,7 @@ public final class CityIntelligenceService {
 
     public CityIntelligenceSnapshot observe(GameState gameState, String observerFactionId,
         String cityId) {
-        CityState city = gameState.requireCityState(cityId);
+        CityState city = observableCity(gameState, observerFactionId, cityId);
         CityIntelligenceSnapshot snapshot = snapshot(gameState, city);
         FactionState observer = gameState.requireFactionState(observerFactionId);
         List<CityIntelligenceSnapshot> intelligence = new ArrayList<>();
@@ -71,12 +71,11 @@ public final class CityIntelligenceService {
                 snapshot.observationDateRecorded, snapshot.validThroughTurn,
                 snapshot.troops, snapshot.population,
                 snapshot.agriculture, snapshot.commerce, snapshot.waterControl,
-                snapshot.defense, snapshot.training, snapshot.morale, snapshot.publicOrder,
-                snapshot.defensePolicy);
+                snapshot.defense, snapshot.training, snapshot.morale, snapshot.publicOrder);
         }
         int estimate = 800 + Math.floorMod(cityId.hashCode(), 13) * 100;
         return new KnownCityView(cityId, city.ownerFactionId, false, 0, 0, 0, false, 0,
-            estimate, 0, 0, 0, 0, 0, 0, 0, 0, null);
+            estimate, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     private CityIntelligenceSnapshot snapshot(GameState gameState, CityState city) {
@@ -97,7 +96,6 @@ public final class CityIntelligenceService {
         snapshot.training = city.training;
         snapshot.morale = city.morale;
         snapshot.publicOrder = city.publicOrder;
-        snapshot.defensePolicy = city.defensePolicy;
         return snapshot;
     }
 
@@ -105,8 +103,22 @@ public final class CityIntelligenceService {
         int validThrough) {
         return new KnownCityView(city.cityId, city.ownerFactionId, true, turn, year, month,
             true, validThrough, city.troops, city.population, city.agriculture, city.commerce,
-            city.waterControl, city.defense, city.training, city.morale, city.publicOrder,
-            city.defensePolicy);
+            city.waterControl, city.defense, city.training, city.morale, city.publicOrder);
+    }
+
+    private CityState observableCity(GameState gameState, String observerFactionId,
+        String cityId) {
+        CityState current = gameState.requireCityState(cityId);
+        if (observerFactionId.equals(current.ownerFactionId)
+            || gameState.turnStartCityStates == null) {
+            return current;
+        }
+        for (CityState snapshot : gameState.turnStartCityStates) {
+            if (snapshot != null && cityId.equals(snapshot.cityId)) {
+                return snapshot;
+            }
+        }
+        return current;
     }
 
     private void replace(FactionState observer, CityIntelligenceSnapshot snapshot) {

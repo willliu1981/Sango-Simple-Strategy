@@ -16,7 +16,7 @@ import idv.kuan.studio.sango.domain.rule.DefensePolicy;
 import idv.kuan.studio.sango.domain.service.CityIntelligenceService;
 
 /**
- * 逐版遷移 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11。
+ * 逐版遷移 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12。
  * 僅遷移狀態結構，不替換舊劇本、刷新情報或回算既有戰報。
  */
 @SuppressWarnings("deprecation")
@@ -52,6 +52,9 @@ public final class GameStateMigrator {
         }
         if (migratedState.schemaVersion == 10) {
             migrateSchemaTenToEleven(migratedState);
+        }
+        if (migratedState.schemaVersion == 11) {
+            migrateSchemaElevenToTwelve(migratedState);
         }
         if (migratedState.schemaVersion != SangoVersion.GAME_STATE_SCHEMA_VERSION) {
             throw new IllegalArgumentException(
@@ -253,12 +256,51 @@ public final class GameStateMigrator {
             (scaledQuality + TroopQualityRules.SCALE - 1) / TroopQualityRules.SCALE));
     }
 
+    private void migrateSchemaElevenToTwelve(GameState gameState) {
+        gameState.turnStartCityStates = copyCityStates(gameState.cityStates);
+        if (gameState.armyStates != null) {
+            for (ArmyState armyState : gameState.armyStates) {
+                if (armyState == null) {
+                    continue;
+                }
+                armyState.totalTravelMonths = Math.max(1, armyState.remainingTravelMonths);
+                armyState.initialTroops = armyState.troops;
+                armyState.postEncounterOrder = idv.kuan.studio.sango.domain.rule.PostEncounterOrder.AUTO;
+            }
+        }
+        for (FactionState factionState : gameState.factionStates) {
+            if (factionState.cityIntelligence == null) {
+                continue;
+            }
+            for (CityIntelligenceSnapshot snapshot : factionState.cityIntelligence) {
+                if (snapshot != null) {
+                    snapshot.defensePolicy = null;
+                }
+            }
+        }
+        gameState.schemaVersion = 12;
+    }
+
+    private CityState[] copyCityStates(CityState[] source) {
+        if (source == null) {
+            return null;
+        }
+        CityState[] copied = new CityState[source.length];
+        for (int i = 0; i < source.length; i++) {
+            copied[i] = source[i] == null ? null : source[i].copy();
+        }
+        return copied;
+    }
+
     private void normalizeCurrentState(GameState gameState) {
         if (gameState.battleReports == null) {
             gameState.battleReports = new BattleReport[0];
         }
         if (gameState.nextBattleSequence < 1) {
             gameState.nextBattleSequence = gameState.battleReports.length + 1;
+        }
+        if (gameState.turnStartCityStates == null) {
+            gameState.turnStartCityStates = copyCityStates(gameState.cityStates);
         }
         for (FactionState factionState : gameState.factionStates) {
             if (factionState.cityIntelligence == null) {

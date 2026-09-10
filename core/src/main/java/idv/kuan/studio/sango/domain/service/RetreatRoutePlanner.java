@@ -74,6 +74,10 @@ public final class RetreatRoutePlanner {
 
     public boolean isRouteValid(GameState gameState, StrategicMapDefinition mapDefinition,
         ArmyState armyState) {
+        if (armyState.returningFromRoad) {
+            return armyState.remainingTravelMonths > 0
+                && gameState.ownsCity(armyState.factionId, armyState.originCityId);
+        }
         if (!armyState.isRetreating() || armyState.retreatRouteCityIds.length < 2
             || armyState.retreatRouteIndex < 0
             || armyState.retreatRouteIndex >= armyState.retreatRouteCityIds.length - 1

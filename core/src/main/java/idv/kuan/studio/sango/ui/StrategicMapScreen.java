@@ -54,6 +54,7 @@ import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.domain.rule.DefensePolicy;
+import idv.kuan.studio.sango.domain.rule.PostEncounterOrder;
 import idv.kuan.studio.sango.domain.service.CityIntelligenceService;
 import idv.kuan.studio.sango.domain.service.FactionIntelligenceEstimateService;
 import idv.kuan.studio.sango.domain.service.KnownCityView;
@@ -109,6 +110,7 @@ public final class StrategicMapScreen extends SuiScreen {
     private final Map<String, Integer> pendingDispatchAmounts = new LinkedHashMap<>();
     private final List<String> pendingSelectedOriginCityIds = new ArrayList<>();
     private BattleTactic pendingBattleTactic = BattleTactic.FEINT;
+    private PostEncounterOrder pendingPostEncounterOrder = PostEncounterOrder.AUTO;
 
     @Override
     protected BuiltUI buildUI(UIFactory uiFactory) {
@@ -216,9 +218,18 @@ public final class StrategicMapScreen extends SuiScreen {
     }
 
     @Override
+    public void hide() {
+        if (strategicMapWidget != null) {
+            strategicMapWidget.cancelPendingFactionHighlightTimers();
+        }
+        super.hide();
+    }
+
+    @Override
     protected void beforeDispose() {
         screenBackground.remove();
         if (strategicMapWidget != null) {
+            strategicMapWidget.cancelPendingFactionHighlightTimers();
             strategicMapWidget.setTerrainDrawable(null);
         }
         mapTerrainBackground.dispose();
@@ -291,6 +302,7 @@ public final class StrategicMapScreen extends SuiScreen {
         SangoUiStyles.applyPrimaryButton(button("dispatch_confirm_button"));
         refreshDefensePolicyStyles(null);
         refreshDispatchTacticStyles();
+        refreshPostEncounterStyles();
     }
 
     private void bindActions() {
@@ -308,6 +320,9 @@ public final class StrategicMapScreen extends SuiScreen {
         ui.onClick("dispatch_tactic_feint_button", () -> selectDispatchTactic(BattleTactic.FEINT));
         ui.onClick("dispatch_tactic_assault_button", () -> selectDispatchTactic(BattleTactic.ASSAULT));
         ui.onClick("dispatch_tactic_hold_button", () -> selectDispatchTactic(BattleTactic.HOLD));
+        ui.onClick("dispatch_post_continue_button", () -> selectPostEncounterOrder(PostEncounterOrder.CONTINUE));
+        ui.onClick("dispatch_post_auto_button", () -> selectPostEncounterOrder(PostEncounterOrder.AUTO));
+        ui.onClick("dispatch_post_return_button", () -> selectPostEncounterOrder(PostEncounterOrder.RETURN));
         ui.onClick("map_settings_button", this::openSettings);
         ui.onClick("context_help_button", this::showMapHelp);
         ui.onClick("show_last_report_button", this::showLastTurnReport);
@@ -401,6 +416,21 @@ public final class StrategicMapScreen extends SuiScreen {
             pendingBattleTactic == BattleTactic.ASSAULT);
         applySelectionStyle("dispatch_tactic_hold_button",
             pendingBattleTactic == BattleTactic.HOLD);
+    }
+
+    private void selectPostEncounterOrder(PostEncounterOrder order) {
+        pendingPostEncounterOrder = order;
+        refreshPostEncounterStyles();
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
+    }
+
+    private void refreshPostEncounterStyles() {
+        applySelectionStyle("dispatch_post_continue_button",
+            pendingPostEncounterOrder == PostEncounterOrder.CONTINUE);
+        applySelectionStyle("dispatch_post_auto_button",
+            pendingPostEncounterOrder == PostEncounterOrder.AUTO);
+        applySelectionStyle("dispatch_post_return_button",
+            pendingPostEncounterOrder == PostEncounterOrder.RETURN);
     }
 
     private void applySelectionStyle(String actorId, boolean selected) {
@@ -554,7 +584,7 @@ public final class StrategicMapScreen extends SuiScreen {
     }
 
     private void refreshUnreadBattleLabel(GameState gameState) {
-        int unreadBattleCount = (int) BattleReportCatalog.latestCities(gameState).stream()
+        int unreadBattleCount = (int) java.util.Arrays.stream(gameState.battleReports)
             .filter(report -> !report.read && report.resolvedTurn == gameState.currentTurn - 1)
             .count();
         label("map_unread_battle_label").setText(
@@ -580,6 +610,9 @@ public final class StrategicMapScreen extends SuiScreen {
         for (BattleReport battleReport : BattleReportCatalog.latestCities(gameState)) {
             if (!battleReport.read && battleReport.resolvedTurn == gameState.currentTurn - 1) {
                 unreadBattlesByCityId.merge(battleReport.targetCityId, 1, Integer::sum);
+                if (battleReport.routeEncounter) {
+                    unreadBattlesByCityId.merge(battleReport.originCityId, 1, Integer::sum);
+                }
             }
         }
         for (MapCityNodeDefinition nodeDefinition : mapDefinition.nodes) {
@@ -676,17 +709,15 @@ public final class StrategicMapScreen extends SuiScreen {
 
         boolean gameplayActive = gameState.gameplayStatus == GameplayStatus.ACTIVE;
         Actor defensePolicyPanel = ui.getActor("defense_policy_panel");
-        DefensePolicy visibleDefensePolicy = playerOwned
-            ? selectedCityState.defensePolicy
-            : knownCity.exact() ? knownCity.defensePolicy() : null;
-        boolean showDefensePolicy = visibleDefensePolicy != null;
-        defensePolicyPanel.setVisible(showDefensePolicy);
+        DefensePolicy visibleDefensePolicy = playerOwned ? selectedCityState.defensePolicy : null;
+        boolean showDefensePolicy = playerOwned;
+        defensePolicyPanel.setVisible(playerOwned);
         defensePolicyPanel.setTouchable(playerOwned ? Touchable.enabled : Touchable.disabled);
         refreshDefensePolicyStyles(visibleDefensePolicy);
         label("defense_policy_result_label").setText(showDefensePolicy
             ? text(
-                playerOwned ? "map_defense_policy_current_format" : "map_defense_policy_scouted_format",
-                playerOwned ? "目前設定：{0}" : "偵察結果：{0}",
+                "map_defense_policy_current_format",
+                "目前設定：{0}",
                 defensePolicyName(visibleDefensePolicy))
             : "");
         setButtonEnabled(button("defense_feint_button"), playerOwned && gameplayActive);
@@ -997,6 +1028,7 @@ public final class StrategicMapScreen extends SuiScreen {
             pendingTransferOriginOrder = TransferOriginOrder.SHORTEST_TRAVEL;
         }
         pendingBattleTactic = BattleTactic.FEINT;
+        pendingPostEncounterOrder = PostEncounterOrder.AUTO;
         List<CityState> candidates = transfer
             ? orderedTransferOrigins(currentState, targetCityId, pendingTransferOriginOrder)
             : findAdjacentPlayerCities(currentState, targetCityId);
@@ -1024,6 +1056,7 @@ public final class StrategicMapScreen extends SuiScreen {
         pendingTargetCityId = targetCityId;
         pendingSelectedOriginCityIds.add(originCityState.cityId);
         refreshDispatchTacticStyles();
+        refreshPostEncounterStyles();
         updateDispatchTacticPanel(transfer);
         refreshDispatchDetails();
         openModal(expeditionDispatchMask);
@@ -1150,6 +1183,9 @@ public final class StrategicMapScreen extends SuiScreen {
         boolean visible = DispatchPanelRules.showsTacticSelection(transfer);
         tacticPanel.setVisible(visible);
         tacticPanel.setTouchable(visible ? Touchable.enabled : Touchable.disabled);
+        Actor postPanel = ui.getActor("dispatch_post_encounter_panel");
+        postPanel.setVisible(visible);
+        postPanel.setTouchable(visible ? Touchable.enabled : Touchable.disabled);
     }
 
     private void setDispatchAmount(int amount) {
@@ -1355,7 +1391,8 @@ public final class StrategicMapScreen extends SuiScreen {
                     currentState,
                     targetCityId,
                     orders,
-                    pendingBattleTactic
+                    pendingBattleTactic,
+                    pendingPostEncounterOrder
                 );
             }
             closeModals();
@@ -1429,7 +1466,7 @@ public final class StrategicMapScreen extends SuiScreen {
         label("end_month_confirm_description_label").setText(
             text(
                 "end_month_confirm_description_format",
-                "剩餘行動力：{0} / {1}\n月底將結算軍糧、季節收入、行軍、戰鬥與敵軍行動。未使用的行動力不會保留。",
+                "剩餘行動力：{0} / {1}\n月底先完成敵軍命令，再依序結算軍糧、洪災與季節收入、道路接戰、行軍與攻城、撤退、民心與人口，最後建立下月快照。未使用的行動力不會保留。",
                 gameState.actionPointsRemaining,
                 gameState.actionPointsPerTurn
             )
@@ -1533,7 +1570,7 @@ public final class StrategicMapScreen extends SuiScreen {
             text("help_map_title", "戰略圖操作說明"),
             text(
                 "help_map_body",
-                "金與糧由整個勢力共用；行動力（AP）則限制本月可下達的命令。\n\n城池之間必須有道路才能偵察、出征或運兵；出征只能選與目標相鄰的我方城，運兵可選任何沿道路可達的我方城。偵察消耗 1 AP 與 20 金，取得三個月且包含當月的快照，可查看偵察當下的防守方針。\n\n我方城可設定持續生效的防守方針；出征戰術只在派兵視窗選擇並套用本次攻擊。強攻剋固守、固守剋誘敵、誘敵剋強攻。\n\n桌機將滑鼠停在敵城，或按住敵城；Android 長按敵城時，同勢力城池會一起閃爍。我方與中立城不啟動此提示；提示期間會暫停戰報閃爍，放開或移開後恢復。\n\n使用＋、－縮放地圖，「全圖」重設視野，「定位」回到目前選取城；連按地圖空白處可進入或退出全螢幕。全螢幕時連按城池仍只會選取城池。"
+                "金與糧由整個勢力共用；行動力（AP）限制本月命令。各勢力同月規劃，本方操作立即反映，其他勢力只看上月底城市快照。\n\n城池之間必須有道路才能偵察、出征或運兵。偵察取得三個月且包含當月的快照，但敵方目前的防守方針始終不可見。\n\n攻方使用強攻、誘敵、穩進；守方使用迎擊、設伏、據守。強攻剋據守、穩進剋設伏、誘敵剋迎擊。\n\n桌機滑鼠停在敵城約 0.45 秒才顯示同勢力提示。雙擊城池切換同勢力持續高亮，改選其他勢力會取消；雙擊空白處才切換全螢幕。"
             )
         );
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);
@@ -1557,7 +1594,7 @@ public final class StrategicMapScreen extends SuiScreen {
                 text("help_expedition_title", "聯合出征說明"),
                 text(
                     "help_expedition_body",
-                    "對敵方或中立城出征時，可用前一座／後一座查看每座相鄰我方城，並逐城加入或移除本次出征。各城兵數會分別保留，可切回繼續調整。\n\n每次開啟派兵視窗預設穩健，可為本次出征改選強攻或保守；運兵不使用出征戰術。\n\n每座參戰城至少派 400 兵、保留 400 守軍，兵數以 100 遞增；每加入一城就消耗 1 AP 與 100 糧。\n\n清單會顯示總兵力與最慢路程；同一批部隊等到全部來源集結完成後，才會進入同一場戰鬥。"
+                    "選擇敵方或中立目標城，再逐城加入直接相鄰的我方來源城。每城至少派 400 兵並保留 400 守軍，每個來源消耗 1 AP 與 100 糧。\n\n出征方針可選強攻、誘敵或穩進；另設定道路接戰獲勝後繼續攻城、自動判斷或返城。士氣低於 40 仍可出兵，只是自動判斷條件之一。\n\n敵對部隊在同一道路相向且本月路程交會時先接戰；敗方與平手返城，勝方依命令行動。"
                 )
             );
         }
@@ -1649,9 +1686,9 @@ public final class StrategicMapScreen extends SuiScreen {
             return text("defense_policy_unknown", "未知");
         }
         return switch (policy) {
-            case BALANCED, FEINT -> text("tactic_feint", "誘敵");
-            case AGGRESSIVE, ASSAULT -> text("tactic_assault", "強攻");
-            case HOLD -> text("tactic_hold", "固守");
+            case BALANCED, FEINT -> text("defense_policy_feint", "設伏");
+            case AGGRESSIVE, ASSAULT -> text("defense_policy_assault", "迎擊");
+            case HOLD -> text("defense_policy_hold", "據守");
         };
     }
 

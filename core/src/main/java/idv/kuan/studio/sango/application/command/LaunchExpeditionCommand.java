@@ -16,6 +16,7 @@ import idv.kuan.studio.sango.domain.model.GameStateValidator;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.domain.rule.ExpeditionRules;
 import idv.kuan.studio.sango.domain.rule.FactionActionPointRules;
+import idv.kuan.studio.sango.domain.rule.PostEncounterOrder;
 import idv.kuan.studio.sango.domain.rule.StrategicActionFailureReason;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 
@@ -46,7 +47,8 @@ public final class LaunchExpeditionCommand {
             originCityId,
             targetCityId,
             calculateDispatchTroops(currentState.requireCityState(originCityId)),
-            battleTactic
+            battleTactic,
+            PostEncounterOrder.AUTO
         );
     }
 
@@ -58,7 +60,21 @@ public final class LaunchExpeditionCommand {
         int amount,
         BattleTactic battleTactic
     ) {
+        return execute(slotNumber, currentState, originCityId, targetCityId, amount,
+            battleTactic, PostEncounterOrder.AUTO);
+    }
+
+    public StrategicActionResult execute(
+        int slotNumber,
+        GameState currentState,
+        String originCityId,
+        String targetCityId,
+        int amount,
+        BattleTactic battleTactic,
+        PostEncounterOrder postEncounterOrder
+    ) {
         BattleTactic normalizedTactic = normalizeTactic(battleTactic);
+        PostEncounterOrder normalizedPostEncounterOrder = requirePostEncounterOrder(postEncounterOrder);
         StrategicActionFailureReason failureReason = evaluate(
             currentState,
             originCityId,
@@ -92,7 +108,8 @@ public final class LaunchExpeditionCommand {
             travelMonths,
             dispatchedTroops,
             nextState.playerFactionId.equals(targetCityState.ownerFactionId)
-                ? BattleTactic.HOLD : normalizedTactic
+                ? BattleTactic.HOLD : normalizedTactic,
+            normalizedPostEncounterOrder
         );
         nextState.addArmy(armyState);
         nextState.lastActionCode = "LAUNCH_EXPEDITION";
@@ -112,7 +129,19 @@ public final class LaunchExpeditionCommand {
         List<ExpeditionOrder> orders,
         BattleTactic tactic
     ) {
+        return execute(slot, state, targetCityId, orders, tactic, PostEncounterOrder.AUTO);
+    }
+
+    public StrategicActionResult execute(
+        int slot,
+        GameState state,
+        String targetCityId,
+        List<ExpeditionOrder> orders,
+        BattleTactic tactic,
+        PostEncounterOrder postEncounterOrder
+    ) {
         BattleTactic normalizedTactic = normalizeTactic(tactic);
+        PostEncounterOrder normalizedPostEncounterOrder = requirePostEncounterOrder(postEncounterOrder);
         StrategicActionFailureReason failureReason = evaluateJoint(
             state,
             targetCityId,
@@ -145,7 +174,8 @@ public final class LaunchExpeditionCommand {
                 targetCityId,
                 travelMonths,
                 order.troops(),
-                normalizedTactic
+                normalizedTactic,
+                normalizedPostEncounterOrder
             );
             originCityState.troops -= order.troops();
             totalTroops = Math.addExact(totalTroops, order.troops());
@@ -269,7 +299,8 @@ public final class LaunchExpeditionCommand {
         String targetCityId,
         int travelMonths,
         int troops,
-        BattleTactic tactic
+        BattleTactic tactic,
+        PostEncounterOrder postEncounterOrder
     ) {
         ArmyState armyState = new ArmyState();
         armyState.armyId = armyId;
@@ -278,12 +309,15 @@ public final class LaunchExpeditionCommand {
         armyState.originCityId = originCityState.cityId;
         armyState.targetCityId = targetCityId;
         armyState.remainingTravelMonths = travelMonths;
+        armyState.totalTravelMonths = Math.max(1, travelMonths);
+        armyState.initialTroops = troops;
         armyState.troops = troops;
         armyState.training = originCityState.training;
         armyState.morale = originCityState.morale;
         armyState.trainingFraction = originCityState.trainingFraction;
         armyState.moraleFraction = originCityState.moraleFraction;
         armyState.tactic = tactic;
+        armyState.postEncounterOrder = postEncounterOrder;
         return armyState;
     }
 
@@ -292,5 +326,12 @@ public final class LaunchExpeditionCommand {
             throw new IllegalArgumentException("battleTactic 不可為 null。");
         }
         return tactic.normalized();
+    }
+
+    private PostEncounterOrder requirePostEncounterOrder(PostEncounterOrder order) {
+        if (order == null) {
+            throw new IllegalArgumentException("postEncounterOrder 不可為 null。");
+        }
+        return order;
     }
 }

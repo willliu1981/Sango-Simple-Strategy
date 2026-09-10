@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.function.Consumer;
 
 import com.badlogic.gdx.Input;
@@ -59,6 +61,8 @@ public final class StrategicMapWidget extends WidgetGroup {
     private String playerFactionId;
     private String neutralFactionId;
     private String highlightedFactionId;
+    private String pinnedFactionId;
+    private final Set<Timer.Task> pendingHighlightTasks = new HashSet<>();
     private float worldWidth;
     private float worldHeight;
     private boolean initialFocusPending;
@@ -132,6 +136,9 @@ public final class StrategicMapWidget extends WidgetGroup {
         this.playerFactionId = playerFactionId;
         this.neutralFactionId = neutralFactionId;
         highlightedFactionId = null;
+        if (pinnedFactionId != null && !this.factionIdsByCityId.containsValue(pinnedFactionId)) {
+            pinnedFactionId = null;
+        }
         this.selectedCityId = selectedCityId;
         rebuildChildren();
         invalidate();
@@ -157,6 +164,12 @@ public final class StrategicMapWidget extends WidgetGroup {
         // Focus after the host has completed layout, including the first loaded frame.
         initialFocusPending = true;
         invalidate();
+    }
+
+    /** 畫面隱藏或釋放時，阻止尚未觸發的滑鼠懸停／長按提示回呼存取舊 UI。 */
+    public void cancelPendingFactionHighlightTimers() {
+        cancelPendingHighlights();
+        clearFactionHighlight();
     }
 
     public void setFullscreen(boolean fullscreen) {
@@ -224,6 +237,7 @@ public final class StrategicMapWidget extends WidgetGroup {
     }
 
     private void rebuildChildren() {
+        cancelPendingHighlights();
         clearChildren();
         buttonsByCityId.clear();
         roadImages.clear();
@@ -261,19 +275,23 @@ public final class StrategicMapWidget extends WidgetGroup {
     private InputListener createFactionHighlightListener(String cityId) {
         return new InputListener() {
             private Timer.Task longPressTask;
+            private Timer.Task hoverTask;
             private float downX;
             private float downY;
-            private boolean longPressActive;
 
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                if (pointer == -1) activateFactionHighlight(cityId);
+                if (pointer == -1) {
+                    hoverTask = scheduleHighlight(cityId);
+                }
             }
 
             @Override
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
                 if (pointer == -1 && (toActor == null || (toActor != event.getListenerActor()
                     && !toActor.isDescendantOf(event.getListenerActor())))) {
+                    cancelTask(hoverTask);
+                    hoverTask = null;
                     clearFactionHighlight();
                 }
             }
@@ -283,12 +301,7 @@ public final class StrategicMapWidget extends WidgetGroup {
                 if (button != Input.Buttons.LEFT) return false;
                 downX = x;
                 downY = y;
-                longPressActive = false;
-                longPressTask = Timer.schedule(new Timer.Task() {
-                    @Override public void run() {
-                        longPressActive = activateFactionHighlight(cityId);
-                    }
-                }, 0.45f);
+                longPressTask = scheduleHighlight(cityId);
                 return true;
             }
 
@@ -300,17 +313,42 @@ public final class StrategicMapWidget extends WidgetGroup {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 cancelLongPress();
-                if (longPressActive) clearFactionHighlight();
-                longPressActive = false;
+                clearFactionHighlight();
             }
 
             private void cancelLongPress() {
                 if (longPressTask != null) {
-                    longPressTask.cancel();
+                    cancelTask(longPressTask);
                     longPressTask = null;
                 }
             }
         };
+    }
+
+    private Timer.Task scheduleHighlight(String cityId) {
+        Timer.Task task = new Timer.Task() {
+            @Override public void run() {
+                pendingHighlightTasks.remove(this);
+                activateFactionHighlight(cityId);
+            }
+        };
+        pendingHighlightTasks.add(task);
+        Timer.schedule(task, 0.45f);
+        return task;
+    }
+
+    private void cancelTask(Timer.Task task) {
+        if (task != null) {
+            task.cancel();
+            pendingHighlightTasks.remove(task);
+        }
+    }
+
+    private void cancelPendingHighlights() {
+        for (Timer.Task task : new HashSet<>(pendingHighlightTasks)) {
+            task.cancel();
+        }
+        pendingHighlightTasks.clear();
     }
 
     private boolean activateFactionHighlight(String cityId) {
@@ -330,14 +368,26 @@ public final class StrategicMapWidget extends WidgetGroup {
         refreshNodeAnimations();
     }
 
+    private void togglePinnedFaction(String cityId) {
+        String factionId = factionIdsByCityId.get(cityId);
+        if (factionId == null) {
+            return;
+        }
+        pinnedFactionId = factionId.equals(pinnedFactionId) ? null : factionId;
+        highlightedFactionId = null;
+        refreshNodeAnimations();
+    }
+
     private void refreshNodeAnimations() {
         for (Map.Entry<String, TextButton> entry : buttonsByCityId.entrySet()) {
             TextButton button = entry.getValue();
             button.clearActions();
             button.getColor().a = 1f;
-            boolean shouldFlash = highlightedFactionId == null
+            String effectiveHighlight = highlightedFactionId != null
+                ? highlightedFactionId : pinnedFactionId;
+            boolean shouldFlash = effectiveHighlight == null
                 ? unreadBattlesByCityId.getOrDefault(entry.getKey(), 0) > 0
-                : highlightedFactionId.equals(factionIdsByCityId.get(entry.getKey()));
+                : effectiveHighlight.equals(factionIdsByCityId.get(entry.getKey()));
             if (shouldFlash) {
                 button.addAction(Actions.forever(Actions.sequence(
                     Actions.alpha(0.52f, 0.48f), Actions.alpha(1f, 0.48f)
@@ -488,12 +538,19 @@ public final class StrategicMapWidget extends WidgetGroup {
         MapInteractionState.Action action = interaction.tap(
             cityId, fullscreen, TimeUtils.millis(), event.getStageX(), event.getStageY());
         if (cityId != null) {
+            String focusedFactionId = factionIdsByCityId.get(cityId);
+            if (pinnedFactionId != null && !pinnedFactionId.equals(focusedFactionId)) {
+                pinnedFactionId = null;
+                refreshNodeAnimations();
+            }
             citySelectionHandler.accept(cityId);
         }
         if (action == MapInteractionState.Action.ENTER_FULLSCREEN) {
             mapTapHandler.run();
         } else if (action == MapInteractionState.Action.EXIT_FULLSCREEN) {
             mapRestoreHandler.run();
+        } else if (action == MapInteractionState.Action.TOGGLE_FACTION_HIGHLIGHT) {
+            togglePinnedFaction(cityId);
         }
     }
 

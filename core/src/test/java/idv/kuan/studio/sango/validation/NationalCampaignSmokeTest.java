@@ -455,6 +455,8 @@ public final class NationalCampaignSmokeTest {
         armyState.morale = morale;
         armyState.tactic = BattleTactic.FEINT;
         armyState.remainingTravelMonths = 1;
+        armyState.totalTravelMonths = 1;
+        armyState.initialTroops = troops;
         return armyState;
     }
 

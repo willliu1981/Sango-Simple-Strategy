@@ -39,7 +39,8 @@ public final class RetreatResolutionService {
         TurnResolutionReport report) {
         ArmyState[] snapshot = gameState.armyStates.clone();
         for (ArmyState armyState : snapshot) {
-            if (!armyState.isRetreating() || !containsArmy(gameState, armyState.armyId)
+            if (armyState.returningFromRoad || !armyState.isRetreating()
+                || !containsArmy(gameState, armyState.armyId)
                 || routePlanner.isRouteValid(gameState, mapDefinition, armyState)) {
                 continue;
             }
@@ -67,6 +68,7 @@ public final class RetreatResolutionService {
             armyState.retreatRouteIndex = prefix.length - 1;
             armyState.remainingTravelMonths = requireEdge(mapDefinition, currentCityId,
                 suffix[1]).travelMonths;
+            armyState.totalTravelMonths = Math.max(1, armyState.remainingTravelMonths);
             report.add(new TurnEvent(TurnEventType.ARMY_RETREAT_REROUTED,
                 armyState.factionId, oldDestination, armyState.retreatDestinationCityId(),
                 armyState.troops, plan.totalTravelMonths()));
@@ -78,6 +80,21 @@ public final class RetreatResolutionService {
         for (String armyId : new HashSet<>(eligibleIds)) {
             ArmyState armyState = findArmy(gameState, armyId);
             if (armyState == null || !armyState.isRetreating()) {
+                continue;
+            }
+            if (armyState.returningFromRoad) {
+                if (!gameState.ownsCity(armyState.factionId, armyState.originCityId)) {
+                    disband(gameState, armyState, null, armyState.originCityId, report);
+                    continue;
+                }
+                armyState.remainingTravelMonths -= 1;
+                if (armyState.remainingTravelMonths > 0) {
+                    report.add(new TurnEvent(TurnEventType.ARMY_RETREAT_ADVANCED,
+                        armyState.factionId, null, armyState.originCityId, armyState.troops,
+                        armyState.remainingTravelMonths));
+                } else {
+                    arrive(gameState, armyState, armyState.originCityId, report);
+                }
                 continue;
             }
             if (!routePlanner.isRouteValid(gameState, mapDefinition, armyState)) {
@@ -104,6 +121,7 @@ public final class RetreatResolutionService {
                 armyState.factionId, edgeStart, edgeEnd, armyState.troops, 0));
             armyState.remainingTravelMonths = requireEdge(mapDefinition, edgeEnd,
                 armyState.retreatRouteCityIds[armyState.retreatRouteIndex + 1]).travelMonths;
+            armyState.totalTravelMonths = Math.max(1, armyState.remainingTravelMonths);
         }
     }
 

@@ -205,9 +205,9 @@ public final class RpsTacticSmokeTest {
             known.requireCityState(route[1]).defensePolicy = DEFENSE[(d + 1) % 3];
             BattleTactic choice = march(known, map, factionId).tactic;
             int row = Arrays.asList(ATTACK).indexOf(choice);
-            check(row >= 0 && ADVANTAGE[row][d] == 1, "AI counters own stale but valid snapshot");
-            check(known.requireFactionState(factionId).cityIntelligence[0].defensePolicy == DEFENSE[d],
-                "AI decision does not refresh observation");
+            check(row >= 0, "AI uses an active tactic without reading hidden current policy");
+            check(known.requireFactionState(factionId).cityIntelligence[0].defensePolicy == null,
+                "Scouting and AI decisions never persist hidden defense policy");
         }
         GameState unknownA = base.copy();
         GameState unknownB = base.copy();
@@ -296,9 +296,9 @@ public final class RpsTacticSmokeTest {
             && migrated.requireCityState(route[1]).defensePolicy == DefensePolicy.ASSAULT,
             "old city policies migrated");
         CityIntelligenceSnapshot intel = migrated.requirePlayerFactionState().cityIntelligence[0];
-        check(intel.defensePolicy == DefensePolicy.ASSAULT
+        check(intel.defensePolicy == null
             && intel.validThroughTurn == validThrough && intel.observedTurn == observedTurn,
-            "snapshot policy mapped without changing observed time");
+            "snapshot keeps observed time but drops hidden policy");
         BattleReport historic = migrated.battleReports[0];
         check(historic.battleRulesVersion == 0
             && historic.attackerTactic == BattleTactic.CAUTIOUS
@@ -325,6 +325,27 @@ public final class RpsTacticSmokeTest {
             && loaded.attackerContributions[0].attackerTactic == BattleTactic.FEINT
             && loaded.attackerContributions[0].strength == report.attackerContributions[0].strength,
             "new battle snapshots survive JSON round-trip");
+
+        GameState schemaEleven = initial.copy();
+        schemaEleven.schemaVersion = 11;
+        SaveGameDocument schemaElevenDocument = new SaveGameDocument();
+        schemaElevenDocument.schemaVersion = SangoVersion.SAVE_DOCUMENT_SCHEMA_VERSION;
+        schemaElevenDocument.gameVersion = "0.6.1";
+        schemaElevenDocument.gameState = schemaEleven;
+        JsonValue schemaElevenJson = new JsonReader().parse(json.toJson(schemaElevenDocument));
+        schemaElevenJson.get("gameState").remove("turnStartCityStates");
+        directory.child("slot-03.json").writeString(
+            schemaElevenJson.toJson(JsonWriter.OutputType.json), false, "UTF-8");
+        GameState migratedEleven = saves.load(3);
+        check(migratedEleven.schemaVersion == SangoVersion.GAME_STATE_SCHEMA_VERSION
+            && migratedEleven.turnStartCityStates.length == migratedEleven.cityStates.length
+            && migratedEleven.turnStartCityStates[0] != migratedEleven.cityStates[0],
+            "schema 11 repository fixture migrates to an independent month-start snapshot");
+        saves.save(3, migratedEleven);
+        GameState roundTripEleven = saves.load(3);
+        check(roundTripEleven.turnStartCityStates.length == roundTripEleven.cityStates.length
+            && roundTripEleven.turnStartCityStates[0] != roundTripEleven.cityStates[0],
+            "schema 11 migration survives repository save and reload");
     }
 
     private static CityState target(GameState state, String cityId, int troops, DefensePolicy policy) {
@@ -350,6 +371,8 @@ public final class RpsTacticSmokeTest {
         army.morale = 50;
         army.tactic = tactic;
         army.remainingTravelMonths = 1;
+        army.totalTravelMonths = 1;
+        army.initialTroops = troops;
         return army;
     }
 

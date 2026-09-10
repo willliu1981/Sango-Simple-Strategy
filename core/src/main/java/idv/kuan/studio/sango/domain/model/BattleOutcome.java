@@ -6,5 +6,6 @@ package idv.kuan.studio.sango.domain.model;
 public enum BattleOutcome {
     ATTACKER_VICTORY,
     DEFENDER_VICTORY,
-    UNOPPOSED_OCCUPATION
+    UNOPPOSED_OCCUPATION,
+    DRAW
 }

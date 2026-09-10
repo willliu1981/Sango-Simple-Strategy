@@ -14,10 +14,15 @@
         <entry name="world_battle_read" value="已讀" />
         <entry name="world_battle_unread" value="未讀" />
         <entry name="world_battle_winner" value="勝方：{0}" />
+        <entry name="world_battle_draw" value="結果：平手" />
         <entry name="world_battle_empty" value="目前沒有戰事紀錄。" />
         <entry name="report_player_battle_summary" value="{0}：{1}；我方戰損 {2}，戰後兵力 {3}。可由下方查看詳細戰報。" />
         <entry name="report_player_battle_win" value="我方獲勝" />
         <entry name="report_player_battle_loss" value="我方戰敗" />
+        <entry name="report_player_encounter_summary" value="{0}—{1} 道路接戰：{2}；我方戰損 {3}，戰後兵力 {4}。" />
+        <entry name="report_player_encounter_draw" value="平手，雙方返城" />
+        <entry name="report_player_encounter_win" value="我方獲勝" />
+        <entry name="report_player_encounter_loss" value="我方戰敗" />
         <entry name="report_shortage_city_morale" value="{0} 駐軍缺糧，士氣 -{1}；目前士氣 {2}。" />
         <entry name="report_shortage_army_morale" value="{0} 前往 {3} 的部隊缺糧，士氣 -{1}；目前士氣 {2}。" />
         <entry name="battle_contributions_title" value="各城參戰明細" />
@@ -47,7 +52,7 @@
         <entry name="dispatch_status_insufficient_food_format" value="糧不足：本次需 {0} 糧，目前只有 {1}。" />
         <entry name="dispatch_status_army_active" value="我方已有部隊行軍中，需等待其抵達。" />
         <entry name="help_map_title" value="戰略圖操作說明" />
-        <entry name="help_map_body" value="金與糧由整個勢力共用；行動力（AP）限制本月可下達的命令。\n\n偵察與出征的目標必須和至少一座我方城有直接道路連接；運兵則可沿道路前往我方城池。偵察非我方城消耗 1 AP 與 20 金，情報維持三個月並包含偵察當月，可查看偵察當下的防守方針。點擊非我方勢力名稱可查看勢力情報；總金、糧、兵力與下月行動力皆為估算。\n\n我方城可設定防守方針；出征戰術在派兵視窗選擇，只套用本次出征。雙方都可選強攻、誘敵或固守：強攻剋固守、固守剋誘敵、誘敵剋強攻。相剋方戰力加成 10%，同種無加成。\n\n桌機將滑鼠停在敵城，或按住敵城；Android 長按敵城時，同勢力城池會一起閃爍。我方與中立城不啟動此提示；提示期間會暫停戰報閃爍，放開或移開後恢復。\n\n使用＋、－縮放，「全圖」重設視野，「定位」回到選取城。快速點兩下地圖空白處可進入或退出全螢幕；全螢幕時單擊或雙擊城池都只會選取城池。\n\n勢力月報記錄我方收支、缺糧、災害與戰事；天下戰報顯示最新月份的全部戰報，同月我方戰事排在前面；城池戰報顯示此城最近一次戰鬥。" />
+        <entry name="help_map_body" value="金與糧由整個勢力共用；行動力（AP）限制本月命令。各勢力同月規劃，本方操作立即反映，其他勢力只看上月底城市快照。\n\n偵察取得三個月精確快照，但敵方防守方針始終不可見。攻方使用強攻、誘敵、穩進；守方使用迎擊、設伏、據守。\n\n桌機滑鼠停在敵城約 0.45 秒才顯示同勢力提示。雙擊城池切換同勢力持續高亮，改選其他勢力會取消；雙擊空白處才切換全螢幕。" />
         <entry name="help_city_title" value="內政操作說明" />
         <entry name="help_city_body" value="金、糧是全勢力共用資源；人口屬於本城。農業提高秋收，商業提高季末商稅，治水降低夏季洪災風險與損失，城防影響守城；訓練與士氣影響作戰表現。\n\n巡查消耗 1 AP、100 金與 50 糧，可提高民心，最高到 90。徵兵的金糧成本依人數計算，且不會降低民心。訓練消耗 1 AP 與 50 金，單次最多覆蓋 20,000 兵。\n\n民心至少 90，且沒有缺糧、洪災或易主時，月底累計一個穩定月；連續第 3 個合格月底起，每月自然提高 1 點，最高 100。不合格時累計歸零，不代表直接扣除民心。\n\n缺軍糧會造成逃兵，並依缺口比例降低駐軍與行軍部隊士氣。缺一半軍糧扣 10 點，完全缺糧扣 20 點；士氣最低 0。補足軍糧不會立即回復已失去的士氣。" />
         <entry name="help_recruit_title" value="徵兵說明" />
@@ -55,7 +60,7 @@
         <entry name="help_transfer_title" value="運兵說明" />
         <entry name="help_transfer_body" value="運兵只在我方城池間進行。使用上一城／下一城切換沿道路可達的來源，再調整兵數。\n\n每次至少派 400 兵，來源城保留 400 守軍，以 100 人增減，單次最多 10,000 兵。派遣消耗 1 AP 與 100 糧。\n\n行程依道路最短時間計算，抵達後才加入目標城；行軍期間仍受軍糧不足影響。其他部隊正在行軍時，只要兵力、行動力與糧食足夠，仍可再派兵。" />
         <entry name="help_expedition_title" value="聯合出征說明" />
-        <entry name="help_expedition_body" value="選擇敵方或中立目標城，再用上一城／下一城切換直接相鄰的我方來源城。逐城加入出征並設定兵數，各城數量分別保留。\n\n每次開啟派兵視窗預設為誘敵，可改選強攻或固守。強攻剋固守、固守剋誘敵、誘敵剋強攻；相剋方戰力加成 10%，同種無加成。兵力、訓練、士氣與城防仍會影響勝負。運兵不選戰術，若抵達前目標已失守，部隊會以固守戰術交戰。\n\n每城至少派 400 兵、保留 400 守軍，以 100 人增減，每城最多 10,000 兵。每個來源消耗 1 AP 與 100 糧；確認時整批檢查資源，不能只扣除部分來源。\n\n先到部隊等待同批其他部隊集結，再共同進入一場戰鬥。同勢力即使分次下令，只要同月抵達同一目標，也會合併為一場戰鬥與一份戰報。聯軍混用戰術時逐軍計算相剋，守方加成依其克制的攻軍戰力比例計算。戰報可查看各城戰術、出兵、戰損與生還兵力。本功能限同一勢力，不包含盟軍。已有部隊行軍不會阻止另一次派兵。\n\n戰敗生還者從下月起撤往安全道路上最近的我方城；同距離優先原城，再比較城防。撤退途中仍需軍糧，退路失效會改道，無路可退時潰散，結果列入勢力月報。" />
+        <entry name="help_expedition_body" value="選擇敵方或中立目標城，再逐城加入直接相鄰的我方來源城。每城至少派 400 兵並保留 400 守軍，每個來源消耗 1 AP 與 100 糧。\n\n出征戰術可選強攻、誘敵或穩進；另設定道路接戰獲勝後繼續攻城、自動判斷或返城。士氣低於 40 仍可出兵，只是自動判斷條件之一。\n\n敵對部隊在同一道路相向且本月路程交會時先接戰；敗方與平手返城，勝方依命令行動。" />
         <entry name="lobby_sango" value="SANGO" description="lobby_sango" />
         <entry name="lobby_title" value="簡易三國志" description="lobby_title" />
         <entry name="lobby_tagline" value="漢末群雄 · 天下待定" description="lobby_tagline" />
@@ -218,7 +223,11 @@
         <entry name="map_defense_policy_heading" value="防守方針" description="map_defense_policy_heading" />
         <entry name="tactic_assault" value="強攻" />
         <entry name="tactic_feint" value="誘敵" />
-        <entry name="tactic_hold" value="固守" />
+        <entry name="tactic_hold" value="穩進" />
+        <entry name="dispatch_post_encounter_heading" value="勝後命令" />
+        <entry name="dispatch_post_continue" value="繼續攻城" />
+        <entry name="dispatch_post_auto" value="自動判斷" />
+        <entry name="dispatch_post_return" value="返城" />
         <entry name="battle_tactic_mixed" value="混合戰術" />
         <entry name="battle_matchup_strength" value="相剋後戰力：攻方 {0}｜守方 {1}（守方加成 {2}%）" />
         <entry name="battle_contribution_tactic" value="戰術：{0}｜{1}" />
@@ -260,7 +269,9 @@
         <entry name="faction_intelligence_body_format" value="{0}\n\n兵力估算：{1}～{2}\n國庫估算：金 {3}～{4}｜糧 {5}～{6}\n下月行動力估算：{7}～{8} AP\n\n估算依有效偵察快照、已知城池數與公開規則推算；不會讀取敵方實際國庫、行軍部隊或本月剩餘行動力。" description="faction_intelligence_body_format" />
         <entry name="defense_policy_balanced" value="均衡防守" description="defense_policy_balanced" />
         <entry name="defense_policy_aggressive" value="積極迎戰" description="defense_policy_aggressive" />
-        <entry name="defense_policy_hold" value="固守城池" description="defense_policy_hold" />
+        <entry name="defense_policy_hold" value="據守" description="defense_policy_hold" />
+        <entry name="defense_policy_assault" value="迎擊" />
+        <entry name="defense_policy_feint" value="設伏" />
         <entry name="map_status_defense_policy_updated" value="已更新此城的防守方針。" description="map_status_defense_policy_updated" />
         <entry name="map_status_defense_policy_unavailable" value="只能設定我方城池的防守方針。" description="map_status_defense_policy_unavailable" />
         <entry name="map_route_owned" value="此城屬於我方；目前沒有可運兵的我方城池。" description="map_route_owned" />
@@ -359,8 +370,8 @@
         <entry name="map_status_player_eliminated" value="我方已失去全部城池，不能再下達命令。" description="map_status_player_eliminated" />
         <entry name="end_month_confirm_title_placeholder" value="結束本月？" description="end_month_confirm_title_placeholder" />
         <entry name="end_month_confirm_title_format" value="確定結束 {0} 年 {1} 月？" description="end_month_confirm_title_format" />
-        <entry name="end_month_confirm_description_placeholder" value="月底將進行軍糧、季節收入、行軍、戰鬥與敵軍行動結算。" description="end_month_confirm_description_placeholder" />
-        <entry name="end_month_confirm_description_format" value="剩餘行動力：{0} / {1}。月底結算軍糧、季節收入、行軍、戰鬥與敵軍行動，再按全城民心計算下月 3–9 點。未用點數不保留。" description="end_month_confirm_description_format" />
+        <entry name="end_month_confirm_description_placeholder" value="月底先完成敵軍命令，再依序結算軍糧、洪災與季節收入、道路接戰、行軍與攻城、撤退、民心與人口，最後建立下月快照。" description="end_month_confirm_description_placeholder" />
+        <entry name="end_month_confirm_description_format" value="剩餘行動力：{0} / {1}。先完成敵軍命令，再依序結算軍糧、洪災與季節收入、道路接戰、行軍與攻城、撤退、民心與人口，最後建立下月快照。未用點數不保留。" description="end_month_confirm_description_format" />
         <entry name="button_end_month_confirm" value="確認結束本月" description="button_end_month_confirm" />
         <entry name="battle_prompt_title_placeholder" value="本月發生戰鬥" description="battle_prompt_title_placeholder" />
         <entry name="battle_prompt_title_format" value="{0} 發生戰鬥" description="battle_prompt_title_format" />
@@ -379,6 +390,15 @@
         <entry name="battle_report_tactic_prefix" value="攻方戰術：" description="battle_report_tactic_prefix" />
         <entry name="battle_report_defense_format" value="｜守方城防：{0}｜防守方針：{1}" description="battle_report_defense_format" />
         <entry name="battle_report_defense_policy_legacy" value="未記錄" description="battle_report_defense_policy_legacy" />
+        <entry name="battle_tactic_hold_legacy" value="固守" />
+        <entry name="defense_policy_hold_legacy" value="固守城池" />
+        <entry name="battle_report_encounter_title" value="{0}—{1} 道路接戰" />
+        <entry name="battle_report_encounter_tactics" value="{0}：{1}｜{2}：{3}" />
+        <entry name="battle_report_encounter_draw" value="雙方戰力相當，脫離接戰並返城。" />
+        <entry name="battle_report_encounter_result" value="{0}贏得道路接戰。" />
+        <entry name="battle_report_encounter_both_return" value="雙方均已返城。" />
+        <entry name="battle_report_encounter_continue" value="{0}擊退敵軍後繼續攻城。" />
+        <entry name="battle_report_encounter_return" value="{0}擊退敵軍後選擇返城。" />
         <entry name="battle_report_attacker" value="攻方" description="battle_report_attacker" />
         <entry name="battle_report_defender" value="守方" description="battle_report_defender" />
         <entry name="battle_report_faction_placeholder" value="勢力尚未載入" description="battle_report_faction_placeholder" />
@@ -465,7 +485,7 @@
         <entry name="settings_save_before_exit_failed" value="保存失敗，已取消返回或退出。" description="settings_save_before_exit_failed" />
         <entry name="gameplay_guide_title" value="玩法說明" description="gameplay_guide_title" />
         <entry name="gameplay_guide_description" value="從每月流程開始，快速掌握經營、軍事、情報與存檔。" description="gameplay_guide_description" />
-        <entry name="gameplay_guide_content" value="【遊戲目標】\n選擇一方勢力，在期限內完成劇本指定的攻城目標。目標達成或失敗後仍可繼續自由征戰；失去所有城池則無法再推進月份。\n\n【每月怎麼玩】\n先在戰略地圖查看城池、道路、目標與共用資源，再進入我方城池執行內政或徵兵；需要時可偵察敵城、運兵增援或出征。安排完成後按「結束月份」，統一結算收入、軍糧、行軍、戰鬥、災害與敵軍行動。未使用的行動力不會保留。\n\n【資源與城池】\n金與糧由全勢力共用，人口、城防、訓練、士氣與民心則屬於各城。農業提高九月秋收，商業提高季末稅金，治水降低六月洪災風險，城防強化守城。徵兵會消耗人口與資源，但不會降低民心；訓練和士氣會影響部隊戰力。\n\n【軍糧與民心】\n駐軍和行軍部隊每月都需要軍糧。缺糧會造成逃兵與士氣下降，也會中斷高民心的自然恢復。巡查可直接提升民心至 90；維持民心、供糧與城市安全，之後可逐步自然提升至 100。\n\n【情報與道路】\n偵察非我方城消耗 1 行動力與 20 金，取得三個月情報並包含當月。情報是偵察當下的快照，可查看當時的防守方針；目標之後的調兵或改變方針不會自動更新。點擊非我方勢力名稱可查看勢力的金、糧、兵力與下月行動力估算；數值不會讀取敵方真實國庫、行軍部隊或本月剩餘行動力。玩家與電腦遵守相同規則，各勢力情報互不相通。\n\n【出征、防守與戰報】\n出征時在派兵視窗選擇本次戰術；運兵不使用戰術。我方每座城可設定強攻、誘敵或固守。強攻剋固守、固守剋誘敵、誘敵剋強攻；相剋方戰力加成 10%，同種無加成。戰敗生還者需要沿安全道路撤退。勢力月報整理我方收支、缺糧、災害與戰事；天下戰報顯示最新月份的全部戰報，同月我方戰事排在前面；城池戰報顯示此城最近一次戰鬥。\n\n【存檔與反悔】\n一般內政、偵察、運兵與出征不會立即存檔；想取消尚未保存的操作，可讀取存檔回到上次保存狀態。建立新局、月份結算、手動存檔，以及從遊戲選單返回大廳或離開遊戲時會保存。\n\n【操作提示】\n各主要畫面的「操作說明」會補充當前功能、成本與限制；實際消耗以確認畫面顯示為準。" description="gameplay_guide_content" />
+        <entry name="gameplay_guide_content" value="【遊戲目標】\n選擇一方勢力，在期限內完成劇本指定的攻城目標。目標達成或失敗後仍可繼續自由征戰；失去所有城池則無法再推進月份。\n\n【同時規劃與月初快照】\n各勢力在同一個月規劃命令，不會依勢力順序逐一行動。本月內政、徵兵與出征會先反映在本方工作狀態；其他勢力只能依上個月底完成結算後建立的城市快照判斷，不能偷看尚未結算的變化。未使用的行動力不會保留。\n\n【月結順序】\n按「結束月份」後，先完成敵軍命令，再依序結算軍糧、洪災與季節收入、道路接戰、行軍與攻城、撤退、民心與人口；最後推進月份、刷新行動力，並建立新的月初快照。\n\n【資源與城池】\n金與糧由全勢力共用，人口、城防、訓練、士氣與民心則屬於各城。農業提高九月秋收，商業提高季末稅金，治水降低六月洪災風險，城防強化守城。徵兵會消耗人口與資源，但不會降低民心；訓練和士氣會影響部隊戰力。\n\n【軍糧與民心】\n駐軍和行軍部隊每月都需要軍糧。缺糧會造成逃兵與士氣下降，也會中斷高民心的自然恢復。巡查可直接提升民心至 90；維持民心、供糧與城市安全，之後可逐步自然提升至 100。\n\n【情報與隱藏方針】\n偵察非我方城消耗 1 行動力與 20 金，取得三個月情報並包含當月。情報來自月初快照，目標之後的調兵不會自動更新；敵方目前的防守方針永遠不可見，只會在完成後的戰報揭露。點擊非我方勢力名稱可查看估算資訊，但不會讀取敵方真實國庫、行軍部隊或本月剩餘行動力。玩家與電腦遵守相同規則，各勢力情報互不相通。\n\n【出擊與防守方針】\n出擊方針為強攻、誘敵、穩進；防守方針為迎擊、設伏、據守。強攻剋據守、穩進剋設伏、誘敵剋迎擊；相剋方戰力加成 10%，同種無加成。運兵不使用方針。\n\n【道路接戰與後續命令】\n雙方沿同一道路互相出兵時，會先在道路或野外接戰，再決定是否繼續攻城。出征時可設定接戰後命令：繼續攻城、自動判斷或返城。士氣低於 40 不會禁止出兵，只是自動判斷在接戰勝利後是否返城的條件之一；接戰落敗或平手時會返城。\n\n【戰報】\n勢力月報整理我方收支、缺糧、災害與戰事；天下戰報顯示最新月份的全部戰報，同月我方戰事排在前面；道路接戰會由道路兩端城市索引，城池戰報可追查相關戰鬥。\n\n【存檔與反悔】\n一般內政、偵察、運兵與出征不會立即存檔；想取消尚未保存的操作，可讀取存檔回到上次保存狀態。建立新局、月份結算、手動存檔，以及從遊戲選單返回大廳或離開遊戲時會保存。\n\n【操作提示】\n各主要畫面的「操作說明」會補充當前功能、成本與限制；實際消耗以確認畫面顯示為準。" description="gameplay_guide_content" />
         <entry name="button_back_to_settings" value="返回設定" description="button_back_to_settings" />
         <entry name="city_status_player_eliminated" value="我方已失去全部城池，不能再下達命令或推進月份。" description="city_status_player_eliminated" />
         <entry name="scenario_china_name" value="漢末群雄・全國征戰" description="scenario_china_name" />

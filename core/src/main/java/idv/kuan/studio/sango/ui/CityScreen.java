@@ -500,7 +500,7 @@ public final class CityScreen extends SuiScreen {
         label("city_end_month_description_label").setText(
             text(
                 "end_month_confirm_description_format",
-                "剩餘行動力：{0} / {1}\n月底將結算軍糧、季節收入、行軍、戰鬥與敵軍行動。未使用的行動力不會保留。",
+                "剩餘行動力：{0} / {1}\n月底先完成敵軍命令，再依序結算軍糧、洪災與季節收入、道路接戰、行軍與攻城、撤退、民心與人口，最後建立下月快照。未使用的行動力不會保留。",
                 gameState.actionPointsRemaining,
                 gameState.actionPointsPerTurn
             )

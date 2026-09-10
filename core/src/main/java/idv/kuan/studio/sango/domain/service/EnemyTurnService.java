@@ -7,6 +7,7 @@ import idv.kuan.studio.sango.application.result.TurnResolutionReport;
 import idv.kuan.studio.sango.domain.definition.CityConnectionDefinition;
 import idv.kuan.studio.sango.domain.definition.StrategicMapDefinition;
 import idv.kuan.studio.sango.domain.model.ArmyState;
+import idv.kuan.studio.sango.domain.model.BattleReport;
 import idv.kuan.studio.sango.domain.model.CityState;
 import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
@@ -18,6 +19,7 @@ import idv.kuan.studio.sango.domain.rule.DomesticActionType;
 import idv.kuan.studio.sango.domain.rule.ExpeditionRules;
 import idv.kuan.studio.sango.domain.rule.FactionActionPointRules;
 import idv.kuan.studio.sango.domain.rule.OfficerCommandProfile;
+import idv.kuan.studio.sango.domain.rule.PostEncounterOrder;
 import idv.kuan.studio.sango.domain.rule.RecruitmentRules;
 import idv.kuan.studio.sango.domain.rule.StrategicActionFailureReason;
 
@@ -123,6 +125,8 @@ public final class EnemyTurnService {
         armyState.originCityId = originCity.cityId;
         armyState.targetCityId = targetCity.cityId;
         armyState.remainingTravelMonths = connection.travelMonths;
+        armyState.totalTravelMonths = Math.max(1, connection.travelMonths);
+        armyState.initialTroops = dispatchedTroops;
         armyState.troops = dispatchedTroops;
         armyState.training = originCity.training;
         armyState.morale = originCity.morale;
@@ -133,6 +137,7 @@ public final class EnemyTurnService {
         armyState.tactic = chooseAttackTactic(
             gameState, factionState.factionId, originCity.cityId,
             targetCity.cityId, knownTarget);
+        armyState.postEncounterOrder = PostEncounterOrder.AUTO;
         originCity.troops -= dispatchedTroops;
         factionState.food -= ExpeditionRules.FOOD_COST;
         FactionActionPointRules.spend(gameState, factionState.factionId, ExpeditionRules.ACTION_POINT_COST);
@@ -256,15 +261,48 @@ public final class EnemyTurnService {
             / 2_000_000L);
     }
 
-    private BattleTactic chooseAttackTactic(GameState gameState, String factionId,
+    BattleTactic chooseAttackTactic(GameState gameState, String factionId,
         String originCityId, String targetCityId, KnownCityView knownTarget) {
-        if (knownTarget.exact() && knownTarget.defensePolicy() != null) {
-            return BattleTactic.counterTo(knownTarget.defensePolicy());
+        DefensePrediction prediction = predictDefensePolicy(
+            gameState, factionId, knownTarget.ownerFactionId());
+        if (prediction != null) {
+            int chance = prediction.samples() >= 3 ? 70 : 50;
+            int roll = Math.floorMod((factionId + "|habit|" + originCityId + "|"
+                + targetCityId + "|" + gameState.currentTurn).hashCode(), 100);
+            if (roll < chance) {
+                return BattleTactic.counterTo(prediction.policy());
+            }
         }
         BattleTactic[] activeTactics = BattleTactic.activeValues();
         int choice = Math.floorMod((factionId + "|" + originCityId + "|"
             + targetCityId + "|" + gameState.currentTurn).hashCode(), activeTactics.length);
         return activeTactics[choice];
+    }
+
+    private DefensePrediction predictDefensePolicy(GameState state, String factionId,
+        String defendingFactionId) {
+        DefensePolicy repeated = null;
+        int samples = 0;
+        if (state.battleReports == null) {
+            return null;
+        }
+        for (int index = state.battleReports.length - 1; index >= 0 && samples < 4; index--) {
+            BattleReport report = state.battleReports[index];
+            if (report == null || report.routeEncounter
+                || !factionId.equals(report.attackerFactionId)
+                || !defendingFactionId.equals(report.defenderFactionId)
+                || !report.defenderPolicyRecorded || report.defenderPolicy == null) {
+                continue;
+            }
+            DefensePolicy observed = report.defenderPolicy.normalized();
+            if (repeated == null) {
+                repeated = observed;
+            } else if (repeated != observed) {
+                break;
+            }
+            samples++;
+        }
+        return samples < 2 ? null : new DefensePrediction(repeated, samples);
     }
 
     private String connectedCityId(String cityId, CityConnectionDefinition connection) {
@@ -278,5 +316,8 @@ public final class EnemyTurnService {
     }
 
     private record AttackPlan(CityState originCity, CityState targetCity) {
+    }
+
+    private record DefensePrediction(DefensePolicy policy, int samples) {
     }
 }

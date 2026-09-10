@@ -29,7 +29,10 @@ public final class FactionIntelligenceEstimateService {
         long publicOrderLower = 0;
         long publicOrderUpper = 0;
 
-        for (CityState cityState : gameState.cityStates) {
+        CityState[] visibleOwnership = observerFactionId.equals(targetFactionId)
+            || gameState.turnStartCityStates == null
+                ? gameState.cityStates : gameState.turnStartCityStates;
+        for (CityState cityState : visibleOwnership) {
             if (!targetFactionId.equals(cityState.ownerFactionId)) {
                 continue;
             }

@@ -38,7 +38,7 @@ public final class BattleReportCatalog {
         BattleReport latest = null;
         if (state.battleReports == null) return null;
         for (BattleReport report : state.battleReports) {
-            if (report != null && cityId.equals(report.targetCityId) && isNewer(report, latest)) {
+            if (report != null && touchesCity(report, cityId) && isNewer(report, latest)) {
                 latest = report;
             }
         }
@@ -54,16 +54,35 @@ public final class BattleReportCatalog {
         java.util.Map<String, BattleReport> latest = new java.util.LinkedHashMap<>();
         if (state.battleReports != null) {
             for (BattleReport report : state.battleReports) {
-                if (report != null) latest.put(report.targetCityId, report);
+                if (report != null) {
+                    putIfNewer(latest, report.targetCityId, report);
+                    if (report.routeEncounter) putIfNewer(latest, report.originCityId, report);
+                }
             }
         }
-        return new ArrayList<>(latest.values());
+        java.util.Map<String, BattleReport> unique = new java.util.LinkedHashMap<>();
+        for (BattleReport report : latest.values()) {
+            unique.putIfAbsent(report.battleId, report);
+        }
+        return new ArrayList<>(unique.values());
+    }
+
+    private static void putIfNewer(java.util.Map<String, BattleReport> latest,
+        String cityId, BattleReport report) {
+        if (cityId != null && isNewer(report, latest.get(cityId))) {
+            latest.put(cityId, report);
+        }
     }
 
     private static boolean isNewer(BattleReport candidate, BattleReport current) {
         return candidate != null && (current == null || candidate.resolvedTurn > current.resolvedTurn
             || (candidate.resolvedTurn == current.resolvedTurn
                 && candidate.battleId.compareTo(current.battleId) > 0));
+    }
+
+    private static boolean touchesCity(BattleReport report, String cityId) {
+        return cityId.equals(report.targetCityId)
+            || report.routeEncounter && cityId.equals(report.originCityId);
     }
 
     public static List<BattleReport> playerMonth(GameState state, TurnResolutionReport month) {

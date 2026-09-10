@@ -1,7 +1,5 @@
 package idv.kuan.studio.sango.domain.service;
 
-import idv.kuan.studio.sango.domain.rule.DefensePolicy;
-
 /** 某勢力可合法用於畫面或決策的城池資訊。 */
 public record KnownCityView(
     String cityId,
@@ -20,7 +18,6 @@ public record KnownCityView(
     int defense,
     int training,
     int morale,
-    int publicOrder,
-    DefensePolicy defensePolicy
+    int publicOrder
 ) {
 }

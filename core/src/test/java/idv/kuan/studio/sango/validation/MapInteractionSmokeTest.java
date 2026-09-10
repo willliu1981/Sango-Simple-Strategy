@@ -15,8 +15,8 @@ public final class MapInteractionSmokeTest {
     public static void main(String[] args) {
         MapInteractionState taps = new MapInteractionState();
         check(taps.tap("pingyuan", true, 1000, 10, 10) == Action.NONE, "Single city tap stays full");
-        check(taps.tap("pingyuan", true, 1200, 12, 12) == Action.NONE,
-            "Same-city double tap stays full and only selects");
+        check(taps.tap("pingyuan", true, 1200, 12, 12) == Action.TOGGLE_FACTION_HIGHLIGHT,
+            "City double tap toggles faction highlight without changing fullscreen");
         check(taps.tap(null, true, 2000, 10, 10) == Action.NONE, "Blank single tap stays full");
         check(taps.tap(null, true, 2200, 10, 10) == Action.EXIT_FULLSCREEN,
             "Blank double tap restores without focusing");
@@ -26,6 +26,10 @@ public final class MapInteractionSmokeTest {
         taps.tap(null, false, 4000, 10, 10);
         check(taps.tap(null, false, 4200, 10, 10) == Action.ENTER_FULLSCREEN,
             "Normal map double tap expands");
+        taps.reset();
+        taps.tap("pingyuan", false, 4500, 10, 10);
+        check(taps.tap("pingyuan", false, 4700, 12, 12) == Action.TOGGLE_FACTION_HIGHLIGHT,
+            "Normal-map city double tap highlights instead of entering fullscreen");
         taps.tap("pingyuan", true, 5000, 10, 10);
         taps.reset();
         check(taps.tap("pingyuan", true, 5200, 10, 10) == Action.NONE, "Drag resets pending tap");
@@ -35,6 +39,9 @@ public final class MapInteractionSmokeTest {
 
         BitmapFont font = new BitmapFont(new BitmapFont.BitmapFontData(), new TextureRegion(), false);
         StrategicMapWidget widget = new StrategicMapWidget(font, ignored -> { });
+        widget.cancelPendingFactionHighlightTimers();
+        check(hasLifecycleCancellationMethod(),
+            "Map widget exposes an idempotent pending-highlight timer cancellation boundary");
         Group normalHost = new Group();
         normalHost.setSize(1040, 626);
         normalHost.addActor(widget);
@@ -59,5 +66,14 @@ public final class MapInteractionSmokeTest {
     private static void check(boolean condition, String message) {
         checks++;
         if (!condition) throw new AssertionError(message);
+    }
+
+    private static boolean hasLifecycleCancellationMethod() {
+        try {
+            return StrategicMapWidget.class
+                .getMethod("cancelPendingFactionHighlightTimers").getReturnType() == void.class;
+        } catch (NoSuchMethodException exception) {
+            return false;
+        }
     }
 }

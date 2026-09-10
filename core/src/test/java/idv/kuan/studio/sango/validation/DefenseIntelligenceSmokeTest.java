@@ -185,6 +185,8 @@ public final class DefenseIntelligenceSmokeTest {
         army.originCityId = originId;
         army.targetCityId = targetId;
         army.remainingTravelMonths = 1;
+        army.totalTravelMonths = 1;
+        army.initialTroops = 10_000;
         army.troops = 10_000;
         army.training = 100;
         army.morale = 100;
@@ -225,9 +227,8 @@ public final class DefenseIntelligenceSmokeTest {
             && !snapshot.observationDateRecorded
             && migrated.requireCityState(target.cityId).scoutedUntilTurn == 0,
             "舊玩家偵察保留原到期日且不偽造偵察年月");
-        check(new CityIntelligenceService().knownView(
-            migrated, migrated.playerFactionId, target.cityId).defensePolicy() == DefensePolicy.FEINT,
-            "偵察情報保留敵城防守方針");
+        check(snapshot.defensePolicy == null,
+            "舊偵察中的敵城防守方針會在遷移時清除");
     }
 
     private static void validateUi(Path assets) throws Exception {

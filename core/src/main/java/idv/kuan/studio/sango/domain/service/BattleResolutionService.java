@@ -362,8 +362,11 @@ public final class BattleResolutionService {
         armyState.expeditionGroupId = armyState.armyId;
         armyState.retreatRouteCityIds = plan.cityIds();
         armyState.retreatRouteIndex = 0;
+        armyState.returningFromRoad = false;
         armyState.remainingTravelMonths = mapDefinition.findConnection(
             armyState.retreatRouteCityIds[0], armyState.retreatRouteCityIds[1]).travelMonths;
+        armyState.totalTravelMonths = Math.max(1, armyState.remainingTravelMonths);
+        armyState.initialTroops = survivors;
         if (findArmy(gameState, armyState.armyId) == null) {
             gameState.addArmy(armyState);
         }

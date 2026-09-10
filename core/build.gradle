@@ -162,3 +162,15 @@ tasks.register('runRpsTacticSmokeTest', JavaExec) {
 tasks.named('check') {
   dependsOn 'runRpsTacticSmokeTest'
 }
+
+tasks.register('runPlanningAndRoadEncounterTest', JavaExec) {
+  group = 'verification'
+  description = '驗證月初快照、道路接戰、道路返城與 schema 12 遷移。'
+  dependsOn testClasses
+  classpath = sourceSets.test.runtimeClasspath
+  mainClass.set('idv.kuan.studio.sango.domain.service.PlanningAndRoadEncounterTest')
+}
+
+tasks.named('check') {
+  dependsOn 'runPlanningAndRoadEncounterTest'
+}

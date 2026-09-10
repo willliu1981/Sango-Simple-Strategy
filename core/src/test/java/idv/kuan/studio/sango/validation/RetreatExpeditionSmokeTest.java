@@ -119,6 +119,8 @@ public final class RetreatExpeditionSmokeTest {
         army.originCityId = origin;
         army.targetCityId = target;
         army.remainingTravelMonths = 1;
+        army.totalTravelMonths = 1;
+        army.initialTroops = troops;
         army.troops = troops;
         army.training = 20;
         army.morale = 20;

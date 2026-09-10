@@ -39,6 +39,8 @@ public final class GameState {
     public String lastActionCode;
     public FactionState[] factionStates;
     public CityState[] cityStates;
+    /** 上次月底完成後的深快照；其他勢力於本月只能由此觀察城市。 */
+    public CityState[] turnStartCityStates;
     public ArmyState[] armyStates;
     public BattleReport[] battleReports;
 
@@ -71,6 +73,7 @@ public final class GameState {
         copiedState.lastActionCode = lastActionCode;
         copiedState.factionStates = copyFactionStates(factionStates);
         copiedState.cityStates = copyCityStates(cityStates);
+        copiedState.turnStartCityStates = copyCityStates(turnStartCityStates);
         copiedState.armyStates = copyArmyStates(armyStates);
         copiedState.battleReports = copyBattleReports(battleReports);
         return copiedState;
@@ -239,7 +242,7 @@ public final class GameState {
             for (BattleReport battleReport : battleReports) {
                 if (battleReport != null
                     && !battleReport.read
-                    && cityId.equals(battleReport.targetCityId)) {
+                    && reportTouchesCity(battleReport, cityId)) {
                     unreadReports.add(battleReport);
                 }
             }
@@ -251,7 +254,7 @@ public final class GameState {
         List<BattleReport> reports = new ArrayList<>();
         if (battleReports != null) {
             for (BattleReport battleReport : battleReports) {
-                if (battleReport != null && cityId.equals(battleReport.targetCityId)) {
+                if (battleReport != null && reportTouchesCity(battleReport, cityId)) {
                     reports.add(battleReport);
                 }
             }
@@ -263,12 +266,17 @@ public final class GameState {
         if (battleReports != null) {
             for (int index = battleReports.length - 1; index >= 0; index--) {
                 BattleReport battleReport = battleReports[index];
-                if (battleReport != null && cityId.equals(battleReport.targetCityId)) {
+                if (battleReport != null && reportTouchesCity(battleReport, cityId)) {
                     return battleReport;
                 }
             }
         }
         return null;
+    }
+
+    private boolean reportTouchesCity(BattleReport battleReport, String cityId) {
+        return cityId.equals(battleReport.targetCityId)
+            || battleReport.routeEncounter && cityId.equals(battleReport.originCityId);
     }
 
     public int countUnreadBattleReports() {

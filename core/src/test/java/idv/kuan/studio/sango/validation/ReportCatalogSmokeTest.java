@@ -33,6 +33,16 @@ public final class ReportCatalogSmokeTest {
             "World must retain every battle from the latest turn, with player battles first");
         require(BattleReportCatalog.latestForCity(state, "city-a") == attack,
             "City reports must resolve to that city's latest battle");
+        BattleReport road = battle("road", "player", "enemy-b", 13);
+        road.routeEncounter = true;
+        road.originCityId = "city-a";
+        road.targetCityId = "city-b";
+        state.battleReports = new BattleReport[] {other, defense, attack, road};
+        require(BattleReportCatalog.latestForCity(state, "city-a") == road
+            && BattleReportCatalog.latestForCity(state, "city-b") == road,
+            "Road encounter must be indexed at both endpoint cities");
+        require(BattleReportCatalog.latestCities(state).equals(List.of(road)),
+            "One road report must appear only once while representing both endpoint cities");
         state.battleReports = new BattleReport[] {other, defense, attack};
 
         TurnResolutionReport month = new TurnResolutionReport(190, 1);

@@ -36,6 +36,9 @@
                     <label id="ruler_label" fontSize="26" width="590" height="36"
                         align="left" textAlign="left">${text:city_ruler_placeholder}</label>
                     <row />
+                    <scrollPane id="city_overview_scroll" width="600" height="480"
+                        flags="scrollingDisableX,hideScrollbars">
+                    <table width="590">
                     <table width="590" height="370" pad="16" backgroundColor="0.040,0.034,0.030,1">
                         <table width="180">
                             <label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_gold}</label>
@@ -79,6 +82,8 @@
                     <row />
                     <label id="population_projection_label" fontSize="22" width="590" height="64"
                         align="left" textAlign="left" wrap="true" color="0.73,0.78,0.66,1">${text:population_projection_placeholder}</label>
+                    </table>
+                    </scrollPane>
                 </table>
 
                 <table width="30"></table>

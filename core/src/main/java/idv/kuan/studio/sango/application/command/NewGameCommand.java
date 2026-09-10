@@ -165,6 +165,7 @@ public final class NewGameCommand {
             neutralFactionState
         };
         gameState.cityStates = cityStates;
+        gameState.turnStartCityStates = copyCityStates(cityStates);
         gameState.armyStates = new ArmyState[0];
         gameState.battleReports = new BattleReport[0];
         return gameState;
@@ -216,6 +217,7 @@ public final class NewGameCommand {
         gameState.lastActionCode = "NEW_GAME";
         gameState.factionStates = factionStates.toArray(new FactionState[0]);
         gameState.cityStates = cityStates;
+        gameState.turnStartCityStates = copyCityStates(cityStates);
         gameState.armyStates = new ArmyState[0];
         gameState.battleReports = new BattleReport[0];
         return gameState;
@@ -257,5 +259,13 @@ public final class NewGameCommand {
         cityState.defensePolicy = DefensePolicy.HOLD;
         cityState.scoutedUntilTurn = 0;
         return cityState;
+    }
+
+    private CityState[] copyCityStates(CityState[] cityStates) {
+        CityState[] snapshots = new CityState[cityStates.length];
+        for (int i = 0; i < cityStates.length; i++) {
+            snapshots[i] = cityStates[i].copy();
+        }
+        return snapshots;
     }
 }

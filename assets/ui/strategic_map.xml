@@ -168,6 +168,17 @@
                     padLeft="12">${text:tactic_hold}</textButton>
             </table>
             <row />
+            <table id="dispatch_post_encounter_panel" width="1170" height="72">
+                <label fontKey="title" fontSize="29" width="250" height="62"
+                    color="0.86,0.68,0.37,1">${text:dispatch_post_encounter_heading}</label>
+                <textButton id="dispatch_post_continue_button" fontSize="24" width="280" height="58"
+                    padLeft="12">${text:dispatch_post_continue}</textButton>
+                <textButton id="dispatch_post_auto_button" fontSize="24" width="280" height="58"
+                    padLeft="12">${text:dispatch_post_auto}</textButton>
+                <textButton id="dispatch_post_return_button" fontSize="24" width="280" height="58"
+                    padLeft="12">${text:dispatch_post_return}</textButton>
+            </table>
+            <row />
             <group id="dispatch_selected_origins_host" width="1170" height="128" touchChildrenOnly="true" />
             <row />
             <label id="dispatch_summary_label" fontSize="25" width="1170" height="62" wrap="true"

@@ -75,6 +75,10 @@ public final class GameStateValidator {
         if (gameState.cityStates == null || gameState.cityStates.length == 0) {
             throw new IllegalArgumentException("cityStates 不可為空。");
         }
+        if (gameState.turnStartCityStates == null
+            || gameState.turnStartCityStates.length != gameState.cityStates.length) {
+            throw new IllegalArgumentException("turnStartCityStates 必須完整對應目前城池。");
+        }
         if (gameState.armyStates == null) {
             throw new IllegalArgumentException("armyStates 不可為 null。");
         }
@@ -116,6 +120,7 @@ public final class GameStateValidator {
         }
         requireCityReference(cityStatesById, gameState.strategicMapFocusedCityId,
             "strategicMapFocusedCityId");
+        validateTurnStartCities(gameState.turnStartCityStates, factionIds, cityStatesById);
 
         for (FactionState factionState : gameState.factionStates) {
             validateCapitalReference(factionState, cityStatesById);
@@ -254,13 +259,28 @@ public final class GameStateValidator {
         if (armyState.remainingTravelMonths < 0) {
             throw new IllegalArgumentException("remainingTravelMonths 不可小於 0。");
         }
+        if (armyState.totalTravelMonths < 1
+            || armyState.remainingTravelMonths > armyState.totalTravelMonths) {
+            throw new IllegalArgumentException("軍隊總行程與剩餘行程不一致。");
+        }
+        if (armyState.initialTroops < armyState.troops || armyState.initialTroops < 1) {
+            throw new IllegalArgumentException("軍隊初始兵力不可小於目前兵力。");
+        }
+        if (armyState.postEncounterOrder == null) {
+            throw new IllegalArgumentException("軍隊接戰後命令不可為 null。");
+        }
         if (armyState.isRetreating()) {
-            if (armyState.retreatRouteCityIds.length < 2
+            if (armyState.returningFromRoad) {
+                if (armyState.retreatRouteCityIds != null || armyState.remainingTravelMonths <= 0
+                    || !armyState.armyId.equals(armyState.expeditionGroupId)) {
+                    throw new IllegalArgumentException("道路返城軍狀態不完整。");
+                }
+            } else if (armyState.retreatRouteCityIds.length < 2
                 || !armyState.targetCityId.equals(armyState.retreatRouteCityIds[0])) {
                 throw new IllegalArgumentException("退卻路線必須由原戰場開始並包含目的地。");
             }
-            if (armyState.retreatRouteIndex < 0
-                || armyState.retreatRouteIndex >= armyState.retreatRouteCityIds.length - 1) {
+            if (!armyState.returningFromRoad && (armyState.retreatRouteIndex < 0
+                || armyState.retreatRouteIndex >= armyState.retreatRouteCityIds.length - 1)) {
                 throw new IllegalArgumentException("retreatRouteIndex 超出尚未抵達的退卻路線範圍。");
             }
             if (armyState.remainingTravelMonths <= 0) {
@@ -269,7 +289,8 @@ public final class GameStateValidator {
             if (!armyState.armyId.equals(armyState.expeditionGroupId)) {
                 throw new IllegalArgumentException("退卻軍必須使用獨立 armyId 作為群組 ID。");
             }
-            for (String routeCityId : armyState.retreatRouteCityIds) {
+            for (String routeCityId : armyState.returningFromRoad
+                ? new String[0] : armyState.retreatRouteCityIds) {
                 requireText(routeCityId, "armyState.retreatRouteCityIds");
                 requireCityReference(cityStatesById, routeCityId,
                     "armyState.retreatRouteCityIds");
@@ -302,7 +323,6 @@ public final class GameStateValidator {
         requireText(battleReport.targetCityId, "battleReport.targetCityId");
         requireText(battleReport.attackerFactionId, "battleReport.attackerFactionId");
         requireText(battleReport.defenderFactionId, "battleReport.defenderFactionId");
-        requireText(battleReport.winnerFactionId, "battleReport.winnerFactionId");
         requireFactionReference(
             factionIds,
             battleReport.attackerFactionId,
@@ -313,11 +333,13 @@ public final class GameStateValidator {
             battleReport.defenderFactionId,
             "battleReport.defenderFactionId"
         );
-        requireFactionReference(
-            factionIds,
-            battleReport.winnerFactionId,
-            "battleReport.winnerFactionId"
-        );
+        if (battleReport.outcome != BattleOutcome.DRAW) {
+            requireText(battleReport.winnerFactionId, "battleReport.winnerFactionId");
+            requireFactionReference(factionIds, battleReport.winnerFactionId,
+                "battleReport.winnerFactionId");
+        } else if (battleReport.winnerFactionId != null) {
+            throw new IllegalArgumentException("平手戰報不可指定勝方。");
+        }
         requireCityReference(
             cityStatesById,
             battleReport.originCityId,
@@ -340,8 +362,9 @@ public final class GameStateValidator {
         if (battleReport.attackerTactic == null) {
             throw new IllegalArgumentException("battleReport.attackerTactic 不可為 null。");
         }
-        if (battleReport.battleRulesVersion != 0 && battleReport.battleRulesVersion != 2) {
-            throw new IllegalArgumentException("battleReport.battleRulesVersion 只支援 0 或 2。");
+        if (battleReport.battleRulesVersion != 0 && battleReport.battleRulesVersion != 2
+            && battleReport.battleRulesVersion != 3) {
+            throw new IllegalArgumentException("battleReport.battleRulesVersion 只支援 0、2 或 3。");
         }
         if (battleReport.defenderPolicyRecorded && battleReport.defenderPolicy == null) {
             throw new IllegalArgumentException("已記錄的守方方針不可為 null。");
@@ -360,6 +383,11 @@ public final class GameStateValidator {
         requireNonNegative(battleReport.defenderStrength, "battleReport.defenderStrength");
         if (battleReport.battleRulesVersion == 2) {
             validateCurrentBattleSnapshot(battleReport);
+        }
+        if (battleReport.routeEncounter) {
+            validateRoadEncounterSnapshot(battleReport);
+        } else if (battleReport.battleRulesVersion == 3) {
+            throw new IllegalArgumentException("第三版戰報必須是道路接戰。");
         }
         requireNonNegative(battleReport.attackerTroopsBefore, "battleReport.attackerTroopsBefore");
         requireNonNegative(battleReport.defenderTroopsBefore, "battleReport.defenderTroopsBefore");
@@ -410,6 +438,23 @@ public final class GameStateValidator {
             battleReport.defenderMorale, battleReport.defenderDefense);
         if (battleReport.defenderBaseStrength != expectedDefenderBaseStrength) {
             throw new IllegalArgumentException("戰報守方基礎戰力快照不一致。");
+        }
+    }
+
+    private static void validateRoadEncounterSnapshot(BattleReport report) {
+        if (report.battleRulesVersion != 3 || report.defenderTactic == null
+            || !report.defenderTactic.isActive()
+            || report.attackerPostEncounterOrder == null
+            || report.defenderPostEncounterOrder == null
+            || report.defenderPolicyRecorded || report.defenderPolicy != null
+            || report.cityCaptured || report.outcome == BattleOutcome.UNOPPOSED_OCCUPATION) {
+            throw new IllegalArgumentException("道路接戰快照不完整。");
+        }
+        if (report.outcome == BattleOutcome.ATTACKER_VICTORY && report.defenderContinued
+            || report.outcome == BattleOutcome.DEFENDER_VICTORY && report.attackerContinued
+            || report.outcome == BattleOutcome.DRAW
+                && (report.attackerContinued || report.defenderContinued)) {
+            throw new IllegalArgumentException("道路接戰後續行軍與勝負不一致。");
         }
     }
 
@@ -543,8 +588,21 @@ public final class GameStateValidator {
             requireRange(snapshot.training, 0, 100, "cityIntelligence.training");
             requireRange(snapshot.morale, 0, 100, "cityIntelligence.morale");
             requireRange(snapshot.publicOrder, 0, 100, "cityIntelligence.publicOrder");
-            if (snapshot.defensePolicy == null || !snapshot.defensePolicy.isActive()) {
-                throw new IllegalArgumentException("城池情報必須保存目前有效的防守方針。");
+            if (snapshot.defensePolicy != null) {
+                throw new IllegalArgumentException("城池情報不可保存防守方針。");
+            }
+        }
+    }
+
+    private static void validateTurnStartCities(CityState[] snapshots,
+        Set<String> factionIds, Map<String, CityState> currentById) {
+        Set<String> snapshotIds = new HashSet<>();
+        for (CityState snapshot : snapshots) {
+            validateCityState(snapshot);
+            requireFactionReference(factionIds, snapshot.ownerFactionId,
+                "turnStartCityStates.ownerFactionId");
+            if (!currentById.containsKey(snapshot.cityId) || !snapshotIds.add(snapshot.cityId)) {
+                throw new IllegalArgumentException("月初城池快照與目前地圖不一致：" + snapshot.cityId);
             }
         }
     }

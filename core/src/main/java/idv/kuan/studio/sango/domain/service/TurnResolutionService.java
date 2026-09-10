@@ -28,7 +28,7 @@ import idv.kuan.studio.sango.domain.rule.SeasonalEconomyRules;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 
 /**
- * 依固定順序處理軍糧、洪災、季節經濟、行軍、敵方 AI、民心恢復與期限。
+ * 先讓所有勢力依月初快照完成本月規劃，再統一結算軍糧、經濟、道路接戰與攻城。
  */
 public final class TurnResolutionService {
     private final GameDefinitionRepository definitionRepository;
@@ -36,6 +36,7 @@ public final class TurnResolutionService {
     private final BattleResolutionService battleResolutionService;
     private final EnemyTurnService enemyTurnService;
     private final RetreatResolutionService retreatResolutionService;
+    private final RoadEncounterResolutionService roadEncounterResolutionService;
 
     public TurnResolutionService(GameDefinitionRepository definitionRepository) {
         this(
@@ -57,6 +58,7 @@ public final class TurnResolutionService {
         this.battleResolutionService = battleResolutionService;
         this.enemyTurnService = enemyTurnService;
         this.retreatResolutionService = new RetreatResolutionService();
+        this.roadEncounterResolutionService = new RoadEncounterResolutionService();
     }
 
     public TurnResolutionResult resolve(GameState currentState) {
@@ -75,13 +77,13 @@ public final class TurnResolutionService {
         );
         Set<String> retreatArmyIdsAtTurnStart = retreatArmyIds(nextState);
 
+        enemyTurnService.execute(nextState, mapDefinition, report);
         Set<String> foodShortageFactionIds = resolveMilitaryUpkeep(nextState, report);
         Set<String> floodedCityIds = resolveFloodSeason(nextState, report);
         resolveQuarterlyTax(nextState, report);
         resolveHarvest(nextState, report);
         Set<String> changedOwnerCityIds = resolveArmyMovement(nextState, mapDefinition, report);
         retreatResolutionService.resolve(nextState, mapDefinition, retreatArmyIdsAtTurnStart, report);
-        enemyTurnService.execute(nextState, mapDefinition, report);
         resolvePublicOrderNaturalRecovery(
             nextState,
             report,
@@ -91,6 +93,7 @@ public final class TurnResolutionService {
         );
         resolveAnnualPopulation(nextState, report);
         advanceCampaignClock(nextState, report);
+        nextState.turnStartCityStates = copyCityStates(nextState.cityStates);
 
         nextState.lastActionCode = "END_TURN";
         GameStateValidator.validate(nextState);
@@ -353,6 +356,7 @@ public final class TurnResolutionService {
         TurnResolutionReport report
     ) {
         Set<String> changedOwnerCityIds = new HashSet<>();
+        roadEncounterResolutionService.resolve(gameState, mapDefinition, report);
         ArmyState[] movementSnapshot = gameState.armyStates.clone();
         for (ArmyState armyState : movementSnapshot) {
             if (armyState.isRetreating() || !containsArmy(gameState, armyState.armyId)) {
@@ -404,6 +408,14 @@ public final class TurnResolutionService {
             }
         }
         return changedOwnerCityIds;
+    }
+
+    private CityState[] copyCityStates(CityState[] source) {
+        CityState[] copied = new CityState[source.length];
+        for (int i = 0; i < source.length; i++) {
+            copied[i] = source[i].copy();
+        }
+        return copied;
     }
 
     private List<ArmyState> findGroupArmies(GameState gameState, String groupId) {

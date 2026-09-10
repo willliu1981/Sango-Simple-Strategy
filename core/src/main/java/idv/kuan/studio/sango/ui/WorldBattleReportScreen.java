@@ -69,8 +69,12 @@ public final class WorldBattleReportScreen extends SuiScreen {
                 + text(report.read ? "world_battle_read" : "world_battle_unread", report.read ? "已讀" : "未讀")
                 + " | " + report.resolvedYear + " / " + report.resolvedMonth + "\n"
                 + faction(report.attackerFactionId) + " → " + faction(report.defenderFactionId)
-                + " | " + city(report.targetCityId) + " | "
-                + text("world_battle_winner", "勝方：{0}", faction(report.winnerFactionId));
+                + " | " + (report.routeEncounter
+                    ? city(report.originCityId) + "—" + city(report.targetCityId)
+                    : city(report.targetCityId)) + " | "
+                + (report.winnerFactionId == null
+                    ? text("world_battle_draw", "結果：平手")
+                    : text("world_battle_winner", "勝方：{0}", faction(report.winnerFactionId)));
             TextButton row = new TextButton(title, new TextButton.TextButtonStyle(rowStyle));
             row.getLabel().setWrap(true);
             row.getLabel().setAlignment(Align.left);

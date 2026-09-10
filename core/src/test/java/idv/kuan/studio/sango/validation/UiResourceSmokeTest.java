@@ -90,6 +90,11 @@ public final class UiResourceSmokeTest {
                 }
             }
         }
+        String strategicMapScreen = Files.readString(sourceRoot.resolve(
+            "idv/kuan/studio/sango/ui/StrategicMapScreen.java"));
+        check(strategicMapScreen.contains("public void hide()")
+                && count(strategicMapScreen, "cancelPendingFactionHighlightTimers()") >= 2,
+            "Strategic map must cancel delayed faction highlights on hide and dispose");
         Set<String> factionScreenIds = actorIdsByXml.get("ui/new_game.xml");
         for (int i = 1; i <= 6; i++) {
             check(factionScreenIds.contains("faction_" + i + "_button"), "六個勢力按鈕 ID");
@@ -110,6 +115,15 @@ public final class UiResourceSmokeTest {
         validateTerrainAssets(assetsPath);
         validateCamera();
         System.out.println("Sango UI resources and map camera: PASS; checks=" + checks);
+    }
+
+    private static int count(String source, String fragment) {
+        int matches = 0;
+        for (int index = 0; (index = source.indexOf(fragment, index)) >= 0;
+            index += fragment.length()) {
+            matches++;
+        }
+        return matches;
     }
 
     private static void validateFontCharacterCoverage(
