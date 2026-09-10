@@ -25,7 +25,7 @@ import idv.kuan.studio.sango.ui.support.BattleReportCatalog;
 import idv.kuan.studio.sango.ui.support.ScreenMusic;
 import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
 
-/** All factions' battles, with the player's battles first and revisitable after reading. */
+/** Battles from the just-completed month, with the player's battles first. */
 public final class WorldBattleReportScreen extends SuiScreen {
     private Group host;
     private Table rows;
@@ -90,7 +90,7 @@ public final class WorldBattleReportScreen extends SuiScreen {
             rows.row();
         }
         if (rows.getChildren().size == 0) {
-            TextButton empty = new TextButton(text("world_battle_empty", "目前沒有戰事紀錄。"), rowStyle);
+            TextButton empty = new TextButton(text("world_battle_empty", "上個月沒有戰事紀錄。"), rowStyle);
             empty.setDisabled(true);
             rows.add(empty).width(Math.max(1f, host.getWidth() - 24f)).height(80f);
         }

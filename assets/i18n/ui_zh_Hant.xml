@@ -8,14 +8,14 @@
         <entry name="report_retreat_disbanded" value="{0} 一帶部隊無可撤往的安全我方城池，{1} 兵潰散。" />
         <entry name="map_army_retreat_summary" value="{0} {1} 兵・士氣 {2}｜撤往 {3}（尚需 {4} 個月）" />
         <entry name="world_battle_heading" value="天下戰報" />
-        <entry name="world_battle_description" value="顯示最新月份的全部戰報；同月我方戰事排在前面。已讀後仍可查看，各城入口則顯示該城最近一戰。" />
+        <entry name="world_battle_description" value="只顯示剛結束月份的全部戰報；我方戰事排在前面。若上個月沒有戰事，清單會保持空白。" />
         <entry name="world_battle_player" value="我方戰事" />
         <entry name="world_battle_other" value="其他勢力" />
         <entry name="world_battle_read" value="已讀" />
         <entry name="world_battle_unread" value="未讀" />
         <entry name="world_battle_winner" value="勝方：{0}" />
         <entry name="world_battle_draw" value="結果：平手" />
-        <entry name="world_battle_empty" value="目前沒有戰事紀錄。" />
+        <entry name="world_battle_empty" value="上個月沒有戰事紀錄。" />
         <entry name="report_player_battle_summary" value="{0}：{1}；我方戰損 {2}，戰後兵力 {3}。可由下方查看詳細戰報。" />
         <entry name="report_player_battle_win" value="我方獲勝" />
         <entry name="report_player_battle_loss" value="我方戰敗" />
@@ -339,8 +339,8 @@
         <entry name="map_gameplay_eliminated" value="我方已失去全部城池｜只能查看局勢或讀取存檔" description="map_gameplay_eliminated" />
         <entry name="map_objective_achieved_free" value="劇本目標達成｜自由征戰中" description="map_objective_achieved_free" />
         <entry name="map_objective_failed_free" value="劇本目標失敗｜自由征戰中" description="map_objective_failed_free" />
-        <entry name="map_unread_battle_none" value="本回合沒有新的戰報提示。" description="map_unread_battle_none" />
-        <entry name="map_unread_battle_alert_format" value="本回合戰事：有 {0} 份新戰報；發生戰鬥的城池正在閃爍。" description="map_unread_battle_alert_format" />
+        <entry name="map_unread_battle_none" value="上個月沒有新的戰報提示。" description="map_unread_battle_none" />
+        <entry name="map_unread_battle_alert_format" value="上個月戰事：有 {0} 份新戰報；發生戰鬥的城池正在閃爍。" description="map_unread_battle_alert_format" />
         <entry name="map_marker_battle_format" value="戰事 {0}" description="map_marker_battle_format" />
         <entry name="button_city_battles_placeholder" value="查看此城戰報" description="button_city_battles_placeholder" />
         <entry name="button_city_battles_format" value="查看此城戰報（{0}）" description="button_city_battles_format" />
@@ -375,7 +375,7 @@
         <entry name="button_end_month_confirm" value="確認結束本月" description="button_end_month_confirm" />
         <entry name="battle_prompt_title_placeholder" value="本月發生戰鬥" description="battle_prompt_title_placeholder" />
         <entry name="battle_prompt_title_format" value="{0} 發生戰鬥" description="battle_prompt_title_format" />
-        <entry name="battle_prompt_description" value="本月正在關注的城池發生戰事。是否立即觀看完整戰報？" description="battle_prompt_description" />
+        <entry name="battle_prompt_description" value="上個月正在關注的城池發生戰事。是否立即觀看完整戰報？" description="battle_prompt_description" />
         <entry name="button_view_later" value="稍後觀看" description="button_view_later" />
         <entry name="button_view_battle_report" value="觀看戰報" description="button_view_battle_report" />
         <entry name="battle_report_title_placeholder" value="城池攻防戰" description="battle_report_title_placeholder" />
@@ -485,7 +485,7 @@
         <entry name="settings_save_before_exit_failed" value="保存失敗，已取消返回或退出。" description="settings_save_before_exit_failed" />
         <entry name="gameplay_guide_title" value="玩法說明" description="gameplay_guide_title" />
         <entry name="gameplay_guide_description" value="從每月流程開始，快速掌握經營、軍事、情報與存檔。" description="gameplay_guide_description" />
-        <entry name="gameplay_guide_content" value="【遊戲目標】\n選擇一方勢力，在期限內完成劇本指定的攻城目標。目標達成或失敗後仍可繼續自由征戰；失去所有城池則無法再推進月份。\n\n【同時規劃與月初快照】\n各勢力在同一個月規劃命令，不會依勢力順序逐一行動。本月內政、徵兵與出征會先反映在本方工作狀態；其他勢力只能依上個月底完成結算後建立的城市快照判斷，不能偷看尚未結算的變化。未使用的行動力不會保留。\n\n【月結順序】\n按「結束月份」後，先完成敵軍命令，再依序結算軍糧、洪災與季節收入、道路接戰、行軍與攻城、撤退、民心與人口；最後推進月份、刷新行動力，並建立新的月初快照。\n\n【資源與城池】\n金與糧由全勢力共用，人口、城防、訓練、士氣與民心則屬於各城。農業提高九月秋收，商業提高季末稅金，治水降低六月洪災風險，城防強化守城。徵兵會消耗人口與資源，但不會降低民心；訓練和士氣會影響部隊戰力。\n\n【軍糧與民心】\n駐軍和行軍部隊每月都需要軍糧。缺糧會造成逃兵與士氣下降，也會中斷高民心的自然恢復。巡查可直接提升民心至 90；維持民心、供糧與城市安全，之後可逐步自然提升至 100。\n\n【情報與隱藏方針】\n偵察非我方城消耗 1 行動力與 20 金，取得三個月情報並包含當月。情報來自月初快照，目標之後的調兵不會自動更新；敵方目前的防守方針永遠不可見，只會在完成後的戰報揭露。點擊非我方勢力名稱可查看估算資訊，但不會讀取敵方真實國庫、行軍部隊或本月剩餘行動力。玩家與電腦遵守相同規則，各勢力情報互不相通。\n\n【出擊與防守方針】\n出擊方針為強攻、誘敵、穩進；防守方針為迎擊、設伏、據守。強攻剋據守、穩進剋設伏、誘敵剋迎擊；相剋方戰力加成 10%，同種無加成。運兵不使用方針。\n\n【道路接戰與後續命令】\n雙方沿同一道路互相出兵時，會先在道路或野外接戰，再決定是否繼續攻城。出征時可設定接戰後命令：繼續攻城、自動判斷或返城。士氣低於 40 不會禁止出兵，只是自動判斷在接戰勝利後是否返城的條件之一；接戰落敗或平手時會返城。\n\n【戰報】\n勢力月報整理我方收支、缺糧、災害與戰事；天下戰報顯示最新月份的全部戰報，同月我方戰事排在前面；道路接戰會由道路兩端城市索引，城池戰報可追查相關戰鬥。\n\n【存檔與反悔】\n一般內政、偵察、運兵與出征不會立即存檔；想取消尚未保存的操作，可讀取存檔回到上次保存狀態。建立新局、月份結算、手動存檔，以及從遊戲選單返回大廳或離開遊戲時會保存。\n\n【操作提示】\n各主要畫面的「操作說明」會補充當前功能、成本與限制；實際消耗以確認畫面顯示為準。" description="gameplay_guide_content" />
+        <entry name="gameplay_guide_content" value="【遊戲目標】\n選擇一方勢力，在期限內完成劇本指定的攻城目標。目標達成或失敗後仍可繼續自由征戰；失去所有城池則無法再推進月份。\n\n【同時規劃與月初快照】\n各勢力在同一個月規劃命令，不會依勢力順序逐一行動。本月內政、徵兵與出征會先反映在本方工作狀態；其他勢力只能依上個月底完成結算後建立的城市快照判斷，不能偷看尚未結算的變化。未使用的行動力不會保留。\n\n【月結順序】\n按「結束月份」後，先完成敵軍命令，再依序結算軍糧、洪災與季節收入、道路接戰、行軍與攻城、撤退、民心與人口；最後推進月份、刷新行動力，並建立新的月初快照。\n\n【資源與城池】\n金與糧由全勢力共用，人口、城防、訓練、士氣與民心則屬於各城。農業提高九月秋收，商業提高季末稅金，治水降低六月洪災風險，城防強化守城。徵兵會消耗人口與資源，但不會降低民心；訓練和士氣會影響部隊戰力。\n\n【軍糧與民心】\n駐軍和行軍部隊每月都需要軍糧。缺糧會造成逃兵與士氣下降，也會中斷高民心的自然恢復。巡查可直接提升民心至 90；維持民心、供糧與城市安全，之後可逐步自然提升至 100。\n\n【情報與隱藏方針】\n偵察非我方城消耗 1 行動力與 20 金，取得三個月情報並包含當月。情報來自月初快照，目標之後的調兵不會自動更新；敵方目前的防守方針永遠不可見，只會在完成後的戰報揭露。點擊非我方勢力名稱可查看估算資訊，但不會讀取敵方真實國庫、行軍部隊或本月剩餘行動力。玩家與電腦遵守相同規則，各勢力情報互不相通。\n\n【出擊與防守方針】\n出擊方針為強攻、誘敵、穩進；防守方針為迎擊、設伏、據守。強攻剋據守、穩進剋設伏、誘敵剋迎擊；相剋方戰力加成 10%，同種無加成。運兵不使用方針。\n\n【道路接戰與後續命令】\n雙方沿同一道路互相出兵時，會先在道路或野外接戰，再決定是否繼續攻城。出征時可設定接戰後命令：繼續攻城、自動判斷或返城。士氣低於 40 不會禁止出兵，只是自動判斷在接戰勝利後是否返城的條件之一；接戰落敗或平手時會返城。\n\n【戰報】\n勢力月報整理我方收支、缺糧、災害與戰事；天下戰報與各城入口只顯示剛完成的上一個月份戰報，同月我方戰事排在前面。若上一個月沒有戰事，不會沿用更早的紀錄；道路接戰仍會由道路兩端城市索引。\n\n【存檔與反悔】\n一般內政、偵察、運兵與出征不會立即存檔；想取消尚未保存的操作，可讀取存檔回到上次保存狀態。建立新局、月份結算、手動存檔，以及從遊戲選單返回大廳或離開遊戲時會保存。\n\n【操作提示】\n各主要畫面的「操作說明」會補充當前功能、成本與限制；實際消耗以確認畫面顯示為準。" description="gameplay_guide_content" />
         <entry name="button_back_to_settings" value="返回設定" description="button_back_to_settings" />
         <entry name="city_status_player_eliminated" value="我方已失去全部城池，不能再下達命令或推進月份。" description="city_status_player_eliminated" />
         <entry name="scenario_china_name" value="漢末群雄・全國征戰" description="scenario_china_name" />
@@ -598,22 +598,22 @@
         <entry name="music_player_description" value="自由欣賞遊戲曲目，可切換播放模式；離開時恢復大廳 BGM。" description="music_player_description" />
         <entry name="music_lobby" value="群雄序曲" description="music_lobby" />
         <entry name="music_menu" value="主選單" description="music_menu" />
-        <entry name="music_strategy" value="帷幄之聲" description="music_strategy" />
-        <entry name="music_strategy_scene" value="戰略主題" description="music_strategy_scene" />
+        <entry name="music_victory" value="此戰之後" description="music_victory" />
+        <entry name="music_victory_scene" value="劇本目標達成" description="music_victory_scene" />
         <entry name="music_spring" value="春風入城" description="music_spring" />
-        <entry name="music_summer" value="炎日運籌" description="music_summer" />
+        <entry name="music_summer" value="旌旗長路" description="music_summer" />
         <entry name="music_autumn" value="暮秋望陣" description="music_autumn" />
-        <entry name="music_winter" value="寒夜圖謀" description="music_winter" />
+        <entry name="music_winter" value="孤城待曉" description="music_winter" />
         <entry name="season_spring" value="春 · 一月至三月" description="season_spring" />
         <entry name="season_summer" value="夏 · 四月至六月" description="season_summer" />
         <entry name="season_autumn" value="秋 · 七月至九月" description="season_autumn" />
         <entry name="season_winter" value="冬 · 十月至十二月" description="season_winter" />
         <entry name="music_track_lobby" value="群雄序曲" description="music_track_lobby" />
-        <entry name="music_track_strategy" value="帷幄之聲" description="music_track_strategy" />
+        <entry name="music_track_victory" value="此戰之後" description="music_track_victory" />
         <entry name="music_track_spring" value="春風入城" description="music_track_spring" />
-        <entry name="music_track_summer" value="炎日運籌" description="music_track_summer" />
+        <entry name="music_track_summer" value="旌旗長路" description="music_track_summer" />
         <entry name="music_track_autumn" value="暮秋望陣" description="music_track_autumn" />
-        <entry name="music_track_winter" value="寒夜圖謀" description="music_track_winter" />
+        <entry name="music_track_winter" value="孤城待曉" description="music_track_winter" />
         <entry name="music_previous" value="上一首" description="music_previous" />
         <entry name="music_next" value="下一首" description="music_next" />
         <entry name="music_play" value="播放" description="music_play" />

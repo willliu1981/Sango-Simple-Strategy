@@ -3,7 +3,7 @@ package idv.kuan.studio.sango.audio;
 /** 音樂資產與顯示名稱分離；鑑賞曲目均使用完整 MP3，不裁切來源。 */
 public enum MusicTrack {
     LOBBY("audio/music/lobby_theme.mp3", "music_lobby", "music_menu", 192.480f, 1f),
-    STRATEGY("audio/music/strategy_theme.mp3", "music_strategy", "music_strategy_scene", 63.164f, 1f),
+    VICTORY("audio/music/strategy_theme.mp3", "music_victory", "music_victory_scene", 174.164f, 1f),
     SPRING("audio/music/spring_wind_enters_city.mp3", "music_spring", "season_spring", 209.640f, 0.70f),
     SUMMER("audio/music/summer_counsel.mp3", "music_summer", "season_summer", 209.520f, 0.70f),
     AUTUMN("audio/music/autumn_battlefield.mp3", "music_autumn", "season_autumn", 209.856f, 0.70f),
@@ -60,6 +60,6 @@ public enum MusicTrack {
     }
 
     public static MusicTrack[] galleryTracks() {
-        return new MusicTrack[] {LOBBY, STRATEGY, SPRING, SUMMER, AUTUMN, WINTER};
+        return new MusicTrack[] {LOBBY, VICTORY, SPRING, SUMMER, AUTUMN, WINTER};
     }
 }

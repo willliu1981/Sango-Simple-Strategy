@@ -14,14 +14,11 @@ public final class BattleReportCatalog {
 
     public static List<BattleReport> world(GameState state) {
         if (state == null || state.battleReports == null) return List.of();
-        int latestTurn = -1;
-        for (BattleReport report : state.battleReports) {
-            if (report != null) latestTurn = Math.max(latestTurn, report.resolvedTurn);
-        }
-        if (latestTurn < 0) return List.of();
+        int completedTurn = state.currentTurn - 1;
+        if (completedTurn < 1) return List.of();
         List<BattleReport> reports = new ArrayList<>();
         for (BattleReport report : state.battleReports) {
-            if (report != null && report.resolvedTurn == latestTurn) reports.add(report);
+            if (report != null && report.resolvedTurn == completedTurn) reports.add(report);
         }
         reports.sort(Comparator
             .comparing((BattleReport report) -> !report.involvesFaction(state.playerFactionId))
@@ -36,9 +33,11 @@ public final class BattleReportCatalog {
 
     public static BattleReport latestForCity(GameState state, String cityId) {
         BattleReport latest = null;
-        if (state.battleReports == null) return null;
+        if (state == null || state.battleReports == null || state.currentTurn <= 1) return null;
+        int completedTurn = state.currentTurn - 1;
         for (BattleReport report : state.battleReports) {
-            if (report != null && touchesCity(report, cityId) && isNewer(report, latest)) {
+            if (report != null && report.resolvedTurn == completedTurn
+                && touchesCity(report, cityId) && isNewer(report, latest)) {
                 latest = report;
             }
         }
@@ -52,9 +51,10 @@ public final class BattleReportCatalog {
 
     public static List<BattleReport> latestCities(GameState state) {
         java.util.Map<String, BattleReport> latest = new java.util.LinkedHashMap<>();
-        if (state.battleReports != null) {
+        int completedTurn = state == null ? -1 : state.currentTurn - 1;
+        if (completedTurn >= 1 && state.battleReports != null) {
             for (BattleReport report : state.battleReports) {
-                if (report != null) {
+                if (report != null && report.resolvedTurn == completedTurn) {
                     putIfNewer(latest, report.targetCityId, report);
                     if (report.routeEncounter) putIfNewer(latest, report.originCityId, report);
                 }

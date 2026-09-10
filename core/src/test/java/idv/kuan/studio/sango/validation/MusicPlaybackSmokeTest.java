@@ -31,7 +31,7 @@ public final class MusicPlaybackSmokeTest {
             check(track.getDurationSeconds() > 200f && track.getDurationSeconds() < 220f, "曲長中繼資料");
             check(close(track.getOutputGain(), 0.70f), "四季曲目輸出 gain 為 0.70");
         }
-        check(MusicTrack.galleryTracks().length == 6, "鑑賞清單包含 Lobby、戰略與四季曲目");
+        check(MusicTrack.galleryTracks().length == 6, "鑑賞清單包含主選單、破關與四季曲目");
         for (MusicTrack track : MusicTrack.galleryTracks()) {
             check(Files.size(Path.of(arguments[0]).resolve(track.getAssetPath())) > 100000,
                 "六首鑑賞來源資產存在且非空");
@@ -173,27 +173,27 @@ public final class MusicPlaybackSmokeTest {
         FakeLoader loader = new FakeLoader();
         MusicPlaybackController controller = new MusicPlaybackController(loader::load, 2f);
         List<MusicTrack> completedTracks = new ArrayList<>();
-        controller.request(MusicTrack.STRATEGY, false, completedTracks::add);
+        controller.request(MusicTrack.VICTORY, false, completedTracks::add);
         controller.update(2f, true, 1f);
-        FakeMusic strategy = loader.latest(MusicTrack.STRATEGY);
-        check(!strategy.looping && strategy.playing, "單曲播放使用非循環串流");
-        strategy.complete();
+        FakeMusic victory = loader.latest(MusicTrack.VICTORY);
+        check(!victory.looping && victory.playing, "單曲播放使用非循環串流");
+        victory.complete();
         controller.update(1f, true, 1f);
-        check(completedTracks.equals(List.of(MusicTrack.STRATEGY)) && !strategy.playing,
+        check(completedTracks.equals(List.of(MusicTrack.VICTORY)) && !victory.playing,
             "自然播完只回報一次且不被更新迴圈重新播放");
-        controller.request(MusicTrack.STRATEGY);
+        controller.request(MusicTrack.VICTORY);
         controller.update(0f, true, 1f);
-        check(strategy.looping && strategy.playing && close(strategy.position, 0f),
+        check(victory.looping && victory.playing && close(victory.position, 0f),
             "返回相同的正常 BGM 時恢復循環並由開頭播放");
         controller.setRequestedTrackBehavior(false, completedTracks::add);
-        strategy.complete();
+        victory.complete();
         controller.restartRequestedTrack();
         controller.update(0f, true, 1f);
-        check(strategy.playing && close(strategy.position, 0f), "播放完後可由開頭重新播放");
+        check(victory.playing && close(victory.position, 0f), "播放完後可由開頭重新播放");
         controller.setRequestedTrackBehavior(true, completedTracks::add);
-        check(strategy.looping, "切成單曲循環不更換或重建串流");
+        check(victory.looping, "切成單曲循環不更換或重建串流");
         int completionCount = completedTracks.size();
-        strategy.complete();
+        victory.complete();
         check(completedTracks.size() == completionCount, "循環模式忽略自然結束回呼");
         controller.dispose();
         check(loader.allDisposedExactlyOnce(), "鑑賞結束事件測試無資源遺留");

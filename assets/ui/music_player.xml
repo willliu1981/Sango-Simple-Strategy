@@ -11,7 +11,7 @@
                 <table width="610" height="600" pad="24" backgroundColor="0.023,0.020,0.018,1">
                     <textButton id="music_track_0_button" fontSize="30" width="550" height="82">${text:music_track_lobby}</textButton>
                     <row />
-                    <textButton id="music_track_1_button" fontSize="30" width="550" height="82" padTop="10">${text:music_track_strategy}</textButton>
+                    <textButton id="music_track_1_button" fontSize="30" width="550" height="82" padTop="10">${text:music_track_victory}</textButton>
                     <row />
                     <textButton id="music_track_2_button" fontSize="30" width="550" height="82" padTop="10">${text:music_track_spring}</textButton>
                     <row />

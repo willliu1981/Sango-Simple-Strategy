@@ -10,7 +10,7 @@
   {
     "source": "运筹帷幄_2_炎日運籌.mp3",
     "asset": "audio/music/summer_counsel.mp3",
-    "title": "炎日運籌",
+    "title": "旌旗長路",
     "season": "SUMMER",
     "sha256": "aefec738dde2a02cf36b7e894eaca1063dbf2eae05c9daa33fd38d1092325628",
     "processing": "Byte-identical copy; filename and UI title only."
@@ -26,7 +26,7 @@
   {
     "source": "汉策图谋_1_寒夜圖謀.mp3",
     "asset": "audio/music/winter_stratagem.mp3",
-    "title": "寒夜圖謀",
+    "title": "孤城待曉",
     "season": "WINTER",
     "sha256": "dd55f4e4d24fb0cb04e556102798cdd41422d6b1a8762b4ccad4a752eebece08",
     "processing": "Byte-identical copy; filename and UI title only."

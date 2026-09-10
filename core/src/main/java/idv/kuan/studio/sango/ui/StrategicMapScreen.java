@@ -591,10 +591,10 @@ public final class StrategicMapScreen extends SuiScreen {
             unreadBattleCount > 0
                 ? text(
                     "map_unread_battle_alert_format",
-                    "本回合戰事：有 {0} 份新戰報；發生戰鬥的城池正在閃爍。",
+                    "上個月戰事：有 {0} 份新戰報；發生戰鬥的城池正在閃爍。",
                     unreadBattleCount
                 )
-                : text("map_unread_battle_none", "本回合沒有新的戰報提示。")
+                : text("map_unread_battle_none", "上個月沒有新的戰報提示。")
         );
     }
 
@@ -1518,7 +1518,7 @@ public final class StrategicMapScreen extends SuiScreen {
             text("battle_prompt_title_format", "{0} 發生戰鬥", cityName(battleReport.targetCityId))
         );
         label("battle_prompt_description_label").setText(
-            text("battle_prompt_description", "本月所選城池發生戰事。是否立即觀看完整戰報？")
+            text("battle_prompt_description", "上個月所選城池發生戰事。是否立即觀看完整戰報？")
         );
         openModal(battlePromptMask);
         SangoServices.audio().playSound(SoundEffect.BATTLE_ALERT);
