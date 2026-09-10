@@ -36,6 +36,19 @@ public final class RecruitmentRules {
         return (int) Math.max(0, maximum);
     }
 
+    /** AI 預設只正常徵兵，不進入會降低民心的強徵區間。 */
+    public static int maximumVoluntaryRecruitable(
+        CityState cityState, FactionState factionState, OfficerCommandProfile officer
+    ) {
+        return Math.min(maximumRecruitable(cityState, factionState, officer),
+            Math.max(0, cityState.population - CampaignBalance.RECRUIT_SAFE_POPULATION_RESERVE));
+    }
+
+    public static boolean isForcedRecruitment(int population, int troopCount) {
+        return troopCount > 0
+            && population - troopCount < CampaignBalance.RECRUIT_SAFE_POPULATION_RESERVE;
+    }
+
     public static int goldCost(int troopCount) {
         return calculateCost(troopCount, CampaignBalance.RECRUIT_GOLD_NUMERATOR);
     }
@@ -68,14 +81,19 @@ public final class RecruitmentRules {
             resultingMorale = TroopQualityRules.weightedAverage(cityState.troops, resultingMorale,
                 troopCount, startingMorale * TroopQualityRules.SCALE);
         }
+        boolean forced = isForcedRecruitment(cityState.population, troopCount);
+        int publicOrderLoss = forced
+            ? Math.min(cityState.publicOrder, CampaignBalance.FORCED_RECRUIT_PUBLIC_ORDER_LOSS) : 0;
         return new Quote(troopCount, maximumRecruitable(cityState, factionState, officer),
             goldCost(troopCount), foodCost(troopCount), officer.recruitTraining(), startingMorale,
-            resultingTraining, resultingMorale);
+            resultingTraining, resultingMorale, forced, publicOrderLoss,
+            cityState.publicOrder - publicOrderLoss);
     }
 
     public record Quote(
         int troopCount, int maximum, int goldCost, int foodCost,
-        int recruitTraining, int recruitMorale, int resultingTraining, int resultingMorale
+        int recruitTraining, int recruitMorale, int resultingTraining, int resultingMorale,
+        boolean forced, int publicOrderLoss, int resultingPublicOrder
     ) {
     }
 }

@@ -131,7 +131,8 @@ public final class BattleReportScreen extends SuiScreen {
         String targetCityName = cityName(battleReport.targetCityId);
         String attackerName = factionName(battleReport.attackerFactionId);
         String defenderName = factionName(battleReport.defenderFactionId);
-        boolean playerWon = gameState.playerFactionId.equals(battleReport.winnerFactionId);
+        boolean attackerWon = battleReport.outcome == BattleOutcome.ATTACKER_VICTORY
+            || battleReport.outcome == BattleOutcome.UNOPPOSED_OCCUPATION;
 
         label("battle_report_title_label").setText(
             battleReport.routeEncounter
@@ -212,8 +213,7 @@ public final class BattleReportScreen extends SuiScreen {
         Label resultLabel = label("battle_report_result_label");
         resultLabel.setText(buildResultText(gameState, battleReport, targetCityName));
         resultLabel.setColor(battleReport.outcome == BattleOutcome.DRAW ? DRAW_COLOR
-            : playerWon || !battleReport.involvesFaction(gameState.playerFactionId)
-                ? PLAYER_WIN_COLOR : PLAYER_LOSS_COLOR);
+            : attackerWon ? PLAYER_WIN_COLOR : PLAYER_LOSS_COLOR);
         label("battle_report_capture_label").setText(battleReport.routeEncounter
             ? encounterDisposition(battleReport)
             : battleReport.cityCaptured
@@ -241,21 +241,10 @@ public final class BattleReportScreen extends SuiScreen {
         if (battleReport.outcome == BattleOutcome.UNOPPOSED_OCCUPATION) {
             return text("battle_report_occupation_result", "", factionName(battleReport.winnerFactionId), targetCityName);
         }
-        if (!battleReport.involvesFaction(gameState.playerFactionId)) {
-            return text("battle_report_other_factions_result", "", factionName(battleReport.winnerFactionId), targetCityName);
-        }
-        boolean playerAttacker = gameState.playerFactionId.equals(battleReport.attackerFactionId);
-        boolean playerWinner = gameState.playerFactionId.equals(battleReport.winnerFactionId);
-        if (playerWinner && playerAttacker) {
-            return text("battle_report_player_attack_win", "我軍攻下 {0}", targetCityName);
-        }
-        if (playerWinner) {
-            return text("battle_report_player_defense_win", "我軍守住 {0}", targetCityName);
-        }
-        if (playerAttacker) {
-            return text("battle_report_player_attack_loss", "我軍進攻 {0} 失敗", targetCityName);
-        }
-        return text("battle_report_player_defense_loss", "我軍失守 {0}", targetCityName);
+        boolean attackerWon = battleReport.outcome == BattleOutcome.ATTACKER_VICTORY;
+        return text(attackerWon ? "battle_report_attacker_city_win" : "battle_report_attacker_city_loss",
+            attackerWon ? "{0}攻下 {1}" : "{0}進攻 {1} 失敗",
+            factionName(battleReport.attackerFactionId), targetCityName);
     }
 
     private String encounterDisposition(BattleReport report) {
@@ -403,7 +392,9 @@ public final class BattleReportScreen extends SuiScreen {
             || SangoServices.session().getLastTurnReport() == null) {
             return List.of();
         }
-        return BattleReportCatalog.playerMonth(gameState, SangoServices.session().getLastTurnReport());
+        return SangoServices.session().isMonthReportWorldView()
+            ? BattleReportCatalog.month(gameState, SangoServices.session().getLastTurnReport())
+            : BattleReportCatalog.playerMonth(gameState, SangoServices.session().getLastTurnReport());
     }
 
     private void showContributions() {
@@ -436,6 +427,7 @@ public final class BattleReportScreen extends SuiScreen {
         contributionDialog.setModal(true);
         contributionDialog.setMovable(false);
         ScrollPane pane = new ScrollPane(body);
+        pane.setStyle(new ScrollPane.ScrollPaneStyle());
         pane.setScrollingDisabled(true, false);
         pane.setOverscroll(false, false);
         contributionDialog.getContentTable().add(pane).width(1000f).height(570f).pad(24f);

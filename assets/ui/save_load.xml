@@ -8,8 +8,8 @@
             <label id="save_load_description_label" fontSize="28" width="1620" height="58"
                 color="0.73,0.67,0.58,1">${text:save_load_description_load}</label>
             <row />
-            <table width="1620" height="640" padTop="18">
-                <table width="690" height="620" pad="26" backgroundColor="0.058,0.047,0.039,0.98">
+            <table width="1620" height="604" padTop="12">
+                <table width="690" height="590" pad="24" backgroundColor="0.058,0.047,0.039,0.98">
                     <textButton id="save_slot_1_button" fontSize="31" width="620" height="150">${text:save_slot_1_placeholder}</textButton>
                     <row />
                     <textButton id="save_slot_2_button" fontSize="31" width="620" height="150" padTop="24">${text:save_slot_2_placeholder}</textButton>
@@ -17,7 +17,7 @@
                     <textButton id="save_slot_3_button" fontSize="31" width="620" height="150" padTop="24">${text:save_slot_3_placeholder}</textButton>
                 </table>
                 <table width="42"></table>
-                <table width="880" height="620" pad="34" backgroundColor="0.055,0.044,0.037,0.98">
+                <table width="880" height="590" pad="30" backgroundColor="0.055,0.044,0.037,0.98">
                     <label id="save_slot_detail_heading_label" fontKey="title" fontSize="48" width="800" height="64"
                         color="0.90,0.72,0.40,1">${text:save_slot_detail_heading}</label>
                     <row />
@@ -37,6 +37,9 @@
             <row />
             <label id="save_load_status_label" fontSize="27" width="1620" height="56"
                 color="0.78,0.71,0.61,1">${text:save_load_status_ready}</label>
+            <row />
+            <label id="save_load_tip_label" fontSize="22" width="1620" height="40"
+                color="0.62,0.57,0.49,1">${text:save_load_tip_manual}</label>
             <row />
             <table width="1620" height="92" padTop="10">
                 <textButton id="save_load_back_button" fontSize="38" width="520" height="86">${text:button_back}</textButton>

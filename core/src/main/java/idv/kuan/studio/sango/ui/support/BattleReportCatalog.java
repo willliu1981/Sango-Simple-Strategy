@@ -107,12 +107,17 @@ public final class BattleReportCatalog {
     }
 
     public static List<BattleReport> playerMonth(GameState state, TurnResolutionReport month) {
+        List<BattleReport> reports = month(state, month);
+        reports.removeIf(report -> !report.involvesFaction(state.playerFactionId));
+        return reports;
+    }
+
+    public static List<BattleReport> month(GameState state, TurnResolutionReport month) {
         List<BattleReport> reports = new ArrayList<>();
         if (month == null) return reports;
         for (String id : month.getBattleReportIds()) {
             BattleReport report = state.findBattleReport(id);
-            if (report != null && report.involvesFaction(state.playerFactionId)
-                && reports.stream().noneMatch(existing -> existing.battleId.equals(id))) {
+            if (report != null && reports.stream().noneMatch(existing -> existing.battleId.equals(id))) {
                 reports.add(report);
             }
         }

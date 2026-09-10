@@ -120,6 +120,8 @@ public final class NationalActionPointSmokeTest {
         check(NationalActionPointRules.calculateMonthlyActionPoints(gameState) == 3, "敵方與中立民心不得影響玩家");
         check(NationalOrderTextFormatter.formatAverage(895).equals("89.5"), "UI 顯示一位小數");
         check(NationalOrderTextFormatter.formatAverage(1000).equals("100.0"), "UI 正確顯示上界");
+        check(NationalActionPointRules.nextThreshold(167) == 200, "顯示下一級行動力所需民心門檻");
+        check(NationalActionPointRules.nextThreshold(1500) == -1, "最高級行動力沒有下一門檻");
         gameState.gameplayStatus = GameplayStatus.ELIMINATED;
         check(NationalActionPointRules.calculateMonthlyActionPoints(gameState) == 0, "滅亡後不可獲得最低三點");
         gameState.gameplayStatus = GameplayStatus.ACTIVE;

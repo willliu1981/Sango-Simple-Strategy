@@ -50,10 +50,8 @@
                         <row />
                         <label id="selected_resources_label" fontSize="29" width="870" height="46" align="left" textAlign="left">${text:new_game_selected_resources_placeholder}</label>
                         <row />
-                        <label id="selected_summary_label" fontSize="27" width="870" height="78" align="left" textAlign="left"
+                        <label id="selected_summary_label" fontSize="27" width="870" height="126" align="left" textAlign="left"
                             wrap="true" color="0.72,0.66,0.57,1">${text:new_game_selected_summary_placeholder}</label>
-                        <row />
-                        <label fontSize="24" width="870" height="46" wrap="true" color="0.64,0.59,0.52,1">${text:new_game_scenario_actions}</label>
                     </table>
                 </table>
             </table>

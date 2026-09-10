@@ -43,6 +43,7 @@ public final class WorldBattleReportScreen extends SuiScreen {
         rows = new Table();
         rows.top().left();
         scroll = new ScrollPane(rows);
+        scroll.setStyle(new ScrollPane.ScrollPaneStyle());
         scroll.setScrollingDisabled(true, false);
         scroll.setOverscroll(false, false);
         host.addActor(scroll);

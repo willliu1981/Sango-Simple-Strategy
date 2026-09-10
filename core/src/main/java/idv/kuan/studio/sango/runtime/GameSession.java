@@ -17,6 +17,7 @@ public final class GameSession {
     private String selectedBattleReportId;
     private ScreenId battleReportReturnScreen = ScreenId.STRATEGIC_MAP;
     private ScreenId monthReportReturnScreen = ScreenId.STRATEGIC_MAP;
+    private boolean monthReportWorldView;
     private ScreenId settingsReturnScreen = ScreenId.STRATEGIC_MAP;
     private ScreenId saveLoadReturnScreen = ScreenId.LOBBY;
     private SaveLoadMode saveLoadMode = SaveLoadMode.LOAD;
@@ -114,10 +115,19 @@ public final class GameSession {
         }
         lastTurnReport = turnResolutionReport;
         monthReportReturnScreen = returnScreen;
+        monthReportWorldView = false;
     }
 
     public ScreenId getMonthReportReturnScreen() {
         return monthReportReturnScreen;
+    }
+
+    public boolean isMonthReportWorldView() {
+        return monthReportWorldView;
+    }
+
+    public void setMonthReportWorldView(boolean monthReportWorldView) {
+        this.monthReportWorldView = monthReportWorldView;
     }
 
     public void openSettings(ScreenId returnScreen) {
@@ -177,6 +187,7 @@ public final class GameSession {
         selectedBattleReportId = null;
         battleReportReturnScreen = ScreenId.STRATEGIC_MAP;
         monthReportReturnScreen = ScreenId.STRATEGIC_MAP;
+        monthReportWorldView = false;
         settingsReturnScreen = ScreenId.STRATEGIC_MAP;
         saveLoadReturnScreen = ScreenId.LOBBY;
         saveLoadMode = SaveLoadMode.LOAD;

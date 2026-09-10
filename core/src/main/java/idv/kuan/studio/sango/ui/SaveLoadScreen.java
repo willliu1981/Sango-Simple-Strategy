@@ -228,6 +228,16 @@ public final class SaveLoadScreen extends SuiScreen {
         Label statusLabel = label("save_load_status_label");
         statusLabel.setText(statusMessage);
         statusLabel.setColor(statusColor);
+        String tipKey = switch (selectedSlot) {
+            case 2 -> "save_load_tip_snapshot";
+            case 3 -> "save_load_tip_reports";
+            default -> "save_load_tip_manual";
+        };
+        label("save_load_tip_label").setText(text(tipKey, switch (selectedSlot) {
+            case 2 -> "小提示：敵方本月只看得到上月底快照，不會偷看你尚未結算的命令。";
+            case 3 -> "小提示：上月戰報保留未讀提示，較早戰報仍可在六個月內查閱。";
+            default -> "小提示：手動存檔與自動存檔彼此獨立，可在讀檔時自行選擇。";
+        }));
     }
 
     private void refreshSlotButton(int slotNumber) {
@@ -522,6 +532,7 @@ public final class SaveLoadScreen extends SuiScreen {
     }
 
     private String text(String entryName, String fallback, Object... arguments) {
-        return Sui.i18n.manager().getText("literal", entryName, fallback, arguments);
+        return Sui.i18n.manager().getText("literal", entryName, fallback, arguments)
+            .replace("\\n", "\n");
     }
 }

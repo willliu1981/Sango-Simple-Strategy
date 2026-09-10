@@ -8,12 +8,20 @@
             <label id="month_report_period_label" fontSize="31" width="1180" height="54"
                 color="0.75,0.68,0.57,1">${text:report_period_placeholder}</label>
             <row />
-            <table width="1180" height="570" pad="34" backgroundColor="0.025,0.022,0.020,1">
-                <group id="month_report_scroll_host" width="1090" height="500">
+            <table width="1180" height="62">
+                <textButton id="month_report_player_filter_button" fontSize="28" width="560" height="56">${text:month_report_filter_player}</textButton>
+                <textButton id="month_report_world_filter_button" fontSize="28" width="560" height="56" padLeft="24">${text:month_report_filter_world}</textButton>
+            </table>
+            <row />
+            <table width="1180" height="470" pad="30" backgroundColor="0.025,0.022,0.020,1">
+                <group id="month_report_scroll_host" width="1100" height="410">
                     <label id="month_report_content_label" fontSize="29" width="1066" height="1"
                         align="left" textAlign="left" wrap="true" color="0.87,0.82,0.72,1">${text:report_empty}</label>
                 </group>
             </table>
+            <row />
+            <label id="month_report_tip_label" fontSize="23" width="1180" height="54" wrap="true"
+                color="0.70,0.62,0.48,1">${text:monthly_tip_snapshot}</label>
             <row />
             <table width="1180" height="92" padTop="28">
                 <textButton id="month_report_close_button" fontSize="38" width="540" height="86">${text:button_report_close}</textButton>

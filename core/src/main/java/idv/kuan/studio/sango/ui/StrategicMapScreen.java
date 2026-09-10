@@ -102,6 +102,7 @@ public final class StrategicMapScreen extends SuiScreen {
     private ContextHelpOverlay contextHelpOverlay;
     private ScrollPane dispatchOriginsPane;
     private boolean mapFullscreen;
+    private String previewCityId;
     private String currentStatusMessage;
     private Color currentStatusColor = STATUS_NORMAL_COLOR;
     private String pendingOriginCityId;
@@ -134,6 +135,7 @@ public final class StrategicMapScreen extends SuiScreen {
         strategicMapWidget = new StrategicMapWidget(
             label("map_font_probe").getStyle().font,
             this::selectCity,
+            this::previewCity,
             () -> setMapFullscreen(true),
             () -> setMapFullscreen(false)
         );
@@ -148,6 +150,7 @@ public final class StrategicMapScreen extends SuiScreen {
         selectedContent.top().left();
         selectedContent.add(selectedOrigins).growX().top().left().padRight(18f);
         dispatchOriginsPane = new ScrollPane(selectedContent);
+        dispatchOriginsPane.setStyle(new ScrollPane.ScrollPaneStyle());
         dispatchOriginsPane.setFillParent(true);
         dispatchOriginsPane.setScrollingDisabled(true, false);
         dispatchOriginsPane.setOverscroll(false, false);
@@ -480,7 +483,8 @@ public final class StrategicMapScreen extends SuiScreen {
         refreshObjectiveLabel(gameState);
         refreshUnreadBattleLabel(gameState);
         refreshMapWidget(gameState, mapDefinition, selectedCityId);
-        refreshSelectedCityPanel(gameState);
+        previewCityId = null;
+        refreshSelectedCityPanel(gameState, selectedCityId);
         refreshArmySummary(gameState);
         refreshStatusLabel();
 
@@ -490,7 +494,7 @@ public final class StrategicMapScreen extends SuiScreen {
             lastTurnReport != null
         );
         int unreadBattleCount = (int) BattleReportCatalog.world(gameState).stream()
-            .filter(report -> !report.read)
+            .filter(report -> !report.read && BattleReportCatalog.isLatestCompletedMonth(gameState, report))
             .count();
         button("show_unread_battle_button").setText(
             text("button_world_battle_reports_format", "天下戰報（未讀{0}）", unreadBattleCount)
@@ -659,10 +663,8 @@ public final class StrategicMapScreen extends SuiScreen {
         return MapNodeTone.ENEMY;
     }
 
-    private void refreshSelectedCityPanel(GameState gameState) {
-        CityState selectedCityState = gameState.requireCityState(
-            SangoServices.session().getSelectedCityId()
-        );
+    private void refreshSelectedCityPanel(GameState gameState, String displayedCityId) {
+        CityState selectedCityState = gameState.requireCityState(displayedCityId);
         FactionDefinition ownerDefinition = SangoServices.definitions().requireFaction(
             selectedCityState.ownerFactionId
         );
@@ -687,9 +689,11 @@ public final class StrategicMapScreen extends SuiScreen {
         ownerLabel.setText(
             text("map_owner_prefix", "所屬：")
                 + localized(ownerDefinition.nameKey, ownerDefinition.id)
-                + (playerOwned ? "" : text("map_owner_intelligence_hint", "（點擊查看勢力情報）"))
+                + (playerOwned
+                    ? text("map_owner_own_intelligence_hint", "（點擊查看勢力總情報）")
+                    : text("map_owner_intelligence_hint", "（點擊查看勢力情報）"))
         );
-        ownerLabel.setTouchable(playerOwned ? Touchable.disabled : Touchable.enabled);
+        ownerLabel.setTouchable(Touchable.enabled);
         label("selected_city_intel_label").setText(
             buildIntelligenceText(gameState, knownCity, playerOwned)
         );
@@ -751,6 +755,16 @@ public final class StrategicMapScreen extends SuiScreen {
         setButtonEnabled(button("launch_expedition_button"), expeditionEnabled);
     }
 
+    private void previewCity(String cityId) {
+        if (!SangoServices.session().hasCurrentState()) {
+            return;
+        }
+        previewCityId = cityId;
+        String displayedCityId = previewCityId == null
+            ? SangoServices.session().getSelectedCityId() : previewCityId;
+        refreshSelectedCityPanel(SangoServices.session().requireCurrentState(), displayedCityId);
+    }
+
     private String buildIntelligenceText(
         GameState gameState,
         KnownCityView city,
@@ -788,6 +802,24 @@ public final class StrategicMapScreen extends SuiScreen {
         }
         CityState selectedCity = gameState.requireCityState(SangoServices.session().getSelectedCityId());
         if (gameState.playerFactionId.equals(selectedCity.ownerFactionId)) {
+            FactionState factionState = gameState.requirePlayerFactionState();
+            int troops = 0;
+            for (CityState city : gameState.findCitiesOwnedBy(gameState.playerFactionId)) {
+                troops += city.troops;
+            }
+            for (ArmyState army : gameState.armyStates) {
+                if (gameState.playerFactionId.equals(army.factionId)) troops += army.troops;
+            }
+            contextHelpOverlay.show(
+                text("faction_intelligence_own_title", "我方勢力總情報"),
+                text("faction_intelligence_own_body_format",
+                    "領地：{0} 城\n總兵力：{1}\n國庫：金 {2}｜糧 {3}\n本月行動力：{4} / {5}",
+                    gameState.findCitiesOwnedBy(gameState.playerFactionId).size(),
+                    numberFormat.format(troops), numberFormat.format(factionState.gold),
+                    numberFormat.format(factionState.food), gameState.actionPointsRemaining,
+                    gameState.actionPointsPerTurn)
+            );
+            SangoServices.audio().playSound(SoundEffect.UI_CLICK);
             return;
         }
         FactionDefinition faction = SangoServices.definitions().requireFaction(selectedCity.ownerFactionId);
@@ -1570,7 +1602,7 @@ public final class StrategicMapScreen extends SuiScreen {
             text("help_map_title", "戰略圖操作說明"),
             text(
                 "help_map_body",
-                "金與糧由整個勢力共用；行動力（AP）限制本月命令。各勢力同月規劃，本方操作立即反映，其他勢力只看上月底城市快照。\n\n城池之間必須有道路才能偵察、出征或運兵。偵察取得三個月且包含當月的快照，但敵方目前的防守方針始終不可見。\n\n攻方使用強攻、誘敵、穩進；守方使用迎擊、設伏、據守。強攻剋據守、穩進剋設伏、誘敵剋迎擊。\n\n桌機滑鼠停在敵城約 0.45 秒才顯示同勢力提示。雙擊城池切換同勢力持續高亮，改選其他勢力會取消；雙擊空白處才切換全螢幕。"
+                "金與糧由整個勢力共用；行動力（AP）限制本月命令。各勢力同月規劃，本方操作立即反映，其他勢力只看上月底城市快照。\n\n城池之間必須有道路才能偵察、出征或運兵。偵察取得三個月且包含當月的快照，但敵方目前的防守方針始終不可見。\n\n攻方使用強攻、誘敵、穩進；守方使用迎擊、設伏、據守。強攻剋據守、穩進剋設伏、誘敵剋迎擊。\n\n滑鼠停在城池約 0.2 秒會暫時顯示資料，移開後還原；敵方勢力提示約 0.45 秒後才閃爍。雙擊城池以固定外框鎖定同勢力，單擊空白或其他勢力才取消；雙擊空白處切換全螢幕。"
             )
         );
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);

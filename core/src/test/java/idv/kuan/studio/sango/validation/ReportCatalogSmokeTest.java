@@ -67,6 +67,8 @@ public final class ReportCatalogSmokeTest {
         month.addBattleReportId("attack");
         require(BattleReportCatalog.playerMonth(state, month).equals(List.of(defense, attack)),
             "Faction month must exclude unrelated, missing and duplicate battles, including already-read ones");
+        require(BattleReportCatalog.month(state, month).equals(List.of(other, defense, attack)),
+            "World month must include public battles from every faction without duplicates");
         require(BattleReportCatalog.playerMonth(state, null).isEmpty(), "No month means no faction battles");
         state.battleReports = null;
         require(BattleReportCatalog.world(state).isEmpty(), "Empty saved history must be supported");

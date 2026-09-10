@@ -51,6 +51,15 @@ public final class NationalActionPointRules {
         return summarizePlayer(gameState).monthlyActionPoints();
     }
 
+    public static int nextThreshold(long totalPublicOrder) {
+        for (int threshold : BONUS_THRESHOLDS) {
+            if (totalPublicOrder < threshold) {
+                return threshold;
+            }
+        }
+        return -1;
+    }
+
     public record PublicOrderSummary(int cityCount, long totalPublicOrder) {
         public PublicOrderSummary {
             if (cityCount < 0 || totalPublicOrder < 0 || totalPublicOrder > cityCount * 100L) {
@@ -77,6 +86,10 @@ public final class NationalActionPointRules {
                 actionPoints += 1;
             }
             return actionPoints;
+        }
+
+        public int nextActionPointThreshold() {
+            return nextThreshold(totalPublicOrder);
         }
     }
 }

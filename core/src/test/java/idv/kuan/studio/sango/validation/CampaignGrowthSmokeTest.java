@@ -102,15 +102,17 @@ public final class CampaignGrowthSmokeTest {
         int previous = 0;
         for (int i = 0; i <= 1_050_000; i++) {
             int result = RecruitmentRules.populationLimit(i, DEFAULT_OFFICER);
-            int expected = (int) Math.min(1000, Math.min(Math.floor(10d * Math.sqrt(i)), Math.max(0, i - 200)));
+            int expected = (int) Math.min(1000, Math.min(Math.floor(10d * Math.sqrt(i)), Math.max(0, i - 100)));
             check(result == expected, "完整人口邊界與硬上限");
-            check(result >= previous && result <= 1000 && result <= Math.max(0, i - 200), "單調遞增且保留人口");
+            check(result >= previous && result <= 1000 && result <= Math.max(0, i - 100), "單調遞增且保留人口硬下限");
             previous = result;
         }
         check(RecruitmentRules.populationLimit(Integer.MAX_VALUE, DEFAULT_OFFICER) == 1000, "極大人口不溢位");
         OfficerCommandProfile stronger = new OfficerCommandProfile(120, 24000, 5, 5, 50);
         check(RecruitmentRules.populationLimit(10000, stronger) == 1000, "武將加成仍受單次硬上限");
-        check(RecruitmentRules.populationLimit(201, stronger) == 1, "武將加成不能突破保留量");
+        check(RecruitmentRules.populationLimit(101, stronger) == 1, "武將加成不能突破人口硬下限");
+        check(!RecruitmentRules.isForcedRecruitment(300, 100), "保留兩百人口屬於正常徵兵");
+        check(RecruitmentRules.isForcedRecruitment(250, 100), "低於兩百人口明確標記為強徵");
         check(RecruitmentRules.populationLimit(1_000_000, stronger) == 1000, "極大人口仍受單次硬上限");
         for (int i = 0; i <= 1000; i++) {
             check(RecruitmentRules.goldCost(i) == (i + 1) / 2, "金費用按實際人數向上取整");
@@ -124,6 +126,14 @@ public final class CampaignGrowthSmokeTest {
         check(RecruitmentRules.maximumRecruitable(city, faction, DEFAULT_OFFICER) == 100, "資源限制取較小值");
         city.troops = Integer.MAX_VALUE - 1;
         check(RecruitmentRules.maximumRecruitable(city, faction, DEFAULT_OFFICER) == 1, "總兵力不超出整數容量");
+        city.troops = 0;
+        city.population = 250;
+        faction.gold = 1000;
+        faction.food = 1000;
+        check(RecruitmentRules.maximumVoluntaryRecruitable(city, faction, DEFAULT_OFFICER) == 50,
+            "AI 正常徵兵不進入強徵區間");
+        check(RecruitmentRules.maximumRecruitable(city, faction, DEFAULT_OFFICER) > 50,
+            "玩家仍可在提示後選擇強徵");
     }
 
     private static void testWeightedQuality() {
@@ -207,10 +217,15 @@ public final class CampaignGrowthSmokeTest {
             check(state.actionPointsRemaining == 3 && city.population == 10000, "拒絕不扣點或人口");
         }
         city.population = 201;
-        check(!command.execute(1, state, city.cityId, DomesticActionType.RECRUIT, 2).isSuccessful(), "徵完必須保留 200");
-        result = command.execute(1, state, city.cityId, DomesticActionType.RECRUIT, 1);
-        check(result.isSuccessful() && result.getGameState().requireCapitalCityState().population == 200,
-            "201 人可精確徵 1 人");
+        city.publicOrder = 50;
+        check(!command.execute(1, state, city.cityId, DomesticActionType.RECRUIT, 102).isSuccessful(),
+            "強徵也不能突破一百人口硬下限");
+        result = command.execute(1, state, city.cityId, DomesticActionType.RECRUIT, 101);
+        check(result.isSuccessful()
+                && result.getGameState().requireCapitalCityState().population == 100
+                && result.getGameState().requireCapitalCityState().publicOrder == 45,
+            "強徵至硬下限成功並降低五點民心");
+        check(city.population == 201 && city.publicOrder == 50, "強徵仍維持 copy-on-write");
         city.population = 3000;
         city.troops = 0;
         check(command.execute(1, state, city.cityId, DomesticActionType.TRAIN).getFailureReason()

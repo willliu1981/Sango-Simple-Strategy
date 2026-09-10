@@ -154,7 +154,8 @@ public final class EnemyTurnService {
                 return true;
             }
             int recruitmentAmount = Math.min(Math.max(0, TARGET_GARRISON - cityState.troops),
-                RecruitmentRules.maximumRecruitable(cityState, factionState, OfficerCommandProfile.DEFAULT));
+                RecruitmentRules.maximumVoluntaryRecruitable(
+                    cityState, factionState, OfficerCommandProfile.DEFAULT));
             if (recruitmentAmount > 0 && applyDomestic(gameState, factionState, cityState,
                 DomesticActionType.RECRUIT, recruitmentAmount)) {
                 report.add(new TurnEvent(TurnEventType.ENEMY_REINFORCING, factionState.factionId,

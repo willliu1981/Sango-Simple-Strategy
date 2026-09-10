@@ -42,6 +42,7 @@ public final class StrategicMapWidget extends WidgetGroup {
     private static final float DRAG_THRESHOLD = 12f;
     private final BitmapFont nodeFont;
     private final Consumer<String> citySelectionHandler;
+    private final Consumer<String> cityPreviewHandler;
     private final Runnable mapTapHandler;
     private final Runnable mapRestoreHandler;
     private final MapInteractionState interaction = new MapInteractionState();
@@ -52,6 +53,7 @@ public final class StrategicMapWidget extends WidgetGroup {
     private final Map<String, Integer> unreadBattlesByCityId = new LinkedHashMap<>();
     private final Map<String, String> factionIdsByCityId = new LinkedHashMap<>();
     private final Map<String, TextButton> buttonsByCityId = new LinkedHashMap<>();
+    private final Map<String, Image> outlinesByCityId = new LinkedHashMap<>();
     private final List<Image> roadImages = new ArrayList<>();
     private final List<ClickListener> nodeClickListeners = new ArrayList<>();
     private final Map<Integer, PointerPosition> pointers = new LinkedHashMap<>();
@@ -69,7 +71,7 @@ public final class StrategicMapWidget extends WidgetGroup {
     private boolean dragging;
 
     public StrategicMapWidget(BitmapFont nodeFont, Consumer<String> citySelectionHandler) {
-        this(nodeFont, citySelectionHandler, () -> { });
+        this(nodeFont, citySelectionHandler, ignored -> { }, () -> { }, () -> { });
     }
 
     public StrategicMapWidget(
@@ -77,17 +79,23 @@ public final class StrategicMapWidget extends WidgetGroup {
         Consumer<String> citySelectionHandler,
         Runnable mapTapHandler
     ) {
-        this(nodeFont, citySelectionHandler, mapTapHandler, () -> { });
+        this(nodeFont, citySelectionHandler, ignored -> { }, mapTapHandler, () -> { });
     }
 
     public StrategicMapWidget(BitmapFont nodeFont, Consumer<String> citySelectionHandler,
         Runnable mapTapHandler, Runnable mapRestoreHandler) {
+        this(nodeFont, citySelectionHandler, ignored -> { }, mapTapHandler, mapRestoreHandler);
+    }
+
+    public StrategicMapWidget(BitmapFont nodeFont, Consumer<String> citySelectionHandler,
+        Consumer<String> cityPreviewHandler, Runnable mapTapHandler, Runnable mapRestoreHandler) {
         if (nodeFont == null || citySelectionHandler == null || mapTapHandler == null
-            || mapRestoreHandler == null) {
+            || cityPreviewHandler == null || mapRestoreHandler == null) {
             throw new IllegalArgumentException("地圖字型、選城與點擊處理不可為 null。");
         }
         this.nodeFont = nodeFont;
         this.citySelectionHandler = citySelectionHandler;
+        this.cityPreviewHandler = cityPreviewHandler;
         this.mapTapHandler = mapTapHandler;
         this.mapRestoreHandler = mapRestoreHandler;
         setFillParent(true);
@@ -240,6 +248,7 @@ public final class StrategicMapWidget extends WidgetGroup {
         cancelPendingHighlights();
         clearChildren();
         buttonsByCityId.clear();
+        outlinesByCityId.clear();
         roadImages.clear();
         nodeClickListeners.clear();
         for (CityConnectionDefinition connection : mapDefinition.connections) {
@@ -249,6 +258,11 @@ public final class StrategicMapWidget extends WidgetGroup {
             addActor(lineImage);
         }
         for (MapCityNodeDefinition node : mapDefinition.nodes) {
+            Image outline = new Image(SangoUiStyles.createMapOutlineDrawable(false));
+            outline.setTouchable(Touchable.disabled);
+            outline.setVisible(false);
+            outlinesByCityId.put(node.cityId, outline);
+            addActor(outline);
             String caption = captionsByCityId.getOrDefault(node.cityId, node.cityId);
             TextButton nodeButton = new TextButton(caption, SangoUiStyles.createMapNodeStyle(
                 nodeFont, tonesByCityId.getOrDefault(node.cityId, MapNodeTone.NEUTRAL),
@@ -276,6 +290,7 @@ public final class StrategicMapWidget extends WidgetGroup {
         return new InputListener() {
             private Timer.Task longPressTask;
             private Timer.Task hoverTask;
+            private Timer.Task previewTask;
             private float downX;
             private float downY;
 
@@ -283,6 +298,7 @@ public final class StrategicMapWidget extends WidgetGroup {
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                 if (pointer == -1) {
                     hoverTask = scheduleHighlight(cityId);
+                    previewTask = schedulePreview(cityId);
                 }
             }
 
@@ -291,8 +307,11 @@ public final class StrategicMapWidget extends WidgetGroup {
                 if (pointer == -1 && (toActor == null || (toActor != event.getListenerActor()
                     && !toActor.isDescendantOf(event.getListenerActor())))) {
                     cancelTask(hoverTask);
+                    cancelTask(previewTask);
                     hoverTask = null;
+                    previewTask = null;
                     clearFactionHighlight();
+                    cityPreviewHandler.accept(null);
                 }
             }
 
@@ -337,6 +356,18 @@ public final class StrategicMapWidget extends WidgetGroup {
         return task;
     }
 
+    private Timer.Task schedulePreview(String cityId) {
+        Timer.Task task = new Timer.Task() {
+            @Override public void run() {
+                pendingHighlightTasks.remove(this);
+                cityPreviewHandler.accept(cityId);
+            }
+        };
+        pendingHighlightTasks.add(task);
+        Timer.schedule(task, 0.20f);
+        return task;
+    }
+
     private void cancelTask(Timer.Task task) {
         if (task != null) {
             task.cancel();
@@ -368,12 +399,12 @@ public final class StrategicMapWidget extends WidgetGroup {
         refreshNodeAnimations();
     }
 
-    private void togglePinnedFaction(String cityId) {
+    private void pinFaction(String cityId) {
         String factionId = factionIdsByCityId.get(cityId);
         if (factionId == null) {
             return;
         }
-        pinnedFactionId = factionId.equals(pinnedFactionId) ? null : factionId;
+        pinnedFactionId = factionId;
         highlightedFactionId = null;
         refreshNodeAnimations();
     }
@@ -383,15 +414,18 @@ public final class StrategicMapWidget extends WidgetGroup {
             TextButton button = entry.getValue();
             button.clearActions();
             button.getColor().a = 1f;
-            String effectiveHighlight = highlightedFactionId != null
-                ? highlightedFactionId : pinnedFactionId;
-            boolean shouldFlash = effectiveHighlight == null
+            boolean shouldFlash = highlightedFactionId == null
                 ? unreadBattlesByCityId.getOrDefault(entry.getKey(), 0) > 0
-                : effectiveHighlight.equals(factionIdsByCityId.get(entry.getKey()));
+                : highlightedFactionId.equals(factionIdsByCityId.get(entry.getKey()));
             if (shouldFlash) {
                 button.addAction(Actions.forever(Actions.sequence(
                     Actions.alpha(0.52f, 0.48f), Actions.alpha(1f, 0.48f)
                 )));
+            }
+            Image outline = outlinesByCityId.get(entry.getKey());
+            if (outline != null) {
+                outline.setVisible(pinnedFactionId != null
+                    && pinnedFactionId.equals(factionIdsByCityId.get(entry.getKey())));
             }
         }
     }
@@ -421,6 +455,7 @@ public final class StrategicMapWidget extends WidgetGroup {
         float nodeHeight = overview ? 32f : 106f * zoom;
         for (MapCityNodeDefinition node : mapDefinition.nodes) {
             TextButton nodeButton = buttonsByCityId.get(node.cityId);
+            Image outline = outlinesByCityId.get(node.cityId);
             String fullCaption = captionsByCityId.getOrDefault(node.cityId, node.cityId);
             String caption = overview ? fullCaption.split("\\n", 2)[0] : fullCaption;
             nodeButton.setText(caption);
@@ -430,6 +465,11 @@ public final class StrategicMapWidget extends WidgetGroup {
                 camera.screenY(node.y * worldHeight) - nodeHeight / 2f,
                 nodeWidth, nodeHeight
             );
+            if (outline != null) {
+                float border = Math.max(4f, 7f * zoom);
+                outline.setBounds(nodeButton.getX() - border, nodeButton.getY() - border,
+                    nodeWidth + border * 2f, nodeHeight + border * 2f);
+            }
         }
     }
 
@@ -544,13 +584,16 @@ public final class StrategicMapWidget extends WidgetGroup {
                 refreshNodeAnimations();
             }
             citySelectionHandler.accept(cityId);
+        } else if (action == MapInteractionState.Action.NONE && pinnedFactionId != null) {
+            pinnedFactionId = null;
+            refreshNodeAnimations();
         }
         if (action == MapInteractionState.Action.ENTER_FULLSCREEN) {
             mapTapHandler.run();
         } else if (action == MapInteractionState.Action.EXIT_FULLSCREEN) {
             mapRestoreHandler.run();
         } else if (action == MapInteractionState.Action.TOGGLE_FACTION_HIGHLIGHT) {
-            togglePinnedFaction(cityId);
+            pinFaction(cityId);
         }
     }
 

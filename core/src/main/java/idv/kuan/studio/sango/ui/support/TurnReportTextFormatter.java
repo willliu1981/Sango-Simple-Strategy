@@ -16,25 +16,42 @@ import idv.kuan.studio.sango.runtime.SangoServices;
  * 將 Domain 回合事件轉為目前語系可讀文字。
  */
 public final class TurnReportTextFormatter {
+    public enum Scope { PLAYER, WORLD }
     private final NumberFormat numberFormat = NumberFormat.getIntegerInstance(Locale.TAIWAN);
 
     public String format(TurnResolutionReport report) {
+        return format(report, Scope.PLAYER);
+    }
+
+    public String format(TurnResolutionReport report, Scope scope) {
         if (report == null) {
             return text("report_empty", "本月沒有特殊事件。");
         }
         StringBuilder reportBuilder = new StringBuilder();
         GameState state = SangoServices.session().requireCurrentState();
         for (TurnEvent turnEvent : report.getEvents()) {
-            if (!isPlayerEvent(turnEvent, state.playerFactionId)) continue;
+            if (!isVisibleEvent(turnEvent, state.playerFactionId, scope)) continue;
             if (reportBuilder.length() > 0) {
                 reportBuilder.append('\n');
             }
             reportBuilder.append("• ").append(formatEvent(turnEvent));
         }
-        for (BattleReport battle : BattleReportCatalog.playerMonth(state, report)) {
+        for (BattleReport battle : scope == Scope.WORLD
+            ? BattleReportCatalog.month(state, report)
+            : BattleReportCatalog.playerMonth(state, report)) {
             if (reportBuilder.length() > 0) reportBuilder.append('\n');
             boolean attacking = state.playerFactionId.equals(battle.attackerFactionId);
             if (battle.routeEncounter) {
+                if (!battle.involvesFaction(state.playerFactionId)) {
+                    String result = battle.winnerFactionId == null
+                        ? text("report_world_encounter_draw", "雙方平手返城")
+                        : text("report_world_encounter_winner", "{0}獲勝",
+                            factionName(battle.winnerFactionId));
+                    reportBuilder.append("• ").append(text("report_world_encounter_summary",
+                        "{0}—{1}道路接戰：{2}。", optionalCityName(battle.originCityId),
+                        optionalCityName(battle.targetCityId), result));
+                    continue;
+                }
                 String result = battle.outcome == idv.kuan.studio.sango.domain.model.BattleOutcome.DRAW
                     ? text("report_player_encounter_draw", "平手，雙方返城")
                     : text(state.playerFactionId.equals(battle.winnerFactionId)
@@ -49,14 +66,23 @@ public final class TurnReportTextFormatter {
                     numberFormat.format(attacking ? battle.attackerSurvivors : battle.defenderSurvivors)));
                 continue;
             }
-            reportBuilder.append("• ").append(text("report_player_battle_summary",
-                "{0}：{1}；我方戰損 {2}，戰後兵力 {3}。可由下方查看詳細戰報。",
-                optionalCityName(battle.targetCityId),
-                text(state.playerFactionId.equals(battle.winnerFactionId)
-                    ? "report_player_battle_win" : "report_player_battle_loss",
-                    state.playerFactionId.equals(battle.winnerFactionId) ? "我方獲勝" : "我方戰敗"),
-                numberFormat.format(attacking ? battle.attackerLosses : battle.defenderLosses),
-                numberFormat.format(attacking ? battle.attackerSurvivors : battle.defenderSurvivors)));
+            if (battle.involvesFaction(state.playerFactionId)) {
+                reportBuilder.append("• ").append(text("report_player_battle_summary",
+                    "{0}：{1}；我方戰損 {2}，戰後兵力 {3}。可由下方查看詳細戰報。",
+                    optionalCityName(battle.targetCityId),
+                    text(state.playerFactionId.equals(battle.winnerFactionId)
+                        ? "report_player_battle_win" : "report_player_battle_loss",
+                        state.playerFactionId.equals(battle.winnerFactionId) ? "我方獲勝" : "我方戰敗"),
+                    numberFormat.format(attacking ? battle.attackerLosses : battle.defenderLosses),
+                    numberFormat.format(attacking ? battle.attackerSurvivors : battle.defenderSurvivors)));
+            } else {
+                reportBuilder.append("• ").append(text("report_world_battle_summary",
+                    "{0}進攻{1}：{2}。",
+                    factionName(battle.attackerFactionId), optionalCityName(battle.targetCityId),
+                    battle.attackerFactionId.equals(battle.winnerFactionId)
+                        ? text("report_world_attack_success", "攻方獲勝")
+                        : text("report_world_attack_failed", "攻方戰敗")));
+            }
         }
         return reportBuilder.length() == 0 ? text("report_empty", "本月沒有特殊事件。") : reportBuilder.toString();
     }
@@ -66,6 +92,16 @@ public final class TurnReportTextFormatter {
             case BATTLE_ATTACKER_WON, BATTLE_DEFENDER_WON, CITY_OCCUPIED_UNOPPOSED,
                 CITY_CAPTURED, AI_ACTIONS_USED, ENEMY_PREPARING, ENEMY_REINFORCING, ENEMY_MARCHING -> false;
             default -> event.getFactionId() == null || playerFactionId.equals(event.getFactionId());
+        };
+    }
+
+    private boolean isVisibleEvent(TurnEvent event, String playerFactionId, Scope scope) {
+        if (scope == Scope.PLAYER) {
+            return isPlayerEvent(event, playerFactionId);
+        }
+        return switch (event.getType()) {
+            case FLOOD_OCCURRED, CAPITAL_RELOCATED -> true;
+            default -> false;
         };
     }
 
@@ -85,7 +121,7 @@ public final class TurnReportTextFormatter {
                 factionName(turnEvent.getFactionId()), turnEvent.getPrimaryValue(), turnEvent.getSecondaryValue());
             case MILITARY_UPKEEP -> text(
                 "report_event_upkeep",
-                "軍糧支出：-{0} 糧，用於維持 {1} 兵。",
+                "軍糧支出：{0} 糧，用於維持 {1} 兵。",
                 numberFormat.format(turnEvent.getPrimaryValue()),
                 numberFormat.format(turnEvent.getSecondaryValue())
             );

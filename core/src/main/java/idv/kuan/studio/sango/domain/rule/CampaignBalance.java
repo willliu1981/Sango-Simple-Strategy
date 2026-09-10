@@ -6,7 +6,11 @@ package idv.kuan.studio.sango.domain.rule;
  */
 public final class CampaignBalance {
     public static final int POPULATION_FLOOR = 100;
-    public static final int RECRUIT_POPULATION_RESERVE = 200;
+    /** 低於此人口仍可強徵，但會降低本城民心。 */
+    public static final int RECRUIT_SAFE_POPULATION_RESERVE = 200;
+    /** 強徵也不可突破的生存人口底線。 */
+    public static final int RECRUIT_POPULATION_RESERVE = POPULATION_FLOOR;
+    public static final int FORCED_RECRUIT_PUBLIC_ORDER_LOSS = 5;
     public static final int MAXIMUM_RECRUITMENT = 1_000;
     public static final int RECRUITMENT_SQRT_FACTOR = 10;
     public static final int RECRUIT_COST_DENOMINATOR = 2;

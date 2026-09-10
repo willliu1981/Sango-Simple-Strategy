@@ -345,6 +345,14 @@ public final class CityScreen extends SuiScreen {
 
     private String actionResultMessage(DomesticActionType actionType, CityState before, CityState after, int recruitmentAmount) {
         if (actionType == DomesticActionType.RECRUIT) {
+            if (after.publicOrder < before.publicOrder) {
+                return text("city_recruit_forced_result_format",
+                    "強徵 {0} 人；人口 {1}，民心 {2} → {3}。金 -{4}、糧 -{5}。",
+                    numberFormat.format(recruitmentAmount), numberFormat.format(after.population),
+                    before.publicOrder, after.publicOrder,
+                    numberFormat.format(RecruitmentRules.goldCost(recruitmentAmount)),
+                    numberFormat.format(RecruitmentRules.foodCost(recruitmentAmount)));
+            }
             return text("city_recruit_result_format", "徵兵 {0} 人；金 -{1}、糧 -{2}。全軍訓練 {3}、士氣 {4}。",
                 numberFormat.format(recruitmentAmount), numberFormat.format(RecruitmentRules.goldCost(recruitmentAmount)),
                 numberFormat.format(RecruitmentRules.foodCost(recruitmentAmount)),
@@ -455,9 +463,10 @@ public final class CityScreen extends SuiScreen {
         FactionState factionState = gameState.requirePlayerFactionState();
         NationalActionPointRules.PublicOrderSummary national = NationalActionPointRules.summarizePlayer(gameState);
         label("recruitment_title_label").setText(text("recruitment_title_format", "{0} · 徵兵", cityName(cityState.cityId)));
-        label("recruitment_limit_label").setText(text("recruitment_limit_format", "人口 {0}｜至少保留 {1}｜人口徵兵上限 {2}｜資源允許 {3} 人",
-            numberFormat.format(cityState.population), numberFormat.format(CampaignBalance.RECRUIT_POPULATION_RESERVE),
-            numberFormat.format(RecruitmentRules.populationLimit(cityState.population, OfficerCommandProfile.DEFAULT)), numberFormat.format(quote.maximum())));
+        label("recruitment_limit_label").setText(text("recruitment_limit_format", "人口 {0}｜正常保留 {1}｜硬下限 {2}｜本次最多 {3} 人",
+            numberFormat.format(cityState.population), numberFormat.format(CampaignBalance.RECRUIT_SAFE_POPULATION_RESERVE),
+            numberFormat.format(CampaignBalance.RECRUIT_POPULATION_RESERVE),
+            numberFormat.format(quote.maximum())));
         label("recruitment_order_label").setText(text("recruitment_order_format", "本城民心 {0}｜全勢力平均 {1}｜有效民心 {2}｜新兵訓練 {3}、士氣 {4}",
             cityState.publicOrder, NationalOrderTextFormatter.formatAverage(national.averagePublicOrderTenths()),
             NationalOrderTextFormatter.formatAverage(PublicOrderRules.effectiveOrderHundredths(gameState, cityState) / 10),
@@ -470,7 +479,11 @@ public final class CityScreen extends SuiScreen {
             quality(TroopQualityRules.morale(cityState)), quality(quote.resultingMorale())));
         DomesticActionFailureReason failure = DomesticActionRules.evaluate(gameState, recruitmentCityId, DomesticActionType.RECRUIT, amount);
         label("recruitment_status_label").setText(failure == DomesticActionFailureReason.NONE
-            ? text("recruitment_ready", "確認後才會扣除人口、金糧與行動力；取消不消耗資源。") : failureMessage(failure));
+            ? quote.forced()
+                ? text("recruitment_forced_warning", "人口不足：本次屬於強徵，民心將降低 {0}。",
+                    quote.publicOrderLoss())
+                : text("recruitment_ready", "確認後才會扣除人口、金糧與行動力；取消不消耗資源。")
+            : failureMessage(failure));
         setButtonEnabled(button("recruitment_confirm_button"), failure == DomesticActionFailureReason.NONE);
     }
 
@@ -606,7 +619,7 @@ public final class CityScreen extends SuiScreen {
             text("help_city_title", "內政操作說明"),
             text(
                 "help_city_body",
-                "金、糧是全勢力共用資源；人口屬於本城，會限制徵兵並受人口容量影響。農業提高秋收，商業提高季末商稅，治水降低夏季洪災風險與損失，城防影響守城。訓練與士氣會影響部隊作戰表現。\n\n巡查消耗 1 AP、100 金與 50 糧，可提升民心但最高只到 90；徵兵的金糧成本依人數計算；訓練消耗 1 AP 與 50 金，單次最多覆蓋 20,000 兵。徵兵不會降低民心。\n\n民心至少 90，且沒有缺糧、洪災或易主時，每次月底累計一個合格月；連續第 3 次月底起回復 1 點，之後每個合格月底再回復 1 點，最高 100。\n\n例：1 月巡查到 90，若 1、2、3 月月底都符合條件，3 月月底升到 91；期間跌破 90 或發生不合格事件，累計會歸零。\n\n缺軍糧會造成逃兵並降低士氣；同時使該勢力每座城的民心依缺口比例下降 1～3。缺一半軍糧時每城民心扣 2，完全缺糧時每城民心扣 3；民心最低 0。"
+                "金、糧是全勢力共用資源；人口屬於本城，會限制徵兵並受人口容量影響。農業提高秋收，商業提高季末商稅，治水降低夏季洪災風險與損失，城防影響守城。訓練與士氣會影響部隊作戰表現。\n\n巡查消耗 1 AP、100 金與 50 糧，可提升民心但最高只到 90；低於正常保留人口仍可強徵，但會降低民心，硬下限後不能再徵；訓練消耗 1 AP 與 50 金，單次最多覆蓋 20,000 兵。\n\n民心至少 90，且沒有缺糧、洪災或易主時，每次月底累計一個合格月；連續第 3 次月底起回復 1 點，之後每個合格月底再回復 1 點，最高 100。\n\n例：1 月巡查到 90，若 1、2、3 月月底都符合條件，3 月月底升到 91；期間跌破 90 或發生不合格事件，累計會歸零。\n\n缺軍糧會造成逃兵並降低士氣；同時使該勢力每座城的民心依缺口比例下降 1～3。缺一半軍糧時每城民心扣 2，完全缺糧時每城民心扣 3；民心最低 0。"
             )
         );
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);
@@ -617,7 +630,7 @@ public final class CityScreen extends SuiScreen {
             text("help_recruit_title", "徵兵說明"),
             text(
                 "help_recruit_body",
-                "徵兵會立即減少本城人口，並消耗 1 AP；金與糧依實際徵兵人數計算，預覽會顯示確認後的完整費用。\n\n本次上限同時受人口保留量、單次徵兵上限、可用金糧與武將統率限制；輸入超過上限時不能確認。\n\n新兵的訓練與士氣依有效民心決定，加入現有部隊後會按新舊兵力重新加權，因此大量徵兵可能拉低全軍平均素質。"
+                "徵兵會立即減少本城人口，並消耗 1 AP；金與糧依實際徵兵人數計算，預覽會顯示確認後的完整費用。\n\n人口低於 200 屬於強徵並降低 5 民心；人口 100 是不能突破的硬下限。AI 平時不會強徵。\n\n新兵的訓練與士氣依有效民心決定，加入現有部隊後會按新舊兵力重新加權，因此大量徵兵可能拉低全軍平均素質。"
             )
         );
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);

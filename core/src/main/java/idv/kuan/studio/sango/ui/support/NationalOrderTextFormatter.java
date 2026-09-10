@@ -14,11 +14,18 @@ public final class NationalOrderTextFormatter {
     public static String formatPreview(GameState gameState) {
         NationalActionPointRules.PublicOrderSummary publicOrderSummary =
             NationalActionPointRules.summarizePlayer(gameState);
+        int nextThreshold = publicOrderSummary.nextActionPointThreshold();
+        if (nextThreshold < 0) {
+            return Sui.i18n.manager().getText(
+                "literal", "national_order_maximum_format", "",
+                publicOrderSummary.totalPublicOrder(), publicOrderSummary.cityCount(),
+                NationalActionPointRules.calculateMonthlyActionPoints(gameState));
+        }
         return Sui.i18n.manager().getText(
-            "literal", "national_order_preview_format", "",
-            publicOrderSummary.totalPublicOrder(),
-            publicOrderSummary.cityCount(),
-            NationalActionPointRules.calculateMonthlyActionPoints(gameState)
+            "literal", "national_order_next_format", "",
+            publicOrderSummary.totalPublicOrder(), publicOrderSummary.cityCount(),
+            nextThreshold - publicOrderSummary.totalPublicOrder(),
+            NationalActionPointRules.calculateMonthlyActionPoints(gameState) + 1
         );
     }
 

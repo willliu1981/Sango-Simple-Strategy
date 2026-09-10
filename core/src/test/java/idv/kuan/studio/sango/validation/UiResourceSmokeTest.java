@@ -108,6 +108,9 @@ public final class UiResourceSmokeTest {
             "內政設定按鈕必須在返回地圖左方");
         check(actorIdsByXml.get("ui/strategic_map.xml").contains("map_zoom_in_button"), "地圖縮放按鈕");
         check(actorIdsByXml.get("ui/month_report.xml").contains("month_report_scroll_host"), "月報捲動容器");
+        check(actorIdsByXml.get("ui/month_report.xml").contains("month_report_player_filter_button")
+            && actorIdsByXml.get("ui/month_report.xml").contains("month_report_world_filter_button"),
+            "月報提供我方與天下公開消息篩選");
         check(!Files.exists(sourceRoot.resolve("idv/kuan/studio/sango/FirstScreen.java")), "移除未使用樣板 Screen");
         check(!Files.exists(sourceRoot.resolve("idv/kuan/studio/sango/ui/PrototypeCampaignScreen.java")),
             "淘汰 Prototype Screen 不可回歸");
