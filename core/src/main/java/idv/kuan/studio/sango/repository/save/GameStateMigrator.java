@@ -1,5 +1,8 @@
 package idv.kuan.studio.sango.repository.save;
 
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+
 import idv.kuan.studio.sango.SangoVersion;
 import idv.kuan.studio.sango.domain.model.BattleReport;
 import idv.kuan.studio.sango.domain.model.ArmyState;
@@ -16,7 +19,7 @@ import idv.kuan.studio.sango.domain.rule.DefensePolicy;
 import idv.kuan.studio.sango.domain.service.CityIntelligenceService;
 
 /**
- * 逐版遷移 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12。
+ * 逐版遷移 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13。
  * 僅遷移狀態結構，不替換舊劇本、刷新情報或回算既有戰報。
  */
 @SuppressWarnings("deprecation")
@@ -55,6 +58,9 @@ public final class GameStateMigrator {
         }
         if (migratedState.schemaVersion == 11) {
             migrateSchemaElevenToTwelve(migratedState);
+        }
+        if (migratedState.schemaVersion == 12) {
+            migrateSchemaTwelveToThirteen(migratedState);
         }
         if (migratedState.schemaVersion != SangoVersion.GAME_STATE_SCHEMA_VERSION) {
             throw new IllegalArgumentException(
@@ -279,6 +285,56 @@ public final class GameStateMigrator {
             }
         }
         gameState.schemaVersion = 12;
+    }
+
+    /**
+     * schema 13 將人口顯示尺度縮為原本的十分之一。只處理人口快照，
+     * 不回算歷史戰報兵力、在途軍或任何既有戰鬥結果。
+     */
+    private void migrateSchemaTwelveToThirteen(GameState gameState) {
+        gameState.campaignInstanceId = legacyCampaignInstanceId(gameState);
+        scaleCityPopulations(gameState.cityStates);
+        scaleCityPopulations(gameState.turnStartCityStates);
+        if (gameState.factionStates != null) {
+            for (FactionState factionState : gameState.factionStates) {
+                if (factionState == null || factionState.cityIntelligence == null) {
+                    continue;
+                }
+                for (CityIntelligenceSnapshot snapshot : factionState.cityIntelligence) {
+                    if (snapshot != null) {
+                        snapshot.population = scalePopulation(snapshot.population);
+                    }
+                }
+            }
+        }
+        gameState.schemaVersion = 13;
+    }
+
+    private void scaleCityPopulations(CityState[] cityStates) {
+        if (cityStates == null) {
+            return;
+        }
+        for (CityState cityState : cityStates) {
+            if (cityState != null) {
+                cityState.population = scalePopulation(cityState.population);
+            }
+        }
+    }
+
+    private int scalePopulation(int population) {
+        return population <= 0 ? population : Math.max(1, population / 10);
+    }
+
+    private String legacyCampaignInstanceId(GameState gameState) {
+        String fingerprint = String.join("|",
+            safe(gameState.scenarioId), safe(gameState.mapId), safe(gameState.playerFactionId),
+            safe(gameState.opponentFactionId), safe(gameState.neutralFactionId),
+            safe(gameState.victoryTargetCityId));
+        return UUID.nameUUIDFromBytes(fingerprint.getBytes(StandardCharsets.UTF_8)).toString();
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
     }
 
     private CityState[] copyCityStates(CityState[] source) {

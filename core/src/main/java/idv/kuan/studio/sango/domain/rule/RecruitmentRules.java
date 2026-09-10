@@ -50,7 +50,8 @@ public final class RecruitmentRules {
 
     private static int calculateCost(int troopCount, int numerator) {
         if (troopCount < 0 || troopCount > CampaignBalance.MAXIMUM_RECRUITMENT) {
-            throw new IllegalArgumentException("單次徵兵數必須介於 0 到 10000。");
+            throw new IllegalArgumentException("單次徵兵數必須介於 0 到 "
+                + CampaignBalance.MAXIMUM_RECRUITMENT + "。");
         }
         return (int) (((long) troopCount * numerator + CampaignBalance.RECRUIT_COST_DENOMINATOR - 1)
             / CampaignBalance.RECRUIT_COST_DENOMINATOR);

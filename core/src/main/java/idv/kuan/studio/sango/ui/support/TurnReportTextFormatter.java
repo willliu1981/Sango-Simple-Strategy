@@ -102,6 +102,11 @@ public final class TurnReportTextFormatter {
                     : "{0} 前往 {3} 的部隊缺糧，士氣 -{1}；目前士氣 {2}。",
                 optionalCityName(turnEvent.getCityId()), turnEvent.getPrimaryValue(),
                 turnEvent.getSecondaryValue(), optionalCityName(turnEvent.getOtherCityId()));
+            case FOOD_SHORTAGE_PUBLIC_ORDER -> text(
+                "report_shortage_public_order",
+                "{0} 因軍糧不足，民心 -{1}；目前民心 {2}。",
+                optionalCityName(turnEvent.getCityId()), turnEvent.getPrimaryValue(),
+                turnEvent.getSecondaryValue());
             case PUBLIC_ORDER_NATURALLY_RECOVERED -> text(
                 "report_event_public_order_recovered",
                 "{0} 民心自然恢復 +{1}；目前民心 {2}。",
@@ -117,8 +122,11 @@ public final class TurnReportTextFormatter {
             );
             case FLOOD_OCCURRED -> text(
                 "report_event_flood",
-                "{0} 發生洪災；秋收預估減少 {1}%（事前風險 {2}%）。",
+                "{0} 發生洪災；農業 -{1}、民心 -{2}、人口 -{3}，秋收預估減少 {4}%（事前風險 {5}%）。",
                 optionalCityName(turnEvent.getCityId()),
+                turnEvent.getTertiaryValue(),
+                turnEvent.getQuaternaryValue(),
+                turnEvent.getQuinaryValue(),
                 turnEvent.getSecondaryValue(),
                 turnEvent.getPrimaryValue()
             );

@@ -49,6 +49,7 @@ import idv.kuan.studio.sango.repository.save.GameStateMigrator;
 import idv.kuan.studio.sango.repository.save.LocalJsonSaveGameRepository;
 import idv.kuan.studio.sango.repository.save.SaveGameDocument;
 import idv.kuan.studio.sango.repository.save.SaveSlotInspection;
+import idv.kuan.studio.sango.repository.save.SaveTarget;
 
 /**
  * 全國劇本、士氣、無抵抗佔領與真實舊 schema 序列化檔的無圖形回歸測試。
@@ -161,7 +162,7 @@ public final class NationalCampaignSmokeTest {
         GameState nextState = recruitment.getGameState();
         check(nextState.requireCapitalCityState().morale > 3, "新兵士氣高於舊兵時，按兵數加權提升");
         check(nextState.requireCapitalCityState().training > 3, "新兵訓練高於舊兵時，按兵數加權提升");
-        check(nextState.requireCapitalCityState().troops == previousTroops + 200, "徵兵增加 200 人");
+        check(nextState.requireCapitalCityState().troops == previousTroops + 100, "徵兵增加 100 人");
         check(originalState.requireCapitalCityState().morale == 3, "徵兵使用 copy-on-write");
         check(originalState.requireCapitalCityState().training == 3, "原狀態訓練不變");
         check(originalState.requireCapitalCityState().troops == previousTroops, "原狀態兵力不變");
@@ -257,9 +258,11 @@ public final class NationalCampaignSmokeTest {
                         check(gameState.scenarioObjectiveStatus == objectiveStatus, "目標結論不被後續佔領覆寫");
                     }
                     GameState markedState = new MarkBattleReportReadCommand().execute(1, gameState, battleReport.battleId);
-                    check(markedState.battleReports[0].read && !saves.load(1).battleReports[0].read,
+                    check(markedState.battleReports[0].read
+                        && !saves.load(SaveTarget.auto(1)).battleReports[0].read,
                         "戰報已讀尚未明確存檔，讀取可回到原狀態");
-                    check(saves.load(1).requireCityState(targetCityId).morale == 71, "佔領城市存檔士氣保留");
+                    check(saves.load(SaveTarget.auto(1)).requireCityState(targetCityId).morale == 71,
+                        "佔領城市自動存檔士氣保留");
                 }
             }
         }

@@ -14,6 +14,7 @@ import idv.kuan.studio.sango.application.result.TurnEvent;
 import idv.kuan.studio.sango.application.result.TurnEventType;
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
 import idv.kuan.studio.sango.domain.model.CityState;
+import idv.kuan.studio.sango.domain.model.CityIntelligenceSnapshot;
 import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
@@ -85,6 +86,7 @@ public final class CampaignGrowthSmokeTest {
             testOrders(initial, saves);
             testPopulation(initial, definitions, saves);
             testPersistence(initial, definitions, saves);
+            testSchemaThirteenMigration(initial, saves);
             testAiParity(initial, definitions);
             System.out.println("Sango population/recruitment/training/AI regression: PASS; checks=" + checks);
         } finally {
@@ -93,24 +95,24 @@ public final class CampaignGrowthSmokeTest {
     }
 
     private static void testRecruitmentCurve() {
-        int[][] samples = {{10000, 1000}, {30000, 1732}, {50000, 2236}, {80000, 2828}, {100000, 3162}};
+        int[][] samples = {{1000, 316}, {3000, 547}, {5000, 707}, {8000, 894}, {10000, 1000}};
         for (int[] sample : samples) {
             check(RecruitmentRules.populationLimit(sample[0], DEFAULT_OFFICER) == sample[1], "人口根號曲線示例");
         }
         int previous = 0;
         for (int i = 0; i <= 1_050_000; i++) {
             int result = RecruitmentRules.populationLimit(i, DEFAULT_OFFICER);
-            int expected = (int) Math.min(10000, Math.min(Math.floor(10d * Math.sqrt(i)), Math.max(0, i - 2000)));
+            int expected = (int) Math.min(1000, Math.min(Math.floor(10d * Math.sqrt(i)), Math.max(0, i - 200)));
             check(result == expected, "完整人口邊界與硬上限");
-            check(result >= previous && result <= 10000 && result <= Math.max(0, i - 2000), "單調遞增且保留人口");
+            check(result >= previous && result <= 1000 && result <= Math.max(0, i - 200), "單調遞增且保留人口");
             previous = result;
         }
-        check(RecruitmentRules.populationLimit(Integer.MAX_VALUE, DEFAULT_OFFICER) == 10000, "極大人口不溢位");
+        check(RecruitmentRules.populationLimit(Integer.MAX_VALUE, DEFAULT_OFFICER) == 1000, "極大人口不溢位");
         OfficerCommandProfile stronger = new OfficerCommandProfile(120, 24000, 5, 5, 50);
-        check(RecruitmentRules.populationLimit(10000, stronger) == 1200, "未來武將徵兵加成獨立生效");
-        check(RecruitmentRules.populationLimit(2_001, stronger) == 1, "武將加成不能突破保留量");
-        check(RecruitmentRules.populationLimit(1_000_000, stronger) == 10000, "武將加成仍受單次硬上限");
-        for (int i = 0; i <= 10000; i++) {
+        check(RecruitmentRules.populationLimit(10000, stronger) == 1000, "武將加成仍受單次硬上限");
+        check(RecruitmentRules.populationLimit(201, stronger) == 1, "武將加成不能突破保留量");
+        check(RecruitmentRules.populationLimit(1_000_000, stronger) == 1000, "極大人口仍受單次硬上限");
+        for (int i = 0; i <= 1000; i++) {
             check(RecruitmentRules.goldCost(i) == (i + 1) / 2, "金費用按實際人數向上取整");
             check(RecruitmentRules.foodCost(i) == (i + 1) / 2, "糧費用按實際人數向上取整");
         }
@@ -180,7 +182,7 @@ public final class CampaignGrowthSmokeTest {
         CityState city = state.requireCapitalCityState();
         state.requirePlayerFactionState().gold = 100000;
         state.requirePlayerFactionState().food = 100000;
-        city.population = 30000;
+        city.population = 10000;
         city.troops = 1000;
         for (CityState owned : state.findCitiesOwnedBy(state.playerFactionId)) {
             owned.publicOrder = 50;
@@ -191,25 +193,25 @@ public final class CampaignGrowthSmokeTest {
         check(result.isSuccessful(), "自選千人徵兵成功");
         CityState nextCity = result.getGameState().requireCapitalCityState();
         check(nextCity.troops == 2000 && nextCity.training == 75 && nextCity.morale == 75, "命令落地加權素質");
-        check(nextCity.population == 29000, "徵多少扣多少人口");
+        check(nextCity.population == 9000, "徵多少扣多少人口");
         check(result.getGameState().requirePlayerFactionState().gold == 99500
             && result.getGameState().requirePlayerFactionState().food == 99500, "按人數扣金糧");
         check(result.getGameState().actionPointsRemaining == 2, "單次只扣一點 AP");
-        check(city.troops == 1000 && city.population == 30000, "命令保留輸入狀態");
+        check(city.troops == 1000 && city.population == 10000, "命令保留輸入狀態");
         check(saves.load(1).requireCapitalCityState().training
             == savedBeforeOrder.requireCapitalCityState().training,
             "內政後尚未明確存檔，讀取仍為操作前狀態");
-        for (int amount : new int[] {-1, 0, 1733, 10001, Integer.MAX_VALUE}) {
+        for (int amount : new int[] {-1, 0, 1001, 1733, Integer.MAX_VALUE}) {
             result = command.execute(1, state, city.cityId, DomesticActionType.RECRUIT, amount);
             check(!result.isSuccessful(), "非法或超過曲線人數拒絕");
-            check(state.actionPointsRemaining == 3 && city.population == 30000, "拒絕不扣點或人口");
+            check(state.actionPointsRemaining == 3 && city.population == 10000, "拒絕不扣點或人口");
         }
-        city.population = 2001;
-        check(!command.execute(1, state, city.cityId, DomesticActionType.RECRUIT, 2).isSuccessful(), "徵完必須保留 2000");
+        city.population = 201;
+        check(!command.execute(1, state, city.cityId, DomesticActionType.RECRUIT, 2).isSuccessful(), "徵完必須保留 200");
         result = command.execute(1, state, city.cityId, DomesticActionType.RECRUIT, 1);
-        check(result.isSuccessful() && result.getGameState().requireCapitalCityState().population == 2000,
-            "2001 人可精確徵 1 人");
-        city.population = 30000;
+        check(result.isSuccessful() && result.getGameState().requireCapitalCityState().population == 200,
+            "201 人可精確徵 1 人");
+        city.population = 3000;
         city.troops = 0;
         check(command.execute(1, state, city.cityId, DomesticActionType.TRAIN).getFailureReason()
             == DomesticActionFailureReason.NO_TROOPS, "零兵拒絕訓練");
@@ -260,20 +262,20 @@ public final class CampaignGrowthSmokeTest {
         check(PublicOrderRules.recruitMorale(state, city) == 62, "低全國民心拖累高民心徵兵城");
         city.publicOrder = 0;
         check(PublicOrderRules.recruitMorale(state, city) == 30, "零民心仍有新兵士氣底值");
-        city.population = 1001;
-        check(PopulationRules.project(state, city, 100000).delta() == -1, "年度流失不低於 1000");
-        city.population = 800;
+        city.population = 101;
+        check(PopulationRules.project(state, city, 10000).delta() == -1, "年度流失不低於 100");
+        city.population = 80;
         check(PopulationRules.project(state, city, 100000).delta() == 0, "舊存檔低人口不憑空補到保護值");
-        city.population = 200000;
-        check(PopulationRules.project(state, city, 300000).delta() == -3000, "年度流失上限 3000");
+        city.population = 20000;
+        check(PopulationRules.project(state, city, 30000).delta() == -300, "年度流失上限 300");
         for (CityState owned : state.findCitiesOwnedBy(state.playerFactionId)) {
             owned.publicOrder = 100;
         }
         check(PublicOrderRules.recruitMorale(state, city) == 70, "高民心新兵士氣仍不等於 100");
-        check(PopulationRules.project(state, city, 300000).delta() == 5000, "年度增加上限 5000");
-        check(PopulationRules.project(state, city, 100000).delta() == 0, "超容量舊人口不裁切");
-        city.population = 99000;
-        check(PopulationRules.project(state, city, 100000).delta() == 1000, "增長不超過容量");
+        check(PopulationRules.project(state, city, 30000).delta() == 500, "年度增加上限 500");
+        check(PopulationRules.project(state, city, 10000).delta() == 0, "超容量舊人口不裁切");
+        city.population = 9900;
+        check(PopulationRules.project(state, city, 10000).delta() == 100, "增長不超過容量");
         state = initial.copy();
         state.currentMonth = 11;
         state.enemyAttackCountdown = 99;
@@ -283,23 +285,23 @@ public final class CampaignGrowthSmokeTest {
         }
         for (CityState candidate : state.cityStates) {
             candidate.publicOrder = 100;
-            candidate.population = 10000;
+            candidate.population = 5000;
         }
         TurnResolutionService turns = new TurnResolutionService(definitions);
         GameState december = turns.resolve(state).getGameState();
-        check(december.requireCapitalCityState().population == 10000, "十一月底不提前結算年度人口");
+        check(december.requireCapitalCityState().population == 5000, "十一月底不提前結算年度人口");
         for (FactionState faction : december.factionStates) {
             faction.aiActionPointsRemaining = 0;
         }
         GameState january = turns.resolve(december).getGameState();
         check(january.currentMonth == 1 && january.currentYear == state.currentYear + 1, "十二月底跨年一次");
         for (CityState candidate : january.cityStates) {
-            check(candidate.population == 10400, "玩家 AI 中立各城皆於年底結算一次");
+            check(candidate.population == 5200, "玩家 AI 中立各城皆於年底結算一次");
         }
         saves.save(2, january);
         GameState loaded = saves.load(2);
-        check(loaded.requireCapitalCityState().population == 10400, "讀檔不重複年度增長");
-        check(turns.resolve(loaded).getGameState().requireCapitalCityState().population == 10400, "一月底不重複增長");
+        check(loaded.requireCapitalCityState().population == 5200, "讀檔不重複年度增長");
+        check(turns.resolve(loaded).getGameState().requireCapitalCityState().population == 5200, "一月底不重複增長");
     }
 
     private static void testPersistence(GameState initial, AssetJsonGameDefinitionRepository definitions,
@@ -315,7 +317,8 @@ public final class CampaignGrowthSmokeTest {
             && state.schemaVersion == 4, "Schema 4 遷移使用副本");
         check(migrated.actionPointsPerTurn == 9 && migrated.actionPointsRemaining == 2, "舊月中 2/9 不回補或重算");
         check(migrated.requireCapitalCityState().morale == 0
-            && migrated.requireCapitalCityState().population == initialPopulation, "零士氣與人口不重設");
+            && migrated.requireCapitalCityState().population == initialPopulation / 10,
+            "零士氣保留且舊人口只縮放一次");
         CityState city = migrated.requireCapitalCityState();
         city.troops = 1800;
         TroopQualityRules.set(city, 75_123_456, 60_234_567);
@@ -341,6 +344,45 @@ public final class CampaignGrowthSmokeTest {
         GameState occupied = new TurnResolutionService(definitions).resolve(launched).getGameState();
         check(occupied.requireCityState("runan").trainingFraction == 0, "佔領後守軍維持整數素質");
         GameStateValidator.validate(occupied);
+    }
+
+    private static void testSchemaThirteenMigration(GameState initial,
+        LocalJsonSaveGameRepository saves) {
+        GameState legacy = initial.copy();
+        legacy.schemaVersion = 12;
+        legacy.campaignInstanceId = null;
+        legacy.cityStates[0].population = 12_340;
+        legacy.turnStartCityStates[0].population = 56_780;
+        CityIntelligenceSnapshot snapshot = new CityIntelligenceService().observe(
+            legacy, legacy.playerFactionId, "runan");
+        snapshot.population = 43_210;
+
+        GameStateMigrator migrator = new GameStateMigrator();
+        GameState migrated = migrator.migrate(legacy);
+        check(migrated.cityStates[0].population == 1_234,
+            "Schema 12 城池人口縮為十分之一");
+        check(migrated.turnStartCityStates[0].population == 5_678,
+            "Schema 12 月初城池快照人口縮為十分之一");
+        check(migrated.requirePlayerFactionState().cityIntelligence[0].population == 4_321,
+            "Schema 12 情報快照人口縮為十分之一");
+        check(migrated.campaignInstanceId != null && !migrated.campaignInstanceId.isBlank(),
+            "舊戰局遷移取得 lineage");
+
+        GameState sameLegacy = legacy.copy();
+        check(migrated.campaignInstanceId.equals(migrator.migrate(sameLegacy).campaignInstanceId),
+            "相同舊戰局每次遷移取得相同 lineage");
+        GameState migratedAgain = migrator.migrate(migrated);
+        check(migratedAgain.cityStates[0].population == 1_234
+                && migratedAgain.turnStartCityStates[0].population == 5_678
+                && migratedAgain.requirePlayerFactionState().cityIntelligence[0].population == 4_321,
+            "目前 schema 重複遷移不再縮放人口");
+
+        saves.save(3, migrated);
+        GameState reloaded = saves.load(3);
+        check(reloaded.cityStates[0].population == 1_234
+                && reloaded.turnStartCityStates[0].population == 5_678
+                && reloaded.requirePlayerFactionState().cityIntelligence[0].population == 4_321,
+            "Schema 13 存讀不再縮放各類人口快照");
     }
 
     private static void testAiParity(GameState initial, AssetJsonGameDefinitionRepository definitions) {

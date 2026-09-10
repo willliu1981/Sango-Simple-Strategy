@@ -10,18 +10,22 @@ import idv.kuan.studio.sango.domain.model.GameState;
 
 /** Report views reference the same persisted battles, including their read state. */
 public final class BattleReportCatalog {
+    public static final int VISIBLE_COMPLETED_MONTHS = 6;
     private BattleReportCatalog() { }
 
     public static List<BattleReport> world(GameState state) {
         if (state == null || state.battleReports == null) return List.of();
         int completedTurn = state.currentTurn - 1;
+        int oldestVisibleTurn = Math.max(1, completedTurn - VISIBLE_COMPLETED_MONTHS + 1);
         if (completedTurn < 1) return List.of();
         List<BattleReport> reports = new ArrayList<>();
         for (BattleReport report : state.battleReports) {
-            if (report != null && report.resolvedTurn == completedTurn) reports.add(report);
+            if (report != null && report.resolvedTurn >= oldestVisibleTurn
+                && report.resolvedTurn <= completedTurn) reports.add(report);
         }
         reports.sort(Comparator
-            .comparing((BattleReport report) -> !report.involvesFaction(state.playerFactionId))
+            .comparingInt((BattleReport report) -> report.resolvedTurn).reversed()
+            .thenComparing(report -> !report.involvesFaction(state.playerFactionId))
             .thenComparing(report -> report.battleId, Comparator.reverseOrder()));
         return reports;
     }
@@ -35,8 +39,10 @@ public final class BattleReportCatalog {
         BattleReport latest = null;
         if (state == null || state.battleReports == null || state.currentTurn <= 1) return null;
         int completedTurn = state.currentTurn - 1;
+        int oldestVisibleTurn = Math.max(1, completedTurn - VISIBLE_COMPLETED_MONTHS + 1);
         for (BattleReport report : state.battleReports) {
-            if (report != null && report.resolvedTurn == completedTurn
+            if (report != null && report.resolvedTurn >= oldestVisibleTurn
+                && report.resolvedTurn <= completedTurn
                 && touchesCity(report, cityId) && isNewer(report, latest)) {
                 latest = report;
             }
@@ -45,8 +51,23 @@ public final class BattleReportCatalog {
     }
 
     public static List<BattleReport> city(GameState state, String cityId) {
-        BattleReport latest = latestForCity(state, cityId);
-        return latest == null ? List.of() : List.of(latest);
+        if (state == null || state.battleReports == null || state.currentTurn <= 1) return List.of();
+        int completedTurn = state.currentTurn - 1;
+        int oldestVisibleTurn = Math.max(1, completedTurn - VISIBLE_COMPLETED_MONTHS + 1);
+        List<BattleReport> reports = new ArrayList<>();
+        for (BattleReport report : state.battleReports) {
+            if (report != null && report.resolvedTurn >= oldestVisibleTurn
+                && report.resolvedTurn <= completedTurn && touchesCity(report, cityId)) {
+                reports.add(report);
+            }
+        }
+        reports.sort(Comparator.comparingInt((BattleReport report) -> report.resolvedTurn)
+            .reversed().thenComparing(report -> report.battleId, Comparator.reverseOrder()));
+        return reports;
+    }
+
+    public static boolean isLatestCompletedMonth(GameState state, BattleReport report) {
+        return state != null && report != null && report.resolvedTurn == state.currentTurn - 1;
     }
 
     public static List<BattleReport> latestCities(GameState state) {

@@ -253,7 +253,7 @@ public final class SettingsScreen extends SuiScreen {
             return true;
         }
         try {
-            SangoServices.saveCurrentGameCommand().execute(
+            SangoServices.saveCurrentGameCommand().executeAuto(
                 SangoServices.session().getCurrentSaveSlot(),
                 SangoServices.session().requireCurrentState()
             );

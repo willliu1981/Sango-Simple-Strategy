@@ -9,6 +9,9 @@ public final class SaveGameDocument {
     public int schemaVersion;
     public String gameVersion;
     public long savedAtEpochMillis;
+    public SaveKind saveKind;
+    public int originSlotNumber;
+    public String campaignInstanceId;
     public GameState gameState;
 
     public SaveGameDocument() {

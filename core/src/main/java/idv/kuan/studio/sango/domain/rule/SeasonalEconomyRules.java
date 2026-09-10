@@ -17,11 +17,11 @@ public final class SeasonalEconomyRules {
     }
 
     public static int calculateQuarterlyTax(CityState cityState) {
-        return 80 + cityState.commerce * 6 + cityState.population / 2000;
+        return 80 + cityState.commerce * 6 + cityState.population / 200;
     }
 
     public static int calculateBaseHarvest(CityState cityState) {
-        return 500 + cityState.agriculture * 20 + cityState.population / 100;
+        return 500 + cityState.agriculture * 20 + cityState.population / 10;
     }
 
     public static int calculateHarvest(CityState cityState) {

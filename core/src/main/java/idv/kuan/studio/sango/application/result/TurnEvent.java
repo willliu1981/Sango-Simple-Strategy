@@ -10,6 +10,9 @@ public final class TurnEvent {
     private final String otherCityId;
     private final int primaryValue;
     private final int secondaryValue;
+    private final int tertiaryValue;
+    private final int quaternaryValue;
+    private final int quinaryValue;
 
     public TurnEvent(
         TurnEventType type,
@@ -18,6 +21,20 @@ public final class TurnEvent {
         String otherCityId,
         int primaryValue,
         int secondaryValue
+    ) {
+        this(type, factionId, cityId, otherCityId, primaryValue, secondaryValue, 0, 0, 0);
+    }
+
+    public TurnEvent(
+        TurnEventType type,
+        String factionId,
+        String cityId,
+        String otherCityId,
+        int primaryValue,
+        int secondaryValue,
+        int tertiaryValue,
+        int quaternaryValue,
+        int quinaryValue
     ) {
         if (type == null) {
             throw new IllegalArgumentException("type 不可為 null。");
@@ -28,6 +45,9 @@ public final class TurnEvent {
         this.otherCityId = otherCityId;
         this.primaryValue = primaryValue;
         this.secondaryValue = secondaryValue;
+        this.tertiaryValue = tertiaryValue;
+        this.quaternaryValue = quaternaryValue;
+        this.quinaryValue = quinaryValue;
     }
 
     public TurnEventType getType() {
@@ -52,5 +72,17 @@ public final class TurnEvent {
 
     public int getSecondaryValue() {
         return secondaryValue;
+    }
+
+    public int getTertiaryValue() {
+        return tertiaryValue;
+    }
+
+    public int getQuaternaryValue() {
+        return quaternaryValue;
+    }
+
+    public int getQuinaryValue() {
+        return quinaryValue;
     }
 }

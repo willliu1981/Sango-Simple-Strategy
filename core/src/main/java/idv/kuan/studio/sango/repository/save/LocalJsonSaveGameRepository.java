@@ -41,30 +41,30 @@ public final class LocalJsonSaveGameRepository implements SaveGameRepository {
     }
 
     @Override
-    public SaveSlotInspection inspect(int slotNumber) {
-        validateSlotNumber(slotNumber);
+    public SaveSlotInspection inspect(SaveTarget target) {
+        validateTarget(target);
 
-        CandidateRead primaryRead = readCandidate(primaryFile(slotNumber));
+        CandidateRead primaryRead = readCandidate(primaryFile(target), target);
         if (primaryRead.isValid()) {
             return SaveSlotInspection.available(
                 false,
-                SaveSlotMetadata.fromDocument(slotNumber, primaryRead.document())
+                SaveSlotMetadata.fromDocument(target.slotNumber(), primaryRead.document())
             );
         }
 
-        CandidateRead temporaryRead = readCandidate(temporaryFile(slotNumber));
+        CandidateRead temporaryRead = readCandidate(temporaryFile(target), target);
         if (temporaryRead.isValid()) {
             return SaveSlotInspection.available(
                 true,
-                SaveSlotMetadata.fromDocument(slotNumber, temporaryRead.document())
+                SaveSlotMetadata.fromDocument(target.slotNumber(), temporaryRead.document())
             );
         }
 
-        CandidateRead backupRead = readCandidate(backupFile(slotNumber));
+        CandidateRead backupRead = readCandidate(backupFile(target), target);
         if (backupRead.isValid()) {
             return SaveSlotInspection.available(
                 true,
-                SaveSlotMetadata.fromDocument(slotNumber, backupRead.document())
+                SaveSlotMetadata.fromDocument(target.slotNumber(), backupRead.document())
             );
         }
 
@@ -78,57 +78,60 @@ public final class LocalJsonSaveGameRepository implements SaveGameRepository {
     }
 
     @Override
-    public GameState load(int slotNumber) {
-        validateSlotNumber(slotNumber);
+    public GameState load(SaveTarget target) {
+        validateTarget(target);
 
-        CandidateRead primaryRead = readCandidate(primaryFile(slotNumber));
+        CandidateRead primaryRead = readCandidate(primaryFile(target), target);
         if (primaryRead.isValid()) {
             return primaryRead.document().gameState.copy();
         }
 
-        CandidateRead temporaryRead = readCandidate(temporaryFile(slotNumber));
+        CandidateRead temporaryRead = readCandidate(temporaryFile(target), target);
         if (temporaryRead.isValid()) {
             return temporaryRead.document().gameState.copy();
         }
 
-        CandidateRead backupRead = readCandidate(backupFile(slotNumber));
+        CandidateRead backupRead = readCandidate(backupFile(target), target);
         if (backupRead.isValid()) {
             return backupRead.document().gameState.copy();
         }
 
         throw new SaveGameException(
-            "無法讀取存檔槽 " + slotNumber + "："
+            "無法讀取存檔槽 " + target.slotNumber() + "（" + target.kind() + "）："
                 + joinDiagnostics(primaryRead, temporaryRead, backupRead)
         );
     }
 
     @Override
-    public void save(int slotNumber, GameState gameState) {
-        validateSlotNumber(slotNumber);
+    public void save(SaveTarget target, GameState gameState) {
+        validateTarget(target);
         GameStateValidator.validate(gameState);
         ensureSaveDirectory();
 
-        FileHandle primaryFile = primaryFile(slotNumber);
-        FileHandle temporaryFile = temporaryFile(slotNumber);
-        FileHandle backupFile = backupFile(slotNumber);
-        FileHandle corruptFile = corruptFile(slotNumber);
+        FileHandle primaryFile = primaryFile(target);
+        FileHandle temporaryFile = temporaryFile(target);
+        FileHandle backupFile = backupFile(target);
+        FileHandle corruptFile = corruptFile(target);
 
         SaveGameDocument saveGameDocument = new SaveGameDocument();
         saveGameDocument.schemaVersion = SangoVersion.SAVE_DOCUMENT_SCHEMA_VERSION;
         saveGameDocument.gameVersion = SangoVersion.GAME_VERSION;
         saveGameDocument.savedAtEpochMillis = System.currentTimeMillis();
+        saveGameDocument.saveKind = target.kind();
+        saveGameDocument.originSlotNumber = target.slotNumber();
+        saveGameDocument.campaignInstanceId = gameState.campaignInstanceId;
         saveGameDocument.gameState = gameState.copy();
 
         try {
             deleteIfExists(temporaryFile);
             temporaryFile.writeString(json.prettyPrint(saveGameDocument), false, "UTF-8");
-            readRequired(temporaryFile);
+            readRequired(temporaryFile, target);
 
-            CandidateRead existingPrimary = readCandidate(primaryFile);
+            CandidateRead existingPrimary = readCandidate(primaryFile, target);
             if (existingPrimary.isValid()) {
                 deleteIfExists(backupFile);
                 primaryFile.copyTo(backupFile);
-                readRequired(backupFile);
+                readRequired(backupFile, target);
             } else if (primaryFile.exists()) {
                 deleteIfExists(corruptFile);
                 primaryFile.copyTo(corruptFile);
@@ -136,11 +139,11 @@ public final class LocalJsonSaveGameRepository implements SaveGameRepository {
 
             deleteIfExists(primaryFile);
             temporaryFile.moveTo(primaryFile);
-            readRequired(primaryFile);
+            readRequired(primaryFile, target);
         } catch (RuntimeException exception) {
-            restoreBackupWhenPrimaryMissing(primaryFile, backupFile);
+            restoreBackupWhenPrimaryMissing(primaryFile, backupFile, target);
             throw new SaveGameException(
-                "寫入存檔槽 " + slotNumber + " 失敗。",
+                "寫入存檔槽 " + target.slotNumber() + "（" + target.kind() + "）失敗。",
                 exception
             );
         } finally {
@@ -149,12 +152,12 @@ public final class LocalJsonSaveGameRepository implements SaveGameRepository {
     }
 
     @Override
-    public void delete(int slotNumber) {
-        validateSlotNumber(slotNumber);
-        deleteIfExists(primaryFile(slotNumber));
-        deleteIfExists(temporaryFile(slotNumber));
-        deleteIfExists(backupFile(slotNumber));
-        deleteIfExists(corruptFile(slotNumber));
+    public void delete(SaveTarget target) {
+        validateTarget(target);
+        deleteIfExists(primaryFile(target));
+        deleteIfExists(temporaryFile(target));
+        deleteIfExists(backupFile(target));
+        deleteIfExists(corruptFile(target));
     }
 
     public FileHandle getSaveDirectory() {
@@ -191,7 +194,7 @@ public final class LocalJsonSaveGameRepository implements SaveGameRepository {
         }
     }
 
-    private CandidateRead readCandidate(FileHandle candidateFile) {
+    private CandidateRead readCandidate(FileHandle candidateFile, SaveTarget target) {
         if (!candidateFile.exists()) {
             return CandidateRead.missing(candidateFile.path());
         }
@@ -201,15 +204,15 @@ public final class LocalJsonSaveGameRepository implements SaveGameRepository {
                 SaveGameDocument.class,
                 candidateFile
             );
-            validateDocument(saveGameDocument);
+            validateDocument(saveGameDocument, target);
             return CandidateRead.valid(candidateFile.path(), saveGameDocument);
         } catch (RuntimeException exception) {
             return CandidateRead.invalid(candidateFile.path(), exception.getMessage());
         }
     }
 
-    private SaveGameDocument readRequired(FileHandle candidateFile) {
-        CandidateRead candidateRead = readCandidate(candidateFile);
+    private SaveGameDocument readRequired(FileHandle candidateFile, SaveTarget target) {
+        CandidateRead candidateRead = readCandidate(candidateFile, target);
         if (!candidateRead.isValid()) {
             throw new SaveGameException(
                 "存檔驗證失敗：" + candidateRead.path() + "；" + candidateRead.diagnostic()
@@ -218,31 +221,51 @@ public final class LocalJsonSaveGameRepository implements SaveGameRepository {
         return candidateRead.document();
     }
 
-    private void validateDocument(SaveGameDocument saveGameDocument) {
+    private void validateDocument(SaveGameDocument saveGameDocument, SaveTarget target) {
         if (saveGameDocument == null) {
             throw new IllegalArgumentException("SaveGameDocument 不可為 null。");
         }
-        if (saveGameDocument.schemaVersion != SangoVersion.SAVE_DOCUMENT_SCHEMA_VERSION) {
+        if (saveGameDocument.schemaVersion < 1
+            || saveGameDocument.schemaVersion > SangoVersion.SAVE_DOCUMENT_SCHEMA_VERSION) {
             throw new IllegalArgumentException(
                 "不支援的 SaveGame schemaVersion：" + saveGameDocument.schemaVersion
             );
+        }
+        if (saveGameDocument.schemaVersion == 1) {
+            if (target.kind() != SaveKind.MANUAL) {
+                throw new IllegalArgumentException("舊版存檔只能作為手動存檔載入。");
+            }
+            saveGameDocument.saveKind = SaveKind.MANUAL;
+            saveGameDocument.originSlotNumber = target.slotNumber();
+        } else if (saveGameDocument.saveKind != target.kind()
+            || saveGameDocument.originSlotNumber != target.slotNumber()) {
+            throw new IllegalArgumentException("存檔種類或來源槽位與檔名不符。");
         }
         if (saveGameDocument.gameVersion == null || saveGameDocument.gameVersion.trim().isEmpty()) {
             throw new IllegalArgumentException("SaveGame.gameVersion 不可為空。");
         }
         saveGameDocument.gameState = gameStateMigrator.migrate(saveGameDocument.gameState);
+        if (saveGameDocument.campaignInstanceId == null
+            || saveGameDocument.campaignInstanceId.isBlank()) {
+            saveGameDocument.campaignInstanceId = saveGameDocument.gameState.campaignInstanceId;
+        }
+        if (!saveGameDocument.campaignInstanceId.equals(
+            saveGameDocument.gameState.campaignInstanceId)) {
+            throw new IllegalArgumentException("存檔戰局識別不一致。");
+        }
         GameStateValidator.validate(saveGameDocument.gameState);
     }
 
     private void restoreBackupWhenPrimaryMissing(
         FileHandle primaryFile,
-        FileHandle backupFile
+        FileHandle backupFile,
+        SaveTarget target
     ) {
         if (primaryFile.exists() || !backupFile.exists()) {
             return;
         }
         try {
-            CandidateRead backupRead = readCandidate(backupFile);
+            CandidateRead backupRead = readCandidate(backupFile, target);
             if (backupRead.isValid()) {
                 backupFile.copyTo(primaryFile);
             }
@@ -277,24 +300,32 @@ public final class LocalJsonSaveGameRepository implements SaveGameRepository {
         }
     }
 
-    private FileHandle primaryFile(int slotNumber) {
-        return saveDirectory.child(filePrefix(slotNumber) + ".json");
+    private void validateTarget(SaveTarget target) {
+        if (target == null) {
+            throw new IllegalArgumentException("target 不可為 null。");
+        }
+        validateSlotNumber(target.slotNumber());
     }
 
-    private FileHandle temporaryFile(int slotNumber) {
-        return saveDirectory.child(filePrefix(slotNumber) + ".tmp");
+    private FileHandle primaryFile(SaveTarget target) {
+        return saveDirectory.child(filePrefix(target) + ".json");
     }
 
-    private FileHandle backupFile(int slotNumber) {
-        return saveDirectory.child(filePrefix(slotNumber) + ".backup.json");
+    private FileHandle temporaryFile(SaveTarget target) {
+        return saveDirectory.child(filePrefix(target) + ".tmp");
     }
 
-    private FileHandle corruptFile(int slotNumber) {
-        return saveDirectory.child(filePrefix(slotNumber) + ".corrupt.json");
+    private FileHandle backupFile(SaveTarget target) {
+        return saveDirectory.child(filePrefix(target) + ".backup.json");
     }
 
-    private String filePrefix(int slotNumber) {
-        return String.format(Locale.ROOT, "slot-%02d", slotNumber);
+    private FileHandle corruptFile(SaveTarget target) {
+        return saveDirectory.child(filePrefix(target) + ".corrupt.json");
+    }
+
+    private String filePrefix(SaveTarget target) {
+        String suffix = target.kind() == SaveKind.AUTO ? ".autosave" : "";
+        return String.format(Locale.ROOT, "slot-%02d%s", target.slotNumber(), suffix);
     }
 
     private void deleteIfExists(FileHandle fileHandle) {

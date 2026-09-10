@@ -356,7 +356,7 @@ public final class StrategicMapScreen extends SuiScreen {
         }
         int slotNumber = SangoPreferences.getLastUsedSaveSlot();
         try {
-            GameState gameState = SangoServices.saveGames().load(slotNumber);
+            GameState gameState = SangoServices.saveGames().loadNewest(slotNumber);
             SangoServices.session().setCurrentState(slotNumber, gameState);
         } catch (RuntimeException exception) {
             Gdx.app.error("StrategicMap", "無法載入目前戰局。", exception);
@@ -700,8 +700,8 @@ public final class StrategicMapScreen extends SuiScreen {
             buildRouteText(gameState, selectedCityState, routeOriginCityState)
         );
 
-        int cityBattleCount = BattleReportCatalog.latestForCity(
-            gameState, selectedCityState.cityId) == null ? 0 : 1;
+        int cityBattleCount = BattleReportCatalog.city(
+            gameState, selectedCityState.cityId).size();
         button("view_city_battle_button").setText(
             text("button_city_battles_format", "查看此城戰報（{0}）", cityBattleCount)
         );
@@ -1288,7 +1288,7 @@ public final class StrategicMapScreen extends SuiScreen {
                 || amount % 100 != 0 || amount > maximum) {
                 return text(
                     "dispatch_status_invalid_origin_amount_format",
-                    "{0} 的派兵數需至少 400、以 100 遞增，並保留 400 守軍。",
+                    "{0} 的派兵數需至少 200、以 100 遞增，並保留 200 守軍。",
                     cityName(originCityId)
                 );
             }
@@ -1443,8 +1443,8 @@ public final class StrategicMapScreen extends SuiScreen {
             case TARGET_NOT_CONNECTED -> text("map_status_not_adjacent", "目標與我方城池不相鄰。");
             case INSUFFICIENT_GOLD -> text("city_status_insufficient_gold", "金不足，無法執行此命令。");
             case INSUFFICIENT_FOOD -> text("city_status_insufficient_food", "糧不足，無法執行此命令。");
-            case INVALID_EXPEDITION_AMOUNT -> text("map_status_invalid_expedition_amount", "派兵數量須至少 400，且為 100 的倍數。");
-            case INSUFFICIENT_TROOPS -> text("map_status_insufficient_troops", "至少需保留 400 守軍並派出 400 兵。");
+            case INVALID_EXPEDITION_AMOUNT -> text("map_status_invalid_expedition_amount", "派兵數量須至少 200，且為 100 的倍數。");
+            case INSUFFICIENT_TROOPS -> text("map_status_insufficient_troops", "至少需保留 200 守軍並派出 200 兵。");
             case ARMY_ALREADY_ACTIVE -> text("map_status_army_active", "我方已有一支部隊行軍中，需等待其抵達。");
             case NONE -> text("map_status_action_failed", "命令未完成。");
         };
@@ -1586,7 +1586,7 @@ public final class StrategicMapScreen extends SuiScreen {
                 text("help_transfer_title", "運兵說明"),
                 text(
                     "help_transfer_body",
-                    "運兵只在我方城池之間進行；任何沿道路可到達目標的我方城都能作為來源。\n\n使用前一座／後一座切換來源，再以 100 人調整兵數。每次至少派 400 兵，來源城必須保留 400 守軍。\n\n運兵消耗 1 AP 與 100 糧；路程依道路最短時間計算，部隊抵達後才加入目標城。"
+                    "運兵只在我方城池之間進行；任何沿道路可到達目標的我方城都能作為來源。\n\n使用前一座／後一座切換來源，再以 100 人調整兵數。每次至少派 200 兵，來源城必須保留 200 守軍。\n\n運兵消耗 1 AP 與 100 糧；路程依道路最短時間計算，部隊抵達後才加入目標城。"
                 )
             );
         } else {
@@ -1594,7 +1594,7 @@ public final class StrategicMapScreen extends SuiScreen {
                 text("help_expedition_title", "聯合出征說明"),
                 text(
                     "help_expedition_body",
-                    "選擇敵方或中立目標城，再逐城加入直接相鄰的我方來源城。每城至少派 400 兵並保留 400 守軍，每個來源消耗 1 AP 與 100 糧。\n\n出征方針可選強攻、誘敵或穩進；另設定道路接戰獲勝後繼續攻城、自動判斷或返城。士氣低於 40 仍可出兵，只是自動判斷條件之一。\n\n敵對部隊在同一道路相向且本月路程交會時先接戰；敗方與平手返城，勝方依命令行動。"
+                    "選擇敵方或中立目標城，再逐城加入直接相鄰的我方來源城。每城至少派 200 兵並保留 200 守軍，每個來源消耗 1 AP 與 100 糧。\n\n出征方針可選強攻、誘敵或穩進；另設定道路接戰獲勝後繼續攻城、自動判斷或返城。士氣低於 40 仍可出兵，只是自動判斷條件之一。\n\n敵對部隊在同一道路相向且本月路程交會時先接戰；敗方與平手返城，勝方依命令行動。"
                 )
             );
         }

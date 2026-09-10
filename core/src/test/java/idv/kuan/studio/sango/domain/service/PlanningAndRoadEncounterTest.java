@@ -169,7 +169,7 @@ public final class PlanningAndRoadEncounterTest {
 
         GameState migrated = new GameStateMigrator().migrate(legacy);
 
-        assertEquals(12, migrated.schemaVersion);
+        assertEquals(13, migrated.schemaVersion);
         assertNotSame(migrated.cityStates[0], migrated.turnStartCityStates[0]);
         assertNull(migrated.factionStates[0].cityIntelligence[0].defensePolicy);
         assertEquals(PostEncounterOrder.AUTO, migrated.armyStates[0].postEncounterOrder);

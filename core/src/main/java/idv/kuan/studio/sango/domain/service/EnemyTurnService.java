@@ -29,7 +29,7 @@ import idv.kuan.studio.sango.domain.rule.StrategicActionFailureReason;
  */
 public final class EnemyTurnService {
     private static final int ASSEMBLY_MONTHS = 3;
-    private static final int TARGET_GARRISON = 1_800;
+    private static final int TARGET_GARRISON = 900;
     private final DomesticActionService domesticActionService = new DomesticActionService();
     private final CityIntelligenceService intelligenceService = new CityIntelligenceService();
     private final ScoutCityCommand scoutCityCommand = new ScoutCityCommand(null);

@@ -38,49 +38,49 @@
                     <row />
                     <scrollPane id="city_overview_scroll" width="600" height="480"
                         flags="scrollingDisableX,hideScrollbars">
-                    <table width="590">
-                    <table width="590" height="370" pad="16" backgroundColor="0.040,0.034,0.030,1">
-                        <table width="180">
-                            <label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_gold}</label>
-                            <row /><label id="gold_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.94,0.78,0.44,1">0</label>
-                            <row /><label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_population}</label>
-                            <row /><label id="population_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left">0</label>
-                            <row /><label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_agriculture}</label>
-                            <row /><label id="agriculture_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.80,0.84,0.58,1">0 / 100</label>
-                            <row /><label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_water_control}</label>
-                            <row /><label id="water_control_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.58,0.78,0.88,1">0 / 100</label>
+                    <table width="568" padLeft="12" padRight="12" padBottom="28">
+                    <table width="568" height="370" pad="14" backgroundColor="0.040,0.034,0.030,1">
+                        <table width="174">
+                            <label fontSize="23" width="160" height="27" align="left" textAlign="left">${text:stat_gold}</label>
+                            <row /><label id="gold_value_label" fontSize="28" width="160" height="33" align="left" textAlign="left" color="0.94,0.78,0.44,1">0</label>
+                            <row /><label fontSize="23" width="160" height="27" align="left" textAlign="left">${text:stat_population}</label>
+                            <row /><label id="population_value_label" fontSize="28" width="160" height="33" align="left" textAlign="left">0</label>
+                            <row /><label fontSize="23" width="160" height="27" align="left" textAlign="left">${text:stat_agriculture}</label>
+                            <row /><label id="agriculture_value_label" fontSize="28" width="160" height="33" align="left" textAlign="left" color="0.80,0.84,0.58,1">0 / 100</label>
+                            <row /><label fontSize="23" width="160" height="27" align="left" textAlign="left">${text:stat_water_control}</label>
+                            <row /><label id="water_control_value_label" fontSize="28" width="160" height="33" align="left" textAlign="left" color="0.58,0.78,0.88,1">0 / 100</label>
                         </table>
-                        <table width="180">
-                            <label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_food}</label>
-                            <row /><label id="food_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.82,0.86,0.55,1">0</label>
-                            <row /><label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_troops}</label>
-                            <row /><label id="troops_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.88,0.67,0.54,1">0</label>
-                            <row /><label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_commerce}</label>
-                            <row /><label id="commerce_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.72,0.76,0.88,1">0 / 100</label>
-                            <row /><label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_defense}</label>
-                            <row /><label id="defense_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.86,0.68,0.54,1">0 / 100</label>
+                        <table width="174">
+                            <label fontSize="23" width="160" height="27" align="left" textAlign="left">${text:stat_food}</label>
+                            <row /><label id="food_value_label" fontSize="28" width="160" height="33" align="left" textAlign="left" color="0.82,0.86,0.55,1">0</label>
+                            <row /><label fontSize="23" width="160" height="27" align="left" textAlign="left">${text:stat_troops}</label>
+                            <row /><label id="troops_value_label" fontSize="28" width="160" height="33" align="left" textAlign="left" color="0.88,0.67,0.54,1">0</label>
+                            <row /><label fontSize="23" width="160" height="27" align="left" textAlign="left">${text:stat_commerce}</label>
+                            <row /><label id="commerce_value_label" fontSize="28" width="160" height="33" align="left" textAlign="left" color="0.72,0.76,0.88,1">0 / 100</label>
+                            <row /><label fontSize="23" width="160" height="27" align="left" textAlign="left">${text:stat_defense}</label>
+                            <row /><label id="defense_value_label" fontSize="28" width="160" height="33" align="left" textAlign="left" color="0.86,0.68,0.54,1">0 / 100</label>
                         </table>
-                        <table width="180">
-                            <label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_public_order}</label>
-                            <row /><label id="public_order_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.72,0.84,0.80,1">0 / 100</label>
-                            <row /><label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_training}</label>
-                            <row /><label id="training_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.88,0.72,0.58,1">0 / 100</label>
-                            <row /><label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_morale}</label>
-                            <row /><label id="morale_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.90,0.73,0.48,1">0 / 100</label>
-                            <row /><label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_quarterly_tax}</label>
-                            <row /><label id="tax_estimate_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.94,0.78,0.44,1">0</label>
-                            <row /><label fontSize="23" width="165" height="27" align="left" textAlign="left">${text:stat_harvest}</label>
-                            <row /><label id="harvest_estimate_value_label" fontSize="28" width="165" height="33" align="left" textAlign="left" color="0.82,0.86,0.55,1">0</label>
+                        <table width="174">
+                            <label fontSize="23" width="160" height="27" align="left" textAlign="left">${text:stat_public_order}</label>
+                            <row /><label id="public_order_value_label" fontSize="28" width="160" height="33" align="left" textAlign="left" color="0.72,0.84,0.80,1">0 / 100</label>
+                            <row /><label fontSize="23" width="160" height="27" align="left" textAlign="left">${text:stat_training}</label>
+                            <row /><label id="training_value_label" fontSize="28" width="160" height="33" align="left" textAlign="left" color="0.88,0.72,0.58,1">0 / 100</label>
+                            <row /><label fontSize="23" width="160" height="27" align="left" textAlign="left">${text:stat_morale}</label>
+                            <row /><label id="morale_value_label" fontSize="28" width="160" height="33" align="left" textAlign="left" color="0.90,0.73,0.48,1">0 / 100</label>
+                            <row /><label fontSize="23" width="160" height="27" align="left" textAlign="left">${text:stat_quarterly_tax}</label>
+                            <row /><label id="tax_estimate_value_label" fontSize="28" width="160" height="33" align="left" textAlign="left" color="0.94,0.78,0.44,1">0</label>
+                            <row /><label fontSize="23" width="160" height="27" align="left" textAlign="left">${text:stat_harvest}</label>
+                            <row /><label id="harvest_estimate_value_label" fontSize="28" width="160" height="33" align="left" textAlign="left" color="0.82,0.86,0.55,1">0</label>
                         </table>
                     </table>
                     <row />
-                    <label id="public_order_recovery_label" fontSize="21" width="590" height="34"
+                    <label id="public_order_recovery_label" fontSize="21" width="568" height="54" wrap="true"
                         align="left" textAlign="left" color="0.72,0.84,0.80,1">${text:city_public_order_recovery_placeholder}</label>
                     <row />
-                    <label id="season_forecast_label" fontSize="22" width="590" height="72"
+                    <label id="season_forecast_label" fontSize="22" width="568" height="96"
                         align="left" textAlign="left" wrap="true" color="0.73,0.68,0.58,1">${text:city_season_forecast_placeholder}</label>
                     <row />
-                    <label id="population_projection_label" fontSize="22" width="590" height="64"
+                    <label id="population_projection_label" fontSize="22" width="568" height="88"
                         align="left" textAlign="left" wrap="true" color="0.73,0.78,0.66,1">${text:population_projection_placeholder}</label>
                     </table>
                     </scrollPane>

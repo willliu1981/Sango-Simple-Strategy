@@ -265,7 +265,7 @@ public final class RpsTacticSmokeTest {
         int observedTurn = snapshot.observedTurn;
         legacy.schemaVersion = 10;
         SaveGameDocument document = new SaveGameDocument();
-        document.schemaVersion = SangoVersion.SAVE_DOCUMENT_SCHEMA_VERSION;
+        document.schemaVersion = 1;
         document.gameVersion = "0.6.1";
         document.gameState = legacy;
         Json json = new Json();
@@ -329,7 +329,7 @@ public final class RpsTacticSmokeTest {
         GameState schemaEleven = initial.copy();
         schemaEleven.schemaVersion = 11;
         SaveGameDocument schemaElevenDocument = new SaveGameDocument();
-        schemaElevenDocument.schemaVersion = SangoVersion.SAVE_DOCUMENT_SCHEMA_VERSION;
+        schemaElevenDocument.schemaVersion = 1;
         schemaElevenDocument.gameVersion = "0.6.1";
         schemaElevenDocument.gameState = schemaEleven;
         JsonValue schemaElevenJson = new JsonReader().parse(json.toJson(schemaElevenDocument));

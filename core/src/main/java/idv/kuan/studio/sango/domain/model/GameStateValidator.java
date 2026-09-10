@@ -34,6 +34,7 @@ public final class GameStateValidator {
         requireText(gameState.opponentFactionId, "opponentFactionId");
         requireText(gameState.neutralFactionId, "neutralFactionId");
         requireText(gameState.victoryTargetCityId, "victoryTargetCityId");
+        requireText(gameState.campaignInstanceId, "campaignInstanceId");
         requireText(gameState.lastActionCode, "lastActionCode");
         if (gameState.scenarioObjectiveStatus == null) {
             throw new IllegalArgumentException("scenarioObjectiveStatus 不可為 null。");

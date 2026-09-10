@@ -172,7 +172,7 @@ public final class NewGameScreen extends SuiScreen {
 
     private int chooseDefaultSlot() {
         for (int slotNumber = 1; slotNumber <= SangoServices.SAVE_SLOT_COUNT; slotNumber++) {
-            if (SangoServices.saveGames().inspect(slotNumber).getState() == SaveSlotState.EMPTY) {
+            if (SangoServices.saveGames().inspectNewest(slotNumber).getState() == SaveSlotState.EMPTY) {
                 return slotNumber;
             }
         }
@@ -245,7 +245,7 @@ public final class NewGameScreen extends SuiScreen {
     private void refreshSlotButtons() {
         for (int slotNumber = 1; slotNumber <= SangoServices.SAVE_SLOT_COUNT; slotNumber++) {
             TextButton slotButton = button(SLOT_BUTTON_IDS[slotNumber - 1]);
-            SaveSlotState slotState = SangoServices.saveGames().inspect(slotNumber).getState();
+            SaveSlotState slotState = SangoServices.saveGames().inspectNewest(slotNumber).getState();
             String stateText = switch (slotState) {
                 case EMPTY -> text("new_game_slot_empty", "空白");
                 case AVAILABLE -> text("new_game_slot_occupied", "已有存檔");
@@ -322,7 +322,7 @@ public final class NewGameScreen extends SuiScreen {
             return;
         }
         SaveSlotState saveSlotState = SangoServices.saveGames()
-            .inspect(selectedSaveSlot)
+            .inspectNewest(selectedSaveSlot)
             .getState();
         if (saveSlotState == SaveSlotState.EMPTY) {
             createNewGame();

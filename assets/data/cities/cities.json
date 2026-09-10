@@ -3,91 +3,91 @@
     {
       "id": "pingyuan",
       "nameKey": "city_pingyuan",
-      "initialPopulation": 54000,
+      "initialPopulation": 5400,
       "initialAgriculture": 46,
       "initialCommerce": 32,
       "initialWaterControl": 42,
       "initialDefense": 35,
-      "initialTroops": 1000,
+      "initialTroops": 600,
       "initialPublicOrder": 66,
       "initialTraining": 32,
       "initialMorale": 66,
-      "populationCapacity": 90000
+      "populationCapacity": 9000
     },
     {
       "id": "ye",
       "nameKey": "city_ye",
-      "initialPopulation": 70000,
+      "initialPopulation": 7000,
       "initialAgriculture": 44,
       "initialCommerce": 45,
       "initialWaterControl": 40,
       "initialDefense": 35,
-      "initialTroops": 950,
+      "initialTroops": 600,
       "initialPublicOrder": 55,
       "initialTraining": 30,
       "initialMorale": 55,
-      "populationCapacity": 110000
+      "populationCapacity": 11000
     },
     {
       "id": "chenliu",
       "nameKey": "city_chenliu",
-      "initialPopulation": 62000,
+      "initialPopulation": 6200,
       "initialAgriculture": 40,
       "initialCommerce": 42,
       "initialWaterControl": 35,
       "initialDefense": 32,
-      "initialTroops": 1200,
+      "initialTroops": 700,
       "initialPublicOrder": 58,
       "initialTraining": 35,
       "initialMorale": 58,
-      "populationCapacity": 100000
+      "populationCapacity": 10000
     },
     {
       "id": "runan",
       "nameKey": "city_runan",
-      "initialPopulation": 58000,
+      "initialPopulation": 5800,
       "initialAgriculture": 50,
       "initialCommerce": 30,
       "initialWaterControl": 28,
       "initialDefense": 30,
-      "initialTroops": 950,
+      "initialTroops": 600,
       "initialPublicOrder": 52,
       "initialTraining": 30,
       "initialMorale": 52,
-      "populationCapacity": 90000
+      "populationCapacity": 9000
     },
     {
       "id": "guangling",
       "nameKey": "city_guangling",
-      "initialPopulation": 60000,
+      "initialPopulation": 6000,
       "initialAgriculture": 42,
       "initialCommerce": 44,
       "initialWaterControl": 38,
       "initialDefense": 34,
-      "initialTroops": 950,
+      "initialTroops": 500,
       "initialPublicOrder": 57,
       "initialTraining": 31,
       "initialMorale": 57,
-      "populationCapacity": 90000
+      "populationCapacity": 9000
     },
     {
       "id": "wu_commandery",
       "nameKey": "city_wu_commandery",
-      "initialPopulation": 68000,
+      "initialPopulation": 6800,
       "initialAgriculture": 38,
       "initialCommerce": 50,
       "initialWaterControl": 50,
       "initialDefense": 38,
-      "initialTroops": 1100,
+      "initialTroops": 700,
       "initialPublicOrder": 60,
       "initialTraining": 40,
       "initialMorale": 60,
-      "populationCapacity": 110000
+      "populationCapacity": 11000
     },
     {
       "id": "wuwei",
       "nameKey": "city_wuwei",
-      "initialPopulation": 38000,
+      "initialPopulation": 3800,
       "initialAgriculture": 35,
       "initialCommerce": 30,
       "initialWaterControl": 30,
@@ -96,12 +96,12 @@
       "initialPublicOrder": 55,
       "initialTraining": 55,
       "initialMorale": 80,
-      "populationCapacity": 60000
+      "populationCapacity": 6000
     },
     {
       "id": "tianshui",
       "nameKey": "city_tianshui",
-      "initialPopulation": 42000,
+      "initialPopulation": 4200,
       "initialAgriculture": 39,
       "initialCommerce": 34,
       "initialWaterControl": 35,
@@ -110,12 +110,12 @@
       "initialPublicOrder": 60,
       "initialTraining": 40,
       "initialMorale": 60,
-      "populationCapacity": 70000
+      "populationCapacity": 7000
     },
     {
       "id": "anding",
       "nameKey": "city_anding",
-      "initialPopulation": 46000,
+      "initialPopulation": 4600,
       "initialAgriculture": 43,
       "initialCommerce": 38,
       "initialWaterControl": 40,
@@ -124,12 +124,12 @@
       "initialPublicOrder": 65,
       "initialTraining": 45,
       "initialMorale": 65,
-      "populationCapacity": 70000
+      "populationCapacity": 7000
     },
     {
       "id": "changan",
       "nameKey": "city_changan",
-      "initialPopulation": 50000,
+      "initialPopulation": 5000,
       "initialAgriculture": 47,
       "initialCommerce": 42,
       "initialWaterControl": 45,
@@ -138,12 +138,12 @@
       "initialPublicOrder": 70,
       "initialTraining": 50,
       "initialMorale": 70,
-      "populationCapacity": 80000
+      "populationCapacity": 8000
     },
     {
       "id": "luoyang",
       "nameKey": "city_luoyang",
-      "initialPopulation": 54000,
+      "initialPopulation": 5400,
       "initialAgriculture": 51,
       "initialCommerce": 46,
       "initialWaterControl": 50,
@@ -152,12 +152,12 @@
       "initialPublicOrder": 55,
       "initialTraining": 35,
       "initialMorale": 55,
-      "populationCapacity": 90000
+      "populationCapacity": 9000
     },
     {
       "id": "xuchang",
       "nameKey": "city_xuchang",
-      "initialPopulation": 62000,
+      "initialPopulation": 6200,
       "initialAgriculture": 35,
       "initialCommerce": 54,
       "initialWaterControl": 35,
@@ -166,12 +166,12 @@
       "initialPublicOrder": 65,
       "initialTraining": 45,
       "initialMorale": 65,
-      "populationCapacity": 100000
+      "populationCapacity": 10000
     },
     {
       "id": "wan",
       "nameKey": "city_wan",
-      "initialPopulation": 38000,
+      "initialPopulation": 3800,
       "initialAgriculture": 43,
       "initialCommerce": 34,
       "initialWaterControl": 45,
@@ -180,12 +180,12 @@
       "initialPublicOrder": 55,
       "initialTraining": 35,
       "initialMorale": 55,
-      "populationCapacity": 60000
+      "populationCapacity": 6000
     },
     {
       "id": "hanzhong",
       "nameKey": "city_hanzhong",
-      "initialPopulation": 42000,
+      "initialPopulation": 4200,
       "initialAgriculture": 47,
       "initialCommerce": 38,
       "initialWaterControl": 50,
@@ -194,12 +194,12 @@
       "initialPublicOrder": 60,
       "initialTraining": 40,
       "initialMorale": 60,
-      "populationCapacity": 70000
+      "populationCapacity": 7000
     },
     {
       "id": "wudu",
       "nameKey": "city_wudu",
-      "initialPopulation": 46000,
+      "initialPopulation": 4600,
       "initialAgriculture": 51,
       "initialCommerce": 42,
       "initialWaterControl": 30,
@@ -208,12 +208,12 @@
       "initialPublicOrder": 65,
       "initialTraining": 45,
       "initialMorale": 65,
-      "populationCapacity": 70000
+      "populationCapacity": 7000
     },
     {
       "id": "zitong",
       "nameKey": "city_zitong",
-      "initialPopulation": 50000,
+      "initialPopulation": 5000,
       "initialAgriculture": 55,
       "initialCommerce": 46,
       "initialWaterControl": 35,
@@ -222,12 +222,12 @@
       "initialPublicOrder": 70,
       "initialTraining": 50,
       "initialMorale": 70,
-      "populationCapacity": 80000
+      "populationCapacity": 8000
     },
     {
       "id": "chengdu",
       "nameKey": "city_chengdu",
-      "initialPopulation": 54000,
+      "initialPopulation": 5400,
       "initialAgriculture": 35,
       "initialCommerce": 50,
       "initialWaterControl": 40,
@@ -236,12 +236,12 @@
       "initialPublicOrder": 55,
       "initialTraining": 35,
       "initialMorale": 55,
-      "populationCapacity": 90000
+      "populationCapacity": 9000
     },
     {
       "id": "jiangzhou",
       "nameKey": "city_jiangzhou",
-      "initialPopulation": 58000,
+      "initialPopulation": 5800,
       "initialAgriculture": 39,
       "initialCommerce": 54,
       "initialWaterControl": 45,
@@ -250,12 +250,12 @@
       "initialPublicOrder": 60,
       "initialTraining": 40,
       "initialMorale": 60,
-      "populationCapacity": 90000
+      "populationCapacity": 9000
     },
     {
       "id": "yongan",
       "nameKey": "city_yongan",
-      "initialPopulation": 62000,
+      "initialPopulation": 6200,
       "initialAgriculture": 43,
       "initialCommerce": 30,
       "initialWaterControl": 50,
@@ -264,12 +264,12 @@
       "initialPublicOrder": 65,
       "initialTraining": 45,
       "initialMorale": 65,
-      "populationCapacity": 100000
+      "populationCapacity": 10000
     },
     {
       "id": "jianning",
       "nameKey": "city_jianning",
-      "initialPopulation": 66000,
+      "initialPopulation": 6600,
       "initialAgriculture": 47,
       "initialCommerce": 34,
       "initialWaterControl": 30,
@@ -278,12 +278,12 @@
       "initialPublicOrder": 70,
       "initialTraining": 50,
       "initialMorale": 70,
-      "populationCapacity": 100000
+      "populationCapacity": 10000
     },
     {
       "id": "yunnan",
       "nameKey": "city_yunnan",
-      "initialPopulation": 38000,
+      "initialPopulation": 3800,
       "initialAgriculture": 51,
       "initialCommerce": 38,
       "initialWaterControl": 35,
@@ -292,12 +292,12 @@
       "initialPublicOrder": 55,
       "initialTraining": 35,
       "initialMorale": 55,
-      "populationCapacity": 60000
+      "populationCapacity": 6000
     },
     {
       "id": "jinyang",
       "nameKey": "city_jinyang",
-      "initialPopulation": 42000,
+      "initialPopulation": 4200,
       "initialAgriculture": 55,
       "initialCommerce": 42,
       "initialWaterControl": 40,
@@ -306,12 +306,12 @@
       "initialPublicOrder": 60,
       "initialTraining": 40,
       "initialMorale": 60,
-      "populationCapacity": 70000
+      "populationCapacity": 7000
     },
     {
       "id": "shangdang",
       "nameKey": "city_shangdang",
-      "initialPopulation": 46000,
+      "initialPopulation": 4600,
       "initialAgriculture": 35,
       "initialCommerce": 46,
       "initialWaterControl": 45,
@@ -320,12 +320,12 @@
       "initialPublicOrder": 65,
       "initialTraining": 45,
       "initialMorale": 65,
-      "populationCapacity": 70000
+      "populationCapacity": 7000
     },
     {
       "id": "nanpi",
       "nameKey": "city_nanpi",
-      "initialPopulation": 58000,
+      "initialPopulation": 5800,
       "initialAgriculture": 47,
       "initialCommerce": 30,
       "initialWaterControl": 35,
@@ -334,12 +334,12 @@
       "initialPublicOrder": 60,
       "initialTraining": 40,
       "initialMorale": 60,
-      "populationCapacity": 90000
+      "populationCapacity": 9000
     },
     {
       "id": "ji",
       "nameKey": "city_ji",
-      "initialPopulation": 62000,
+      "initialPopulation": 6200,
       "initialAgriculture": 51,
       "initialCommerce": 34,
       "initialWaterControl": 40,
@@ -348,12 +348,12 @@
       "initialPublicOrder": 65,
       "initialTraining": 45,
       "initialMorale": 65,
-      "populationCapacity": 100000
+      "populationCapacity": 10000
     },
     {
       "id": "beiping",
       "nameKey": "city_beiping",
-      "initialPopulation": 66000,
+      "initialPopulation": 6600,
       "initialAgriculture": 55,
       "initialCommerce": 38,
       "initialWaterControl": 45,
@@ -362,12 +362,12 @@
       "initialPublicOrder": 70,
       "initialTraining": 50,
       "initialMorale": 70,
-      "populationCapacity": 100000
+      "populationCapacity": 10000
     },
     {
       "id": "xiangping",
       "nameKey": "city_xiangping",
-      "initialPopulation": 38000,
+      "initialPopulation": 3800,
       "initialAgriculture": 35,
       "initialCommerce": 42,
       "initialWaterControl": 50,
@@ -376,12 +376,12 @@
       "initialPublicOrder": 55,
       "initialTraining": 35,
       "initialMorale": 55,
-      "populationCapacity": 60000
+      "populationCapacity": 6000
     },
     {
       "id": "beihai",
       "nameKey": "city_beihai",
-      "initialPopulation": 42000,
+      "initialPopulation": 4200,
       "initialAgriculture": 39,
       "initialCommerce": 46,
       "initialWaterControl": 30,
@@ -390,12 +390,12 @@
       "initialPublicOrder": 60,
       "initialTraining": 40,
       "initialMorale": 60,
-      "populationCapacity": 70000
+      "populationCapacity": 7000
     },
     {
       "id": "xiaopei",
       "nameKey": "city_xiaopei",
-      "initialPopulation": 46000,
+      "initialPopulation": 4600,
       "initialAgriculture": 43,
       "initialCommerce": 50,
       "initialWaterControl": 35,
@@ -404,12 +404,12 @@
       "initialPublicOrder": 65,
       "initialTraining": 45,
       "initialMorale": 65,
-      "populationCapacity": 70000
+      "populationCapacity": 7000
     },
     {
       "id": "xiapi",
       "nameKey": "city_xiapi",
-      "initialPopulation": 50000,
+      "initialPopulation": 5000,
       "initialAgriculture": 47,
       "initialCommerce": 54,
       "initialWaterControl": 40,
@@ -418,12 +418,12 @@
       "initialPublicOrder": 70,
       "initialTraining": 50,
       "initialMorale": 70,
-      "populationCapacity": 80000
+      "populationCapacity": 8000
     },
     {
       "id": "shouchun",
       "nameKey": "city_shouchun",
-      "initialPopulation": 54000,
+      "initialPopulation": 5400,
       "initialAgriculture": 51,
       "initialCommerce": 30,
       "initialWaterControl": 45,
@@ -432,12 +432,12 @@
       "initialPublicOrder": 55,
       "initialTraining": 35,
       "initialMorale": 55,
-      "populationCapacity": 90000
+      "populationCapacity": 9000
     },
     {
       "id": "jianye",
       "nameKey": "city_jianye",
-      "initialPopulation": 62000,
+      "initialPopulation": 6200,
       "initialAgriculture": 35,
       "initialCommerce": 38,
       "initialWaterControl": 30,
@@ -446,12 +446,12 @@
       "initialPublicOrder": 65,
       "initialTraining": 45,
       "initialMorale": 65,
-      "populationCapacity": 100000
+      "populationCapacity": 10000
     },
     {
       "id": "kuaiji",
       "nameKey": "city_kuaiji",
-      "initialPopulation": 38000,
+      "initialPopulation": 3800,
       "initialAgriculture": 43,
       "initialCommerce": 46,
       "initialWaterControl": 40,
@@ -460,12 +460,12 @@
       "initialPublicOrder": 55,
       "initialTraining": 35,
       "initialMorale": 55,
-      "populationCapacity": 60000
+      "populationCapacity": 6000
     },
     {
       "id": "poyang",
       "nameKey": "city_poyang",
-      "initialPopulation": 42000,
+      "initialPopulation": 4200,
       "initialAgriculture": 47,
       "initialCommerce": 50,
       "initialWaterControl": 45,
@@ -474,12 +474,12 @@
       "initialPublicOrder": 60,
       "initialTraining": 40,
       "initialMorale": 60,
-      "populationCapacity": 70000
+      "populationCapacity": 7000
     },
     {
       "id": "yuzhang",
       "nameKey": "city_yuzhang",
-      "initialPopulation": 46000,
+      "initialPopulation": 4600,
       "initialAgriculture": 51,
       "initialCommerce": 54,
       "initialWaterControl": 50,
@@ -488,12 +488,12 @@
       "initialPublicOrder": 65,
       "initialTraining": 45,
       "initialMorale": 65,
-      "populationCapacity": 70000
+      "populationCapacity": 7000
     },
     {
       "id": "xiangyang",
       "nameKey": "city_xiangyang",
-      "initialPopulation": 50000,
+      "initialPopulation": 5000,
       "initialAgriculture": 55,
       "initialCommerce": 30,
       "initialWaterControl": 30,
@@ -502,12 +502,12 @@
       "initialPublicOrder": 70,
       "initialTraining": 50,
       "initialMorale": 70,
-      "populationCapacity": 80000
+      "populationCapacity": 8000
     },
     {
       "id": "jiangling",
       "nameKey": "city_jiangling",
-      "initialPopulation": 54000,
+      "initialPopulation": 5400,
       "initialAgriculture": 35,
       "initialCommerce": 34,
       "initialWaterControl": 35,
@@ -516,12 +516,12 @@
       "initialPublicOrder": 55,
       "initialTraining": 35,
       "initialMorale": 55,
-      "populationCapacity": 90000
+      "populationCapacity": 9000
     },
     {
       "id": "jiangxia",
       "nameKey": "city_jiangxia",
-      "initialPopulation": 58000,
+      "initialPopulation": 5800,
       "initialAgriculture": 39,
       "initialCommerce": 38,
       "initialWaterControl": 40,
@@ -530,12 +530,12 @@
       "initialPublicOrder": 60,
       "initialTraining": 40,
       "initialMorale": 60,
-      "populationCapacity": 90000
+      "populationCapacity": 9000
     },
     {
       "id": "changsha",
       "nameKey": "city_changsha",
-      "initialPopulation": 62000,
+      "initialPopulation": 6200,
       "initialAgriculture": 43,
       "initialCommerce": 42,
       "initialWaterControl": 45,
@@ -544,12 +544,12 @@
       "initialPublicOrder": 65,
       "initialTraining": 45,
       "initialMorale": 65,
-      "populationCapacity": 100000
+      "populationCapacity": 10000
     },
     {
       "id": "wuling",
       "nameKey": "city_wuling",
-      "initialPopulation": 66000,
+      "initialPopulation": 6600,
       "initialAgriculture": 47,
       "initialCommerce": 46,
       "initialWaterControl": 50,
@@ -558,12 +558,12 @@
       "initialPublicOrder": 70,
       "initialTraining": 50,
       "initialMorale": 70,
-      "populationCapacity": 100000
+      "populationCapacity": 10000
     },
     {
       "id": "jiaozhi",
       "nameKey": "city_jiaozhi",
-      "initialPopulation": 38000,
+      "initialPopulation": 3800,
       "initialAgriculture": 51,
       "initialCommerce": 50,
       "initialWaterControl": 30,
@@ -572,12 +572,12 @@
       "initialPublicOrder": 55,
       "initialTraining": 35,
       "initialMorale": 55,
-      "populationCapacity": 60000
+      "populationCapacity": 6000
     },
     {
       "id": "nanhai",
       "nameKey": "city_nanhai",
-      "initialPopulation": 42000,
+      "initialPopulation": 4200,
       "initialAgriculture": 55,
       "initialCommerce": 54,
       "initialWaterControl": 35,
@@ -586,7 +586,7 @@
       "initialPublicOrder": 60,
       "initialTraining": 40,
       "initialMorale": 60,
-      "populationCapacity": 70000
+      "populationCapacity": 7000
     }
   ]
 }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import idv.kuan.studio.sango.SangoVersion;
 import idv.kuan.studio.sango.application.request.NewGameRequest;
@@ -28,6 +29,7 @@ import idv.kuan.studio.sango.domain.model.GameStateValidator;
 import idv.kuan.studio.sango.domain.rule.FactionActionPointRules;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 import idv.kuan.studio.sango.repository.SaveGameRepository;
+import idv.kuan.studio.sango.repository.save.SaveTarget;
 
 /**
  * 依 Definition 建立戰局；全國劇本採固定多勢力配置，舊六城劇本維持原配置。
@@ -84,7 +86,8 @@ public final class NewGameCommand {
         );
         FactionActionPointRules.refreshAll(gameState, true);
         GameStateValidator.validate(gameState);
-        saveGameRepository.save(slotNumber, gameState);
+        saveGameRepository.delete(SaveTarget.auto(slotNumber));
+        saveGameRepository.save(SaveTarget.manual(slotNumber), gameState);
         return gameState;
     }
 
@@ -117,7 +120,8 @@ public final class NewGameCommand {
                     neutralCapitalCityId = cityDefinition.id;
                 }
             }
-            cityStates[i] = createCityState(cityDefinition, ownerFactionId);
+            cityStates[i] = createCityState(cityDefinition, ownerFactionId,
+                neutralFactionDefinition.id.equals(ownerFactionId));
         }
         if (neutralCapitalCityId == null) {
             throw new IllegalStateException("劇本至少需要一座中立城池。");
@@ -147,6 +151,7 @@ public final class NewGameCommand {
         gameState.opponentFactionId = opponentFactionDefinition.id;
         gameState.neutralFactionId = neutralFactionDefinition.id;
         gameState.victoryTargetCityId = campaignStartDefinition.targetCityId;
+        gameState.campaignInstanceId = UUID.randomUUID().toString();
         gameState.strategicMapFocusedCityId = campaignStartDefinition.startCityId;
         gameState.scenarioObjectiveStatus = ScenarioObjectiveStatus.IN_PROGRESS;
         gameState.gameplayStatus = GameplayStatus.ACTIVE;
@@ -194,7 +199,9 @@ public final class NewGameCommand {
             CityDefinition cityDefinition = definitionRepository.requireCity(
                 mapDefinition.nodes[i].cityId
             );
-            cityStates[i] = createCityState(cityDefinition, ownersByCityId.get(cityDefinition.id));
+            String ownerFactionId = ownersByCityId.get(cityDefinition.id);
+            cityStates[i] = createCityState(cityDefinition, ownerFactionId,
+                scenarioDefinition.neutralFactionId.equals(ownerFactionId));
         }
         GameState gameState = new GameState();
         gameState.schemaVersion = SangoVersion.GAME_STATE_SCHEMA_VERSION;
@@ -204,6 +211,7 @@ public final class NewGameCommand {
         gameState.opponentFactionId = scenarioDefinition.opponentFactionId;
         gameState.neutralFactionId = scenarioDefinition.neutralFactionId;
         gameState.victoryTargetCityId = playerStart.targetCityId;
+        gameState.campaignInstanceId = UUID.randomUUID().toString();
         gameState.strategicMapFocusedCityId = playerStart.startCityId;
         gameState.scenarioObjectiveStatus = ScenarioObjectiveStatus.IN_PROGRESS;
         gameState.gameplayStatus = GameplayStatus.ACTIVE;
@@ -240,7 +248,8 @@ public final class NewGameCommand {
 
     private CityState createCityState(
         CityDefinition cityDefinition,
-        String ownerFactionId
+        String ownerFactionId,
+        boolean neutralCity
     ) {
         CityState cityState = new CityState();
         cityState.cityId = cityDefinition.id;
@@ -250,7 +259,7 @@ public final class NewGameCommand {
         cityState.commerce = cityDefinition.initialCommerce;
         cityState.waterControl = cityDefinition.initialWaterControl;
         cityState.defense = cityDefinition.initialDefense;
-        cityState.troops = cityDefinition.initialTroops;
+        cityState.troops = neutralCity ? 300 : cityDefinition.initialTroops;
         cityState.publicOrder = cityDefinition.initialPublicOrder;
         cityState.publicOrderRecoveryStreakMonths = 0;
         cityState.training = cityDefinition.initialTraining;

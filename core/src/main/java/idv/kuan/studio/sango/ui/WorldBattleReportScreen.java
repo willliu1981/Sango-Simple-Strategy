@@ -25,7 +25,7 @@ import idv.kuan.studio.sango.ui.support.BattleReportCatalog;
 import idv.kuan.studio.sango.ui.support.ScreenMusic;
 import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
 
-/** Battles from the just-completed month, with the player's battles first. */
+/** 最近六個完成月份的戰報；上月保留未讀語意，較舊月份以歷史樣式呈現。 */
 public final class WorldBattleReportScreen extends SuiScreen {
     private Group host;
     private Table rows;
@@ -62,11 +62,31 @@ public final class WorldBattleReportScreen extends SuiScreen {
         TextButton.TextButtonStyle rowStyle = new TextButton.TextButtonStyle(template.getStyle());
         rowStyle.font = template.getLabel().getStyle().font;
         rows.clearChildren();
+        int groupedTurn = Integer.MIN_VALUE;
         for (BattleReport report : BattleReportCatalog.world(state)) {
+            boolean latestMonth = BattleReportCatalog.isLatestCompletedMonth(state, report);
+            if (groupedTurn != report.resolvedTurn) {
+                groupedTurn = report.resolvedTurn;
+                String groupTitle = latestMonth
+                    ? text("world_battle_latest_month_group", "上月戰報")
+                    : text("world_battle_history_month_group", "歷史戰報｜{0} 年 {1} 月",
+                        report.resolvedYear, report.resolvedMonth);
+                TextButton header = new TextButton(groupTitle,
+                    new TextButton.TextButtonStyle(rowStyle));
+                header.setDisabled(true);
+                header.getLabel().setAlignment(Align.left);
+                header.getColor().a = latestMonth ? 1f : 0.68f;
+                rows.add(header).width(Math.max(1f, host.getWidth() - 24f))
+                    .height(62f).padTop(8f).padBottom(8f);
+                rows.row();
+            }
             boolean player = report.involvesFaction(state.playerFactionId);
             String title = text(player ? "world_battle_player" : "world_battle_other",
                 player ? "我方戰事" : "其他勢力") + " | "
-                + text(report.read ? "world_battle_read" : "world_battle_unread", report.read ? "已讀" : "未讀")
+                + (latestMonth
+                    ? text(report.read ? "world_battle_read" : "world_battle_unread",
+                        report.read ? "已讀" : "未讀")
+                    : text("world_battle_history", "歷史"))
                 + " | " + report.resolvedYear + " / " + report.resolvedMonth + "\n"
                 + faction(report.attackerFactionId) + " → " + faction(report.defenderFactionId)
                 + " | " + (report.routeEncounter
@@ -80,6 +100,7 @@ public final class WorldBattleReportScreen extends SuiScreen {
             row.getLabel().setAlignment(Align.left);
             if (player) SangoUiStyles.applyPrimaryButton(row);
             else SangoUiStyles.applySecondaryButton(row);
+            if (!latestMonth) row.getColor().a = 0.66f;
             row.addListener(new ChangeListener() {
                 @Override public void changed(ChangeEvent event, Actor actor) {
                     SangoServices.session().openBattleReport(report.battleId, ScreenId.WORLD_BATTLE_REPORT);
@@ -90,7 +111,7 @@ public final class WorldBattleReportScreen extends SuiScreen {
             rows.row();
         }
         if (rows.getChildren().size == 0) {
-            TextButton empty = new TextButton(text("world_battle_empty", "上個月沒有戰事紀錄。"), rowStyle);
+            TextButton empty = new TextButton(text("world_battle_empty", "最近六個月沒有戰事紀錄。"), rowStyle);
             empty.setDisabled(true);
             rows.add(empty).width(Math.max(1f, host.getWidth() - 24f)).height(80f);
         }

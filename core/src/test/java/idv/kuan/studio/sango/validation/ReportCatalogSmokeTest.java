@@ -18,15 +18,16 @@ public final class ReportCatalogSmokeTest {
         BattleReport attack = battle("attack", "player", "enemy-b", 11);
         state.battleReports = new BattleReport[] { other, defense, attack };
         List<BattleReport> world = BattleReportCatalog.world(state);
-        require(world.equals(List.of(other)), "World must show only the just-completed turn");
+        require(world.equals(List.of(other, attack, defense)),
+            "World must show six completed turns in descending month order");
         require(state.battleReports[0] == other, "Sorting must not reorder saved history");
         other.read = true;
         require(BattleReportCatalog.world(state).get(0).read, "Read state must be shared, not copied or removed");
         defense.targetCityId = "city-a";
         attack.targetCityId = "city-a";
         other.targetCityId = "city-b";
-        require(BattleReportCatalog.city(state, "city-a").isEmpty(),
-            "City must not retain a battle older than the just-completed turn");
+        require(BattleReportCatalog.city(state, "city-a").equals(List.of(attack, defense)),
+            "City must retain visible history from the last six completed turns");
         require(BattleReportCatalog.city(state, "city-b").equals(List.of(other)),
             "City must show a battle from the just-completed turn");
         require(BattleReportCatalog.city(state, "missing").isEmpty(), "City without battles must be empty");
@@ -35,8 +36,8 @@ public final class ReportCatalogSmokeTest {
         BattleReport sameTurn = battle("same-turn", "player", "enemy-b", 12);
         sameTurn.targetCityId = "city-a";
         state.battleReports = new BattleReport[] {other, defense, attack, sameTurn};
-        require(BattleReportCatalog.world(state).equals(List.of(sameTurn, other)),
-            "World must retain every battle from the latest turn, with player battles first");
+        require(BattleReportCatalog.world(state).equals(List.of(sameTurn, other, attack, defense)),
+            "World groups latest-turn player battles first and then older months");
         require(BattleReportCatalog.latestForCity(state, "city-a") == sameTurn,
             "City reports must resolve within the just-completed turn");
         BattleReport road = battle("road", "player", "enemy-b", 13);
@@ -51,8 +52,11 @@ public final class ReportCatalogSmokeTest {
         require(BattleReportCatalog.latestCities(state).equals(List.of(road)),
             "One road report must appear only once while representing both endpoint cities");
         state.currentTurn = 15;
-        require(BattleReportCatalog.world(state).isEmpty(),
-            "A month without battles must not fall back to older history");
+        require(BattleReportCatalog.world(state).equals(List.of(road, other, attack, defense)),
+            "A quiet latest month still exposes the preceding six-month history");
+        BattleReport expired = battle("expired", "player", "enemy-b", 8);
+        state.battleReports = new BattleReport[] {expired};
+        require(BattleReportCatalog.world(state).isEmpty(), "Reports older than six months expire from UI only");
         state.battleReports = new BattleReport[] {other, defense, attack};
 
         TurnResolutionReport month = new TurnResolutionReport(190, 1);

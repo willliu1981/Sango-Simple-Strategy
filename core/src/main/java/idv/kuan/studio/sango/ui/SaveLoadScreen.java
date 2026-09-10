@@ -31,6 +31,8 @@ import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.repository.save.SaveSlotInspection;
 import idv.kuan.studio.sango.repository.save.SaveSlotMetadata;
 import idv.kuan.studio.sango.repository.save.SaveSlotState;
+import idv.kuan.studio.sango.repository.save.SaveKind;
+import idv.kuan.studio.sango.repository.save.SaveTarget;
 import idv.kuan.studio.sango.runtime.SangoServices;
 import idv.kuan.studio.sango.runtime.SaveLoadMode;
 import idv.kuan.studio.sango.ui.id.ScreenId;
@@ -59,6 +61,7 @@ public final class SaveLoadScreen extends SuiScreen {
     private Actor overwriteMask;
     private Actor deleteMask;
     private int selectedSlot = 1;
+    private SaveKind selectedKind = SaveKind.MANUAL;
     private String statusMessage = "";
     private Color statusColor = STATUS_NORMAL_COLOR;
 
@@ -88,6 +91,8 @@ public final class SaveLoadScreen extends SuiScreen {
     protected void afterShow() {
         closeModals();
         selectedSlot = chooseInitialSlot();
+        selectedKind = SangoServices.session().getSaveLoadMode() == SaveLoadMode.SAVE
+            ? SaveKind.MANUAL : newestKind(selectedSlot);
         statusMessage = text("save_load_status_ready", "選擇存檔槽。");
         statusColor = STATUS_NORMAL_COLOR;
         playExpectedMusic();
@@ -138,6 +143,8 @@ public final class SaveLoadScreen extends SuiScreen {
             SangoUiStyles.applySecondaryButton(button(slotButtonId));
         }
         SangoUiStyles.applyPrimaryButton(button("save_load_action_button"));
+        SangoUiStyles.applySecondaryButton(button("save_manual_version_button"));
+        SangoUiStyles.applySecondaryButton(button("save_auto_version_button"));
         SangoUiStyles.applyDangerButton(button("save_load_delete_button"));
         SangoUiStyles.applySecondaryButton(button("save_load_back_button"));
         SangoUiStyles.applySecondaryButton(button("save_overwrite_cancel_button"));
@@ -151,6 +158,8 @@ public final class SaveLoadScreen extends SuiScreen {
         ui.onClick("save_slot_2_button", () -> selectSlot(2));
         ui.onClick("save_slot_3_button", () -> selectSlot(3));
         ui.onClick("save_load_action_button", this::executePrimaryAction);
+        ui.onClick("save_manual_version_button", () -> selectKind(SaveKind.MANUAL));
+        ui.onClick("save_auto_version_button", () -> selectKind(SaveKind.AUTO));
         ui.onClick("save_load_delete_button", this::requestDelete);
         ui.onClick("save_load_back_button", this::returnToPreviousScreen);
         ui.onClick("save_overwrite_cancel_button", this::closeModals);
@@ -165,11 +174,11 @@ public final class SaveLoadScreen extends SuiScreen {
             return SangoServices.session().getCurrentSaveSlot();
         }
         int preferredSlot = SangoPreferences.getLastUsedSaveSlot();
-        if (SangoServices.saveGames().inspect(preferredSlot).isAvailable()) {
+        if (SangoServices.saveGames().inspectNewest(preferredSlot).isAvailable()) {
             return preferredSlot;
         }
         for (int slotNumber = 1; slotNumber <= SangoServices.SAVE_SLOT_COUNT; slotNumber++) {
-            if (SangoServices.saveGames().inspect(slotNumber).isAvailable()) {
+            if (SangoServices.saveGames().inspectNewest(slotNumber).isAvailable()) {
                 return slotNumber;
             }
         }
@@ -178,7 +187,20 @@ public final class SaveLoadScreen extends SuiScreen {
 
     private void selectSlot(int slotNumber) {
         selectedSlot = slotNumber;
+        selectedKind = newestKind(slotNumber);
         statusMessage = text("save_load_status_selected", "已選擇存檔槽 {0}。", slotNumber);
+        statusColor = STATUS_NORMAL_COLOR;
+        SangoServices.audio().playSound(SoundEffect.UI_CLICK);
+        refreshView();
+    }
+
+    private void selectKind(SaveKind kind) {
+        if (SangoServices.session().getSaveLoadMode() == SaveLoadMode.SAVE) {
+            return;
+        }
+        selectedKind = kind;
+        statusMessage = text(kind == SaveKind.AUTO ? "save_kind_auto_selected" : "save_kind_manual_selected",
+            kind == SaveKind.AUTO ? "已選擇自動存檔。" : "已選擇手動存檔。");
         statusColor = STATUS_NORMAL_COLOR;
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);
         refreshView();
@@ -200,6 +222,7 @@ public final class SaveLoadScreen extends SuiScreen {
         for (int slotNumber = 1; slotNumber <= SangoServices.SAVE_SLOT_COUNT; slotNumber++) {
             refreshSlotButton(slotNumber);
         }
+        refreshKindButtons();
         refreshSelectedSlotDetails();
         refreshActionButtons();
         Label statusLabel = label("save_load_status_label");
@@ -209,7 +232,7 @@ public final class SaveLoadScreen extends SuiScreen {
 
     private void refreshSlotButton(int slotNumber) {
         TextButton slotButton = button(SLOT_BUTTON_IDS[slotNumber - 1]);
-        SaveSlotInspection inspection = SangoServices.saveGames().inspect(slotNumber);
+        SaveSlotInspection inspection = SangoServices.saveGames().inspectNewest(slotNumber);
         slotButton.setText(buildSlotButtonText(slotNumber, inspection));
         if (slotNumber == selectedSlot) {
             SangoUiStyles.applySelectedButton(slotButton);
@@ -234,7 +257,7 @@ public final class SaveLoadScreen extends SuiScreen {
     }
 
     private void refreshSelectedSlotDetails() {
-        SaveSlotInspection inspection = SangoServices.saveGames().inspect(selectedSlot);
+        SaveSlotInspection inspection = selectedInspection();
         label("save_slot_detail_heading_label").setText(
             text("save_slot_heading_format", "存檔槽 {0}", selectedSlot)
         );
@@ -262,7 +285,9 @@ public final class SaveLoadScreen extends SuiScreen {
             ? "\n" + text("save_slot_recovery_notice", "將由暫存或備份檔復原。")
             : "";
         label("save_slot_detail_label").setText(
-            text("save_slot_scenario_prefix", "劇本：")
+            text(metadata.getSaveKind() == SaveKind.AUTO ? "save_kind_auto_detail" : "save_kind_manual_detail",
+                metadata.getSaveKind() == SaveKind.AUTO ? "種類：自動存檔\n" : "種類：手動存檔\n")
+                + text("save_slot_scenario_prefix", "劇本：")
                 + scenarioName(metadata.getScenarioId()) + "\n"
                 + text("save_slot_faction_prefix", "勢力：")
                 + factionName(metadata.getPlayerFactionId()) + "\n"
@@ -282,7 +307,7 @@ public final class SaveLoadScreen extends SuiScreen {
 
     private void refreshActionButtons() {
         SaveLoadMode mode = SangoServices.session().getSaveLoadMode();
-        SaveSlotInspection inspection = SangoServices.saveGames().inspect(selectedSlot);
+        SaveSlotInspection inspection = selectedInspection();
         button("save_load_action_button").setText(
             mode == SaveLoadMode.LOAD
                 ? text("button_load_selected_slot", "讀取此存檔")
@@ -312,7 +337,8 @@ public final class SaveLoadScreen extends SuiScreen {
 
     private void loadSelectedSlot() {
         try {
-            GameState gameState = SangoServices.saveGames().load(selectedSlot);
+            GameState gameState = SangoServices.saveGames().load(
+                new SaveTarget(selectedSlot, selectedKind));
             SangoServices.session().clear();
             SangoServices.session().setCurrentState(selectedSlot, gameState);
             SangoPreferences.setLastUsedSaveSlot(selectedSlot);
@@ -328,7 +354,8 @@ public final class SaveLoadScreen extends SuiScreen {
     }
 
     private void requestSave() {
-        SaveSlotInspection inspection = SangoServices.saveGames().inspect(selectedSlot);
+        SaveSlotInspection inspection = SangoServices.saveGames().inspect(
+            SaveTarget.manual(selectedSlot));
         boolean currentSlot = SangoServices.session().hasCurrentState()
             && selectedSlot == SangoServices.session().getCurrentSaveSlot();
         if (inspection.getState() == SaveSlotState.EMPTY || currentSlot) {
@@ -361,7 +388,7 @@ public final class SaveLoadScreen extends SuiScreen {
     }
 
     private void requestDelete() {
-        SaveSlotInspection inspection = SangoServices.saveGames().inspect(selectedSlot);
+        SaveSlotInspection inspection = SangoServices.saveGames().inspectNewest(selectedSlot);
         if (inspection.getState() == SaveSlotState.EMPTY) {
             return;
         }
@@ -412,6 +439,38 @@ public final class SaveLoadScreen extends SuiScreen {
 
     private boolean isModalVisible() {
         return isVisible(overwriteMask) || isVisible(deleteMask);
+    }
+
+    private SaveSlotInspection selectedInspection() {
+        if (SangoServices.session().getSaveLoadMode() == SaveLoadMode.SAVE) {
+            selectedKind = SaveKind.MANUAL;
+        }
+        return SangoServices.saveGames().inspect(new SaveTarget(selectedSlot, selectedKind));
+    }
+
+    private SaveKind newestKind(int slotNumber) {
+        SaveSlotInspection inspection = SangoServices.saveGames().inspectNewest(slotNumber);
+        return inspection.isAvailable() ? inspection.getMetadata().getSaveKind() : SaveKind.MANUAL;
+    }
+
+    private void refreshKindButtons() {
+        boolean loading = SangoServices.session().getSaveLoadMode() == SaveLoadMode.LOAD;
+        TextButton manual = button("save_manual_version_button");
+        TextButton auto = button("save_auto_version_button");
+        SaveSlotInspection manualInspection = SangoServices.saveGames().inspect(
+            SaveTarget.manual(selectedSlot));
+        SaveSlotInspection autoInspection = SangoServices.saveGames().inspect(
+            SaveTarget.auto(selectedSlot));
+        manual.setText(text("save_kind_manual", "手動存檔")
+            + (manualInspection.isAvailable() ? "" : text("save_kind_unavailable_suffix", "（無）")));
+        auto.setText(text("save_kind_auto", "自動存檔")
+            + (autoInspection.isAvailable() ? "" : text("save_kind_unavailable_suffix", "（無）")));
+        if (selectedKind == SaveKind.MANUAL) SangoUiStyles.applySelectedButton(manual);
+        else SangoUiStyles.applySecondaryButton(manual);
+        if (selectedKind == SaveKind.AUTO) SangoUiStyles.applySelectedButton(auto);
+        else SangoUiStyles.applySecondaryButton(auto);
+        setButtonEnabled(manual, loading && manualInspection.isAvailable());
+        setButtonEnabled(auto, loading && autoInspection.isAvailable());
     }
 
     private boolean isVisible(Actor actor) {

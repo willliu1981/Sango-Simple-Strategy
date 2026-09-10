@@ -21,6 +21,7 @@ import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
 import idv.kuan.studio.sango.domain.rule.NationalActionPointRules;
+import idv.kuan.studio.sango.domain.rule.CampaignBalance;
 import idv.kuan.studio.sango.domain.rule.FactionActionPointRules;
 import idv.kuan.studio.sango.domain.rule.PopulationRules;
 import idv.kuan.studio.sango.domain.rule.PublicOrderNaturalRecoveryRules;
@@ -177,6 +178,8 @@ public final class TurnResolutionService {
             return 0;
         }
         int moraleLoss = (int) (((long) 20 * shortage + requiredFood - 1L) / requiredFood);
+        int publicOrderLoss = Math.min(3,
+            (int) (((long) 3 * shortage + requiredFood - 1L) / requiredFood));
         boolean playerFaction = gameState.playerFactionId.equals(factionId);
         for (CityState cityState : gameState.cityStates) {
             if (!factionId.equals(cityState.ownerFactionId)) {
@@ -185,10 +188,17 @@ public final class TurnResolutionService {
             int actualLoss = Math.min(cityState.morale, moraleLoss);
             cityState.morale -= actualLoss;
             cityState.moraleFraction = 0;
+            int actualPublicOrderLoss = Math.min(cityState.publicOrder, publicOrderLoss);
+            cityState.publicOrder -= actualPublicOrderLoss;
             cityState.publicOrderRecoveryStreakMonths = 0;
             if (playerFaction && actualLoss > 0) {
                 report.add(new TurnEvent(TurnEventType.FOOD_SHORTAGE_MORALE,
                     factionId, cityState.cityId, null, actualLoss, cityState.morale));
+            }
+            if (playerFaction && actualPublicOrderLoss > 0) {
+                report.add(new TurnEvent(TurnEventType.FOOD_SHORTAGE_PUBLIC_ORDER,
+                    factionId, cityState.cityId, null,
+                    actualPublicOrderLoss, cityState.publicOrder));
             }
         }
         for (ArmyState armyState : gameState.armyStates) {
@@ -262,9 +272,15 @@ public final class TurnResolutionService {
                 int harvestLossPercent = SeasonalEconomyRules
                     .calculateFloodHarvestLossPercent(cityState);
                 cityState.harvestModifierPercent = 100 - harvestLossPercent;
-                cityState.agriculture = Math.max(0, cityState.agriculture - 3);
-                cityState.publicOrder = Math.max(0, cityState.publicOrder - 5);
-                cityState.population = Math.max(1000, cityState.population - 200);
+                int agricultureBefore = cityState.agriculture;
+                int publicOrderBefore = cityState.publicOrder;
+                int populationBefore = cityState.population;
+                cityState.agriculture = Math.max(0,
+                    cityState.agriculture - CampaignBalance.FLOOD_AGRICULTURE_LOSS);
+                cityState.publicOrder = Math.max(0,
+                    cityState.publicOrder - CampaignBalance.FLOOD_PUBLIC_ORDER_LOSS);
+                cityState.population = Math.max(CampaignBalance.POPULATION_FLOOR,
+                    cityState.population - CampaignBalance.FLOOD_POPULATION_LOSS);
                 if (gameState.playerFactionId.equals(cityState.ownerFactionId)) {
                     report.add(new TurnEvent(
                         TurnEventType.FLOOD_OCCURRED,
@@ -272,7 +288,10 @@ public final class TurnResolutionService {
                         cityState.cityId,
                         null,
                         riskPercent,
-                        harvestLossPercent
+                        harvestLossPercent,
+                        agricultureBefore - cityState.agriculture,
+                        publicOrderBefore - cityState.publicOrder,
+                        populationBefore - cityState.population
                     ));
                 }
             } else {

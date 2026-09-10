@@ -12,7 +12,7 @@ public final class FactionIntelligenceEstimateService {
     private static final int UNKNOWN_CITY_PUBLIC_ORDER_HIGH = 80;
     private static final int UNKNOWN_CITY_COMMERCE = 45;
     private static final int UNKNOWN_CITY_AGRICULTURE = 45;
-    private static final int UNKNOWN_CITY_POPULATION = 50_000;
+    private static final int UNKNOWN_CITY_POPULATION = 5_000;
 
     private final CityIntelligenceService cityIntelligenceService = new CityIntelligenceService();
 
@@ -48,8 +48,8 @@ public final class FactionIntelligenceEstimateService {
             int population = exact ? knownCity.population() : UNKNOWN_CITY_POPULATION;
             int commerce = exact ? knownCity.commerce() : UNKNOWN_CITY_COMMERCE;
             int agriculture = exact ? knownCity.agriculture() : UNKNOWN_CITY_AGRICULTURE;
-            quarterlyTax += 80 + commerce * 6 + population / 2_000;
-            harvest += 500 + agriculture * 20 + population / 100;
+            quarterlyTax += 80 + commerce * 6 + population / 200;
+            harvest += 500 + agriculture * 20 + population / 10;
             if (exact) {
                 exactCityCount += 1;
                 publicOrderLower += knownCity.publicOrder();

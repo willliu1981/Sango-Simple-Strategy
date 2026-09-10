@@ -15,6 +15,7 @@ import idv.kuan.studio.sango.application.command.ExecuteDomesticActionCommand;
 import idv.kuan.studio.sango.application.command.LaunchExpeditionCommand;
 import idv.kuan.studio.sango.application.command.MarkBattleReportReadCommand;
 import idv.kuan.studio.sango.application.command.NewGameCommand;
+import idv.kuan.studio.sango.application.command.SaveCurrentGameCommand;
 import idv.kuan.studio.sango.application.command.ScoutCityCommand;
 import idv.kuan.studio.sango.application.request.NewGameRequest;
 import idv.kuan.studio.sango.application.result.DomesticActionResult;
@@ -41,6 +42,8 @@ import idv.kuan.studio.sango.repository.save.SaveGameDocument;
 import idv.kuan.studio.sango.repository.save.SaveSlotInspection;
 import idv.kuan.studio.sango.repository.save.SaveSlotMetadata;
 import idv.kuan.studio.sango.repository.save.SaveSlotState;
+import idv.kuan.studio.sango.repository.save.SaveKind;
+import idv.kuan.studio.sango.repository.save.SaveTarget;
 
 /**
  * 不依賴 Graphics Context 的舊六城劇本、戰報、自由征戰與存檔回歸測試。
@@ -72,6 +75,10 @@ public final class VerticalSliceSmokeTest {
             validateDelayedEconomyAndSeasons(
                 definitionRepository,
                 temporaryRootDirectory.child("economy")
+            );
+            validateClampedFloodLosses(
+                definitionRepository,
+                temporaryRootDirectory.child("flood-clamp")
             );
             validateScoutingAndBattleLoop(
                 definitionRepository,
@@ -207,19 +214,19 @@ public final class VerticalSliceSmokeTest {
         );
         gameState = januaryResult.getGameState();
         assertEquals(2, gameState.currentMonth, "一月結算後月份");
-        assertEquals(2140, gameState.requirePlayerFactionState().food, "一月軍糧支出");
+        assertEquals(2165, gameState.requirePlayerFactionState().food, "一月軍糧支出");
         assertEquals(1020, gameState.requirePlayerFactionState().gold, "一月不可取得商業收入");
         assertContainsEvent(januaryResult, TurnEventType.MILITARY_UPKEEP, "一月軍糧事件");
 
         gameState = commands.endTurnCommand.execute(SAVE_SLOT, gameState).getGameState();
         assertEquals(3, gameState.currentMonth, "二月結算後月份");
-        assertEquals(2080, gameState.requirePlayerFactionState().food, "二月軍糧支出");
+        assertEquals(2130, gameState.requirePlayerFactionState().food, "二月軍糧支出");
 
         TurnResolutionResult marchResult = commands.endTurnCommand.execute(SAVE_SLOT, gameState);
         gameState = marchResult.getGameState();
         assertEquals(4, gameState.currentMonth, "三月結算後月份");
         assertEquals(1413, gameState.requirePlayerFactionState().gold, "三月季末商稅");
-        assertEquals(2020, gameState.requirePlayerFactionState().food, "三月仍只有軍糧支出");
+        assertEquals(2095, gameState.requirePlayerFactionState().food, "三月仍只有軍糧支出");
         assertEventPrimaryValue(
             marchResult,
             TurnEventType.QUARTERLY_TAX,
@@ -236,7 +243,7 @@ public final class VerticalSliceSmokeTest {
         assertContainsEvent(juneResult, TurnEventType.FLOOD_OCCURRED, "六月洪災事件");
         assertEquals(42, floodedCapitalState.agriculture, "洪災降低農業");
         assertEquals(75, floodedCapitalState.harvestModifierPercent, "洪災降低秋收倍率");
-        assertEquals(61800, floodedCapitalState.population, "洪災人口損失");
+        assertEquals(6180, floodedCapitalState.population, "洪災人口損失");
         assertEquals(1805, gameState.requirePlayerFactionState().gold, "六月季末商稅");
 
         gameState = commands.endTurnCommand.execute(SAVE_SLOT, gameState).getGameState();
@@ -247,7 +254,7 @@ public final class VerticalSliceSmokeTest {
         );
         gameState = septemberResult.getGameState();
         assertEquals(10, gameState.currentMonth, "九月結算後月份");
-        assertEquals(3128, gameState.requirePlayerFactionState().food, "九月秋收後糧");
+        assertEquals(3353, gameState.requirePlayerFactionState().food, "九月秋收後糧");
         assertEquals(2197, gameState.requirePlayerFactionState().gold, "九月季末商稅後金");
         assertEventPrimaryValue(
             septemberResult,
@@ -260,6 +267,40 @@ public final class VerticalSliceSmokeTest {
             gameState.requireCityState(PLAYER_CAPITAL_ID).harvestModifierPercent,
             "秋收後重設收成倍率"
         );
+    }
+
+    private static void validateClampedFloodLosses(
+        AssetJsonGameDefinitionRepository definitionRepository,
+        FileHandle saveDirectory
+    ) {
+        CommandSet commands = new CommandSet(definitionRepository, saveDirectory);
+        GameState gameState = commands.newGame();
+        gameState.currentMonth = 6;
+        gameState.enemyAttackCountdown = 99;
+        for (var factionState : gameState.factionStates) {
+            factionState.aiActionPointsRemaining = 0;
+            factionState.food = 100_000;
+        }
+        CityState capital = gameState.requireCityState(PLAYER_CAPITAL_ID);
+        capital.agriculture = 1;
+        capital.publicOrder = 2;
+        capital.population = 110;
+
+        TurnResolutionResult result = new TurnResolutionService(definitionRepository).resolve(gameState);
+        TurnEvent flood = null;
+        for (TurnEvent event : result.getReport().getEvents()) {
+            if (event.getType() == TurnEventType.FLOOD_OCCURRED
+                && PLAYER_CAPITAL_ID.equals(event.getCityId())) {
+                flood = event;
+                break;
+            }
+        }
+        assertNotNull(flood, "低值洪災案例應實際發生");
+        assertEquals(1, flood.getTertiaryValue(), "洪災報告使用實際農業損失");
+        assertEquals(2, flood.getQuaternaryValue(), "洪災報告使用實際民心損失");
+        assertEquals(10, flood.getQuinaryValue(), "洪災報告使用人口底線前實際損失");
+        assertEquals(100, result.getGameState().requireCityState(PLAYER_CAPITAL_ID).population,
+            "洪災人口維持底線");
     }
 
     private static void validateScoutingAndBattleLoop(
@@ -285,11 +326,14 @@ public final class VerticalSliceSmokeTest {
             "偵察情報包含當月共三個月"
         );
 
+        gameState.requireCityState(PLAYER_CAPITAL_ID).troops = 1200;
+        gameState.requireCityState(VICTORY_TARGET_ID).troops = 950;
         StrategicActionResult firstExpedition = commands.launchExpeditionCommand.execute(
             SAVE_SLOT,
             gameState,
             PLAYER_CAPITAL_ID,
             VICTORY_TARGET_ID,
+            800,
             BattleTactic.FEINT
         );
         assertTrue(firstExpedition.isSuccessful(), "第一次出征應成功建立軍隊");
@@ -331,7 +375,7 @@ public final class VerticalSliceSmokeTest {
         );
         assertTrue(gameState.requireBattleReport(firstBattleReport.battleId).read, "戰報可標記已讀");
         assertEquals(0, gameState.countUnreadBattleReports(), "已讀後不再計入未讀數");
-        GameState reloadedReportState = commands.saveGameRepository.load(SAVE_SLOT);
+        GameState reloadedReportState = commands.saveGameRepository.load(SaveTarget.auto(SAVE_SLOT));
         assertTrue(
             !reloadedReportState.requireBattleReport(firstBattleReport.battleId).read,
             "戰報已讀尚未明確存檔，讀取可回到原狀態"
@@ -548,7 +592,7 @@ public final class VerticalSliceSmokeTest {
         legacyState.actionPointsRemaining = 0;
 
         SaveGameDocument legacyDocument = new SaveGameDocument();
-        legacyDocument.schemaVersion = SangoVersion.SAVE_DOCUMENT_SCHEMA_VERSION;
+        legacyDocument.schemaVersion = 1;
         legacyDocument.gameVersion = "0.3.0";
         legacyDocument.savedAtEpochMillis = 1_725_552_000_000L;
         legacyDocument.gameState = legacyState;
@@ -656,6 +700,9 @@ public final class VerticalSliceSmokeTest {
 
         commands.saveGameRepository.save(2, gameState);
         commands.saveGameRepository.save(3, gameState);
+        GameState autoState = gameState.copy();
+        autoState.requirePlayerFactionState().gold = 999;
+        commands.saveGameRepository.save(SaveTarget.auto(2), autoState);
         SaveSlotInspection slotTwoInspection = commands.saveGameRepository.inspect(2);
         SaveSlotInspection slotThreeInspection = commands.saveGameRepository.inspect(3);
         assertEquals(SaveSlotState.AVAILABLE, slotTwoInspection.getState(), "存檔槽 2 狀態");
@@ -667,6 +714,23 @@ public final class VerticalSliceSmokeTest {
         assertEquals(PLAYER_CAPITAL_ID, slotTwoMetadata.getCapitalCityId(), "槽位摘要首都");
         assertEquals(1, slotTwoMetadata.getOwnedCityCount(), "槽位摘要領地數");
         assertEquals(gameState.currentTurn, slotTwoMetadata.getCurrentTurn(), "槽位摘要回合");
+        assertEquals(SaveKind.MANUAL, slotTwoMetadata.getSaveKind(), "預設槽位摘要為手動存檔");
+        assertEquals(1150, commands.saveGameRepository.load(SaveTarget.manual(2))
+            .requirePlayerFactionState().gold, "手動存檔不被自動存檔覆寫");
+        assertEquals(999, commands.saveGameRepository.load(SaveTarget.auto(2))
+            .requirePlayerFactionState().gold, "同槽自動存檔可獨立讀取");
+        assertEquals(SaveKind.AUTO, commands.saveGameRepository.inspectNewest(2)
+            .getMetadata().getSaveKind(), "較新的自動存檔供繼續遊戲使用");
+        GameState differentCampaign = gameState.copy();
+        differentCampaign.campaignInstanceId = "different-campaign";
+        new SaveCurrentGameCommand(commands.saveGameRepository).execute(2, differentCampaign);
+        assertEquals(SaveSlotState.EMPTY,
+            commands.saveGameRepository.inspect(SaveTarget.auto(2)).getState(),
+            "手動另存不同戰局時清除該槽舊自動存檔");
+        assertEquals(SaveKind.MANUAL, commands.saveGameRepository.inspectNewest(2)
+            .getMetadata().getSaveKind(), "不同戰局另存後繼續遊戲不會選到舊自動存檔");
+        assertEquals("different-campaign", commands.saveGameRepository.loadNewest(2)
+            .campaignInstanceId, "不同戰局另存後載入新手動檔");
         assertEquals(
             ScenarioObjectiveStatus.IN_PROGRESS,
             slotTwoMetadata.getObjectiveStatus(),
@@ -679,6 +743,9 @@ public final class VerticalSliceSmokeTest {
             commands.saveGameRepository.inspect(2).getState(),
             "刪除槽位 2 後狀態"
         );
+        assertEquals(SaveSlotState.EMPTY,
+            commands.saveGameRepository.inspect(SaveTarget.auto(2)).getState(),
+            "刪除槽位同時清除自動存檔");
         assertEquals(
             SaveSlotState.AVAILABLE,
             commands.saveGameRepository.inspect(3).getState(),

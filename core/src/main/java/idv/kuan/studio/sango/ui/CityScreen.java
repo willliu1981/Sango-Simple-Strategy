@@ -18,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
@@ -99,6 +100,7 @@ public final class CityScreen extends SuiScreen {
         endMonthConfirmMask = attachModalMask("city_end_month_mask");
         battlePromptMask = attachModalMask("city_battle_prompt_mask");
         recruitmentMask = attachModalMask("recruitment_mask");
+        configureOverviewScrollPane();
         initializeRecruitmentControls();
         applyStyles();
         button("city_context_help_button").setText(text("context_help_button", "操作說明"));
@@ -117,6 +119,15 @@ public final class CityScreen extends SuiScreen {
             "內政投資不會立即產生金糧；收益會在季末或秋收結算。"
         );
         animateEntrance();
+    }
+
+    private void configureOverviewScrollPane() {
+        ScrollPane overview = ui.getActor("city_overview_scroll", ScrollPane.class);
+        overview.setStyle(new ScrollPane.ScrollPaneStyle());
+        overview.setScrollingDisabled(true, false);
+        overview.setOverscroll(false, false);
+        overview.setFadeScrollBars(false);
+        overview.setScrollbarsVisible(false);
     }
 
     @Override
@@ -259,7 +270,7 @@ public final class CityScreen extends SuiScreen {
         }
         int slotNumber = SangoPreferences.getLastUsedSaveSlot();
         try {
-            GameState gameState = SangoServices.saveGames().load(slotNumber);
+            GameState gameState = SangoServices.saveGames().loadNewest(slotNumber);
             SangoServices.session().setCurrentState(slotNumber, gameState);
         } catch (RuntimeException exception) {
             Gdx.app.error("City", "無法載入目前戰局。", exception);
@@ -595,7 +606,7 @@ public final class CityScreen extends SuiScreen {
             text("help_city_title", "內政操作說明"),
             text(
                 "help_city_body",
-                "金、糧是全勢力共用資源；人口屬於本城，會限制徵兵並受人口容量影響。農業提高秋收，商業提高季末商稅，治水降低夏季洪災風險與損失，城防影響守城。訓練與士氣會影響部隊作戰表現。\n\n巡查消耗 1 AP、100 金與 50 糧，可提升民心但最高只到 90；徵兵的金糧成本依人數計算；訓練消耗 1 AP 與 50 金，單次最多覆蓋 20,000 兵。徵兵不會降低民心。\n\n民心至少 90，且沒有缺糧、洪災或易主時，每次月底累計一個合格月；連續第 3 次月底起回復 1 點，之後每個合格月底再回復 1 點，最高 100。\n\n例：1 月巡查到 90，若 1、2、3 月月底都符合條件，3 月月底升到 91；期間跌破 90 或發生不合格事件，累計會歸零。"
+                "金、糧是全勢力共用資源；人口屬於本城，會限制徵兵並受人口容量影響。農業提高秋收，商業提高季末商稅，治水降低夏季洪災風險與損失，城防影響守城。訓練與士氣會影響部隊作戰表現。\n\n巡查消耗 1 AP、100 金與 50 糧，可提升民心但最高只到 90；徵兵的金糧成本依人數計算；訓練消耗 1 AP 與 50 金，單次最多覆蓋 20,000 兵。徵兵不會降低民心。\n\n民心至少 90，且沒有缺糧、洪災或易主時，每次月底累計一個合格月；連續第 3 次月底起回復 1 點，之後每個合格月底再回復 1 點，最高 100。\n\n例：1 月巡查到 90，若 1、2、3 月月底都符合條件，3 月月底升到 91；期間跌破 90 或發生不合格事件，累計會歸零。\n\n缺軍糧會造成逃兵並降低士氣；同時使該勢力每座城的民心依缺口比例下降 1～3。缺一半軍糧時每城民心扣 2，完全缺糧時每城民心扣 3；民心最低 0。"
             )
         );
         SangoServices.audio().playSound(SoundEffect.UI_CLICK);
@@ -871,7 +882,7 @@ public final class CityScreen extends SuiScreen {
                 "city_status_insufficient_population",
                 "人口不足，無法繼續徵兵。"
             );
-            case INVALID_RECRUIT_AMOUNT -> text("recruitment_invalid_amount", "請輸入 1 到 10000 之間的徵兵數量。");
+            case INVALID_RECRUIT_AMOUNT -> text("recruitment_invalid_amount", "請輸入 1 到 1000 之間的徵兵數量。");
             case RECRUIT_LIMIT_EXCEEDED -> text("recruitment_limit_exceeded", "超過本城本次可徵兵上限。");
             case NO_TROOPS -> text("training_no_troops", "城內沒有士兵，不能執行訓練。");
             case VALUE_AT_MAXIMUM -> text(

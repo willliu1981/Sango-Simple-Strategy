@@ -126,7 +126,7 @@ public final class BattleReportScreen extends SuiScreen {
     private void refreshReport(BattleReport battleReport) {
         setButtonEnabled(button("battle_report_contributions_button"),
             !battleReport.routeEncounter && battleReport.attackerContributions != null
-                && battleReport.attackerContributions.length > 0);
+                && battleReport.attackerContributions.length > 1);
         GameState gameState = SangoServices.session().requireCurrentState();
         String targetCityName = cityName(battleReport.targetCityId);
         String attackerName = factionName(battleReport.attackerFactionId);
@@ -397,9 +397,7 @@ public final class BattleReportScreen extends SuiScreen {
         }
         if (SangoServices.session().getBattleReportReturnScreen() == ScreenId.STRATEGIC_MAP) {
             BattleReport selectedReport = requireSelectedReport();
-            BattleReport latest = BattleReportCatalog.latestForCity(
-                gameState, selectedReport.targetCityId);
-            return latest == null ? List.of() : List.of(latest);
+            return BattleReportCatalog.city(gameState, selectedReport.targetCityId);
         }
         if (SangoServices.session().getBattleReportReturnScreen() != ScreenId.MONTH_REPORT
             || SangoServices.session().getLastTurnReport() == null) {
@@ -410,14 +408,8 @@ public final class BattleReportScreen extends SuiScreen {
 
     private void showContributions() {
         BattleReport report = requireSelectedReport();
-        if (report.attackerContributions == null || report.attackerContributions.length == 0) return;
+        if (report.attackerContributions == null || report.attackerContributions.length <= 1) return;
         StringBuilder content = new StringBuilder();
-        if (report.battleRulesVersion >= 2 && report.outcome != BattleOutcome.UNOPPOSED_OCCUPATION) {
-            content.append(text("battle_matchup_strength",
-                "相剋後戰力：攻方 {0}｜守方 {1}（守方加成 {2}%）",
-                numberFormat.format(report.attackerStrength),
-                numberFormat.format(report.defenderStrength), report.defenderMatchupPercent - 100));
-        }
         for (BattleContribution contribution : report.attackerContributions) {
             if (content.length() > 0) content.append("\n\n");
             content.append(text("battle_contribution_row",
@@ -440,7 +432,7 @@ public final class BattleReportScreen extends SuiScreen {
         style.titleFont = body.getStyle().font;
         style.titleFontColor = PLAYER_WIN_COLOR;
         style.background = Sui.resources.manager().getSkin().newDrawable("white", new Color(0.06f, 0.045f, 0.03f, 1f));
-        contributionDialog = new Dialog(text("battle_contributions_title", "各城參戰明細"), style);
+        contributionDialog = new Dialog(text("battle_contributions_title", "攻方各城明細"), style);
         contributionDialog.setModal(true);
         contributionDialog.setMovable(false);
         ScrollPane pane = new ScrollPane(body);

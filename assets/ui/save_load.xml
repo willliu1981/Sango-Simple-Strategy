@@ -21,8 +21,13 @@
                     <label id="save_slot_detail_heading_label" fontKey="title" fontSize="48" width="800" height="64"
                         color="0.90,0.72,0.40,1">${text:save_slot_detail_heading}</label>
                     <row />
-                    <table width="800" height="410" pad="30" backgroundColor="0.025,0.022,0.020,1">
-                        <label id="save_slot_detail_label" fontSize="29" width="730" height="345"
+                    <table width="800" height="62">
+                        <textButton id="save_manual_version_button" fontSize="25" width="390" height="56">${text:save_kind_manual}</textButton>
+                        <textButton id="save_auto_version_button" fontSize="25" width="390" height="56" padLeft="20">${text:save_kind_auto}</textButton>
+                    </table>
+                    <row />
+                    <table width="800" height="342" pad="24" backgroundColor="0.025,0.022,0.020,1">
+                        <label id="save_slot_detail_label" fontSize="27" width="744" height="292"
                             align="left" textAlign="left" wrap="true" color="0.85,0.80,0.70,1">${text:save_slot_empty_detail}</label>
                     </table>
                     <row />

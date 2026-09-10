@@ -9,6 +9,8 @@ import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
 public final class SaveSlotMetadata {
     private final int slotNumber;
     private final long savedAtEpochMillis;
+    private final SaveKind saveKind;
+    private final String campaignInstanceId;
     private final String gameVersion;
     private final String scenarioId;
     private final String playerFactionId;
@@ -22,6 +24,8 @@ public final class SaveSlotMetadata {
     private SaveSlotMetadata(
         int slotNumber,
         long savedAtEpochMillis,
+        SaveKind saveKind,
+        String campaignInstanceId,
         String gameVersion,
         String scenarioId,
         String playerFactionId,
@@ -34,6 +38,8 @@ public final class SaveSlotMetadata {
     ) {
         this.slotNumber = slotNumber;
         this.savedAtEpochMillis = savedAtEpochMillis;
+        this.saveKind = saveKind;
+        this.campaignInstanceId = campaignInstanceId;
         this.gameVersion = gameVersion;
         this.scenarioId = scenarioId;
         this.playerFactionId = playerFactionId;
@@ -56,6 +62,8 @@ public final class SaveSlotMetadata {
         return new SaveSlotMetadata(
             slotNumber,
             saveGameDocument.savedAtEpochMillis,
+            saveGameDocument.saveKind,
+            saveGameDocument.campaignInstanceId,
             saveGameDocument.gameVersion,
             gameState.scenarioId,
             gameState.playerFactionId,
@@ -74,6 +82,14 @@ public final class SaveSlotMetadata {
 
     public long getSavedAtEpochMillis() {
         return savedAtEpochMillis;
+    }
+
+    public SaveKind getSaveKind() {
+        return saveKind;
+    }
+
+    public String getCampaignInstanceId() {
+        return campaignInstanceId;
     }
 
     public String getGameVersion() {

@@ -14,6 +14,8 @@ public final class GameState {
     public String opponentFactionId;
     public String neutralFactionId;
     public String victoryTargetCityId;
+    /** 同一局手動檔與自動檔的穩定識別；schema 13 起保存。 */
+    public String campaignInstanceId;
     /** 每個存檔各自保留的戰略地圖最後焦點城池。 */
     public String strategicMapFocusedCityId;
 
@@ -56,6 +58,7 @@ public final class GameState {
         copiedState.opponentFactionId = opponentFactionId;
         copiedState.neutralFactionId = neutralFactionId;
         copiedState.victoryTargetCityId = victoryTargetCityId;
+        copiedState.campaignInstanceId = campaignInstanceId;
         copiedState.strategicMapFocusedCityId = strategicMapFocusedCityId;
         copiedState.campaignStatus = campaignStatus;
         copiedState.scenarioObjectiveStatus = scenarioObjectiveStatus;
@@ -228,7 +231,8 @@ public final class GameState {
         List<BattleReport> unreadReports = new ArrayList<>();
         if (battleReports != null) {
             for (BattleReport battleReport : battleReports) {
-                if (battleReport != null && !battleReport.read) {
+                if (battleReport != null && !battleReport.read
+                    && battleReport.resolvedTurn == currentTurn - 1) {
                     unreadReports.add(battleReport);
                 }
             }
@@ -242,6 +246,7 @@ public final class GameState {
             for (BattleReport battleReport : battleReports) {
                 if (battleReport != null
                     && !battleReport.read
+                    && battleReport.resolvedTurn == currentTurn - 1
                     && reportTouchesCity(battleReport, cityId)) {
                     unreadReports.add(battleReport);
                 }

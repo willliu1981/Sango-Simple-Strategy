@@ -148,7 +148,7 @@ public final class LobbyScreen extends SuiScreen {
             return;
         }
         try {
-            GameState gameState = SangoServices.saveGames().load(continueSlot);
+            GameState gameState = SangoServices.saveGames().loadNewest(continueSlot);
             SangoServices.session().clear();
             SangoServices.session().setCurrentState(continueSlot, gameState);
             SangoPreferences.setLastUsedSaveSlot(continueSlot);
@@ -189,7 +189,7 @@ public final class LobbyScreen extends SuiScreen {
         setButtonEnabled(button("load_game_button"), availableCount > 0 || corruptCount > 0);
 
         if (continueSlot > 0) {
-            SaveSlotInspection inspection = SangoServices.saveGames().inspect(continueSlot);
+            SaveSlotInspection inspection = SangoServices.saveGames().inspectNewest(continueSlot);
             if (inspection.hasRecoveryCandidate()) {
                 setStatus(
                     text(
@@ -228,11 +228,11 @@ public final class LobbyScreen extends SuiScreen {
 
     private int findContinueSlot() {
         int preferredSlot = SangoPreferences.getLastUsedSaveSlot();
-        if (SangoServices.saveGames().inspect(preferredSlot).isAvailable()) {
+        if (SangoServices.saveGames().inspectNewest(preferredSlot).isAvailable()) {
             return preferredSlot;
         }
         for (int slotNumber = 1; slotNumber <= SangoServices.SAVE_SLOT_COUNT; slotNumber++) {
-            if (SangoServices.saveGames().inspect(slotNumber).isAvailable()) {
+            if (SangoServices.saveGames().inspectNewest(slotNumber).isAvailable()) {
                 return slotNumber;
             }
         }
@@ -242,7 +242,7 @@ public final class LobbyScreen extends SuiScreen {
     private int countSlots(SaveSlotState requestedState) {
         int count = 0;
         for (int slotNumber = 1; slotNumber <= SangoServices.SAVE_SLOT_COUNT; slotNumber++) {
-            if (SangoServices.saveGames().inspect(slotNumber).getState() == requestedState) {
+            if (SangoServices.saveGames().inspectNewest(slotNumber).getState() == requestedState) {
                 count += 1;
             }
         }
