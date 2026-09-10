@@ -1,0 +1,108 @@
+{
+  "contractVersion": 1,
+  "moduleId": "sango-strategy-module",
+  "requiredInstallerVersion": "0.1.0",
+  "installationMode": "preflight-only",
+  "sourcePackage": "idv.kuan.studio.sango",
+  "targetPackage": "idv.kuan.studio.studyroutine.feature.archipelago.sango",
+  "versionSource": "core/src/main/java/idv/kuan/studio/sango/SangoVersion.java",
+  "sourceSets": [
+    {
+      "id": "main-java",
+      "root": "core/src/main/java/idv/kuan/studio/sango",
+      "includes": ["*.java", "**/*.java"],
+      "excludes": ["Main.java", "provider/**"],
+      "role": "gameplay-source",
+      "targetHint": "core/src/main/java/idv/kuan/studio/studyroutine/feature/archipelago/sango",
+      "transform": "java-package-rewrite"
+    },
+    {
+      "id": "test-java",
+      "root": "core/src/test/java/idv/kuan/studio/sango",
+      "includes": ["*.java", "**/*.java"],
+      "excludes": [],
+      "role": "regression-test",
+      "targetHint": "core/src/test/java/idv/kuan/studio/studyroutine/feature/archipelago/sango",
+      "transform": "java-package-rewrite"
+    },
+    {
+      "id": "test-fixtures",
+      "root": "core/src/test/resources/save",
+      "includes": ["*", "**/*"],
+      "excludes": [],
+      "role": "save-migration-fixture",
+      "targetHint": "core/src/test/resources/save",
+      "transform": "copy"
+    },
+    {
+      "id": "game-data",
+      "root": "assets/data",
+      "includes": ["*.json", "**/*.json"],
+      "excludes": [],
+      "role": "terminology-input",
+      "targetHint": "assets/archipelago_epoch/data",
+      "transform": "curated-data-adapter-required"
+    },
+    {
+      "id": "ui-layout",
+      "root": "assets/ui",
+      "includes": ["*.xml", "**/*.xml"],
+      "excludes": [],
+      "role": "ui-layout",
+      "targetHint": "assets/ui/archipelago_epoch",
+      "transform": "curated-resource-path-rewrite"
+    },
+    {
+      "id": "ui-text",
+      "root": "assets/i18n",
+      "includes": ["*.xml", "**/*.xml"],
+      "excludes": [],
+      "role": "terminology-input",
+      "targetHint": "assets/archipelago_epoch/i18n",
+      "transform": "curated-terminology-overlay-required"
+    }
+  ],
+  "managedPaths": [
+    {
+      "path": "core/src/main/java/idv/kuan/studio/studyroutine/feature/archipelago/sango",
+      "state": "candidate-only"
+    },
+    {
+      "path": "core/src/test/java/idv/kuan/studio/studyroutine/feature/archipelago/sango",
+      "state": "candidate-only"
+    },
+    {
+      "path": "assets/ui/archipelago_epoch",
+      "state": "candidate-only"
+    },
+    {
+      "path": "assets/archipelago_epoch/data",
+      "state": "candidate-only"
+    },
+    {
+      "path": "assets/archipelago_epoch/i18n",
+      "state": "candidate-only"
+    }
+  ],
+  "protectedPaths": [
+    "core/src/main/java/idv/kuan/studio/studyroutine/Main.java",
+    "core/src/main/java/idv/kuan/studio/studyroutine/provider",
+    "core/src/main/java/idv/kuan/studio/studyroutine/ui/WorldGate.java",
+    "android",
+    "lwjgl3",
+    "assets/characters/default.txt",
+    "assets/font",
+    "assets/skin",
+    "assets/archipelago_epoch/audio",
+    "assets/picture",
+    "saves",
+    "preferences"
+  ],
+  "excludedContent": [
+    "Sango Main and platform launchers",
+    "application context provider and META-INF services",
+    "fonts and skin",
+    "host-owned audio and pictures",
+    "player saves, preferences, generated assets indexes, build output and runtime data"
+  ]
+}
