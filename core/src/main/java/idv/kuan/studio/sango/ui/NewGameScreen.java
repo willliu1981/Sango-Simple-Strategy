@@ -40,6 +40,8 @@ import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
  */
 public final class NewGameScreen extends SuiScreen {
     private static final String BACKGROUND_PATH = "picture/lobby/sango_lobby_background.png";
+    private static final String CHINA_SCENARIO_ID = "warlords_china";
+    private static final String WORLD_SCENARIO_ID = "world_convergence";
     private static final String[] FACTION_BUTTON_IDS = {
         "faction_1_button",
         "faction_2_button",
@@ -136,6 +138,8 @@ public final class NewGameScreen extends SuiScreen {
     }
 
     private void applyStyles() {
+        SangoUiStyles.applySelectedButton(button("scenario_china_button"));
+        SangoUiStyles.applySecondaryButton(button("scenario_world_button"));
         for (String factionButtonId : FACTION_BUTTON_IDS) {
             SangoUiStyles.applySecondaryButton(button(factionButtonId));
         }
@@ -149,6 +153,8 @@ public final class NewGameScreen extends SuiScreen {
     }
 
     private void bindActions() {
+        ui.onClick("scenario_china_button", () -> selectScenario(CHINA_SCENARIO_ID));
+        ui.onClick("scenario_world_button", () -> selectScenario(WORLD_SCENARIO_ID));
         ui.onClick("faction_1_button", () -> selectFactionByIndex(0));
         ui.onClick("faction_2_button", () -> selectFactionByIndex(1));
         ui.onClick("faction_3_button", () -> selectFactionByIndex(2));
@@ -181,23 +187,7 @@ public final class NewGameScreen extends SuiScreen {
 
     private void loadDefinitionsAndSelectDefault() {
         try {
-            scenarioDefinition = SangoServices.definitions().requireScenario(
-                SangoServices.DEFAULT_SCENARIO_ID
-            );
-            factionDefinitions = SangoServices.definitions().findFactionsForScenario(
-                scenarioDefinition.id
-            );
-            configureFactionButtons();
-            if (factionDefinitions.isEmpty()) {
-                selectedFactionId = null;
-                setStatus(
-                    text("new_game_status_definition_error", "劇本沒有可選勢力。"),
-                    STATUS_ERROR_COLOR
-                );
-                setButtonEnabled(button("start_game_button"), false);
-                return;
-            }
-            selectFactionByIndex(0);
+            selectScenario(SangoServices.DEFAULT_SCENARIO_ID);
             setStatus(
                 text("new_game_status_ready", "選擇勢力與存檔槽後即可建立新局。"),
                 STATUS_NORMAL_COLOR
@@ -211,6 +201,26 @@ public final class NewGameScreen extends SuiScreen {
                 STATUS_ERROR_COLOR
             );
         }
+    }
+
+    private void selectScenario(String scenarioId) {
+        scenarioDefinition = SangoServices.definitions().requireScenario(scenarioId);
+        factionDefinitions = SangoServices.definitions().findFactionsForScenario(scenarioId);
+        configureFactionButtons();
+        SangoUiStyles.applySelectedButton(button("scenario_china_button"));
+        SangoUiStyles.applySecondaryButton(button("scenario_world_button"));
+        if (WORLD_SCENARIO_ID.equals(scenarioId)) {
+            SangoUiStyles.applySecondaryButton(button("scenario_china_button"));
+            SangoUiStyles.applySelectedButton(button("scenario_world_button"));
+        }
+        if (factionDefinitions.isEmpty()) {
+            selectedFactionId = null;
+            setButtonEnabled(button("start_game_button"), false);
+            setStatus(text("new_game_status_definition_error", "劇本沒有可選勢力。"),
+                STATUS_ERROR_COLOR);
+            return;
+        }
+        selectFactionByIndex(0);
     }
 
     private void configureFactionButtons() {

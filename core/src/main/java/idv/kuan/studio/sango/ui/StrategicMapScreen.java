@@ -52,6 +52,7 @@ import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
+import idv.kuan.studio.sango.domain.model.ScenarioObjectiveType;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.domain.rule.DefensePolicy;
 import idv.kuan.studio.sango.domain.rule.PostEncounterOrder;
@@ -565,7 +566,6 @@ public final class StrategicMapScreen extends SuiScreen {
             );
             return;
         }
-        String targetCityName = cityName(gameState.victoryTargetCityId);
         int remainingMonths = Math.max(0, gameState.turnLimitMonths - gameState.elapsedMonths);
         if (gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.ACHIEVED) {
             label("map_objective_label").setText(
@@ -576,14 +576,17 @@ public final class StrategicMapScreen extends SuiScreen {
                 text("map_objective_failed_free", "劇本目標失敗｜自由征戰中")
             );
         } else {
-            label("map_objective_label").setText(
-                text(
+            if (gameState.scenarioObjectiveType == ScenarioObjectiveType.ELIMINATE_FACTION) {
+                label("map_objective_label").setText(text(
+                    "map_objective_eliminate_faction_format",
+                    "目標：消滅 {0}｜期限剩餘 {1} 個月",
+                    factionName(gameState.victoryTargetFactionId), remainingMonths));
+            } else {
+                label("map_objective_label").setText(text(
                     "map_objective_format",
                     "目標：攻下 {0}｜期限剩餘 {1} 個月",
-                    targetCityName,
-                    remainingMonths
-                )
-            );
+                    cityName(gameState.victoryTargetCityId), remainingMonths));
+            }
         }
     }
 
@@ -628,8 +631,12 @@ public final class StrategicMapScreen extends SuiScreen {
             if (gameState.playerFactionId.equals(cityState.ownerFactionId)) {
                 marker += text("map_player_suffix", "");
             }
+            boolean objectiveCity = gameState.scenarioObjectiveType == ScenarioObjectiveType.CAPTURE_CITY
+                && gameState.victoryTargetCityId.equals(cityState.cityId);
+            boolean objectiveFaction = gameState.scenarioObjectiveType == ScenarioObjectiveType.ELIMINATE_FACTION
+                && gameState.victoryTargetFactionId.equals(cityState.ownerFactionId);
             if (gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.IN_PROGRESS
-                && gameState.victoryTargetCityId.equals(cityState.cityId)) {
+                && (objectiveCity || objectiveFaction)) {
                 marker += "・" + text("map_marker_target", "目標");
             }
             int unreadCount = unreadBattlesByCityId.getOrDefault(cityState.cityId, 0);
@@ -1711,6 +1718,11 @@ public final class StrategicMapScreen extends SuiScreen {
     private String cityName(String cityId) {
         CityDefinition cityDefinition = SangoServices.definitions().requireCity(cityId);
         return localized(cityDefinition.nameKey, cityDefinition.id);
+    }
+
+    private String factionName(String factionId) {
+        FactionDefinition factionDefinition = SangoServices.definitions().requireFaction(factionId);
+        return localized(factionDefinition.nameKey, factionDefinition.id);
     }
 
     private String defensePolicyName(DefensePolicy policy) {

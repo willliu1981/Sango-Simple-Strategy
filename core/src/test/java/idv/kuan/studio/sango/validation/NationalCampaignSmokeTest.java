@@ -23,6 +23,7 @@ import idv.kuan.studio.sango.application.request.NewGameRequest;
 import idv.kuan.studio.sango.application.result.DomesticActionResult;
 import idv.kuan.studio.sango.application.result.StrategicActionResult;
 import idv.kuan.studio.sango.application.result.TurnEvent;
+import idv.kuan.studio.sango.application.result.TurnEventType;
 import idv.kuan.studio.sango.application.result.TurnResolutionReport;
 import idv.kuan.studio.sango.application.result.TurnResolutionResult;
 import idv.kuan.studio.sango.domain.definition.CityConnectionDefinition;
@@ -36,6 +37,7 @@ import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
+import idv.kuan.studio.sango.domain.model.ScenarioObjectiveType;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.domain.rule.DefensePolicy;
 import idv.kuan.studio.sango.domain.rule.DomesticActionType;
@@ -93,6 +95,7 @@ public final class NationalCampaignSmokeTest {
                 Path.of(arguments[0]), temporaryDirectory.child("campaign")
             );
             tests.validateWorldAndStarts();
+            tests.validateWorldConvergence();
             tests.validateMoraleCommands();
             tests.validateMilitaryFormulas();
             tests.validateUnopposedOccupationMatrix();
@@ -109,6 +112,10 @@ public final class NationalCampaignSmokeTest {
 
     private GameState newGame(String factionId) {
         return newGameCommand.execute(1, new NewGameRequest("warlords_china", factionId));
+    }
+
+    private GameState newWorldGame(String factionId) {
+        return newGameCommand.execute(1, new NewGameRequest("world_convergence", factionId));
     }
 
     private void validateWorldAndStarts() {
@@ -150,6 +157,52 @@ public final class NationalCampaignSmokeTest {
         check(reachableCities.size() == 42, "全部城市互相可達");
         check(definitions.requireMap("prototype_central_region").nodes.length == 6,
             "舊六城 Definition 必須保留供存檔使用");
+    }
+
+    private void validateWorldConvergence() {
+        StrategicMapDefinition world = definitions.requireMap("world_72");
+        check(world.nodes.length == 72, "世界地圖應有 72 個據點");
+        check(world.connections.length == 100, "世界地圖應有 100 條連線");
+        check(definitions.findFactionsForScenario("world_convergence").size() == 6,
+            "世界劇本第一版開放六個可選勢力");
+
+        GameState gameState = newWorldGame("cao_cao");
+        GameStateValidator.validate(gameState);
+        check(gameState.cityStates.length == 72, "世界新局建立全部據點狀態");
+        check(gameState.factionStates.length == 13, "十二大勢力加中立勢力");
+        check(gameState.scenarioObjectiveType == ScenarioObjectiveType.ELIMINATE_FACTION,
+            "世界劇本使用消滅勢力目標");
+        check(gameState.victoryTargetFactionId.equals("liu_bei"), "曹魏首要目標為消滅蜀漢");
+        check(gameState.victoryTargetCityId == null, "消滅勢力目標不偽造單一目標城");
+
+        CityState originalCapital = gameState.requireCityState("luoyang");
+        originalCapital.troops = 0;
+        new BattleResolutionService().resolveArrival(gameState,
+            army("steppe_khanate", "changan", "luoyang", 900, 60, 70), world,
+            new TurnResolutionReport(gameState.currentYear, gameState.currentMonth));
+        check(gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.IN_PROGRESS,
+            "消滅勢力目標不因我方首都遷移而失敗");
+
+        for (CityState cityState : gameState.findCitiesOwnedBy("liu_bei")) {
+            if (!cityState.cityId.equals("chengdu")) {
+                cityState.ownerFactionId = "neutral";
+            }
+        }
+        FactionState targetFaction = gameState.requireFactionState("liu_bei");
+        targetFaction.capitalCityId = "chengdu";
+        CityState lastTargetCity = gameState.requireCityState("chengdu");
+        lastTargetCity.troops = 0;
+        TurnResolutionReport report = new TurnResolutionReport(gameState.currentYear, gameState.currentMonth);
+        new BattleResolutionService().resolveArrival(gameState,
+            army("cao_cao", "xuchang", "chengdu", 1000, 60, 70), world, report);
+        check(!targetFaction.active, "目標勢力失去最後據點後滅亡");
+        check(gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.ACHIEVED,
+            "目標勢力滅亡後達成劇本目標");
+        check(report.getEvents().stream().anyMatch(event ->
+            event.getType() == TurnEventType.CAMPAIGN_FACTION_ELIMINATED
+                && "liu_bei".equals(event.getFactionId())),
+            "月報記錄指定勢力滅亡勝利");
+        GameStateValidator.validate(gameState);
     }
 
     private void validateMoraleCommands() {
@@ -368,6 +421,9 @@ public final class NationalCampaignSmokeTest {
         GameState migratedState = legacySaves.load(1);
         check(migratedState.schemaVersion == idv.kuan.studio.sango.SangoVersion.GAME_STATE_SCHEMA_VERSION,
             "schema 3 遷移至目前版本");
+        check(migratedState.scenarioObjectiveType == ScenarioObjectiveType.CAPTURE_CITY
+            && migratedState.victoryTargetFactionId == null,
+            "舊存檔遷移後保留攻下指定城池的目標語意");
         check(migratedState.cityStates.length == 6 && migratedState.mapId.equals("prototype_central_region"),
             "舊戰局保留六城，不憑空加入新領地");
         check(migratedState.requireCityState("chenliu").morale == 50, "舊城低民心士氣初始化為 50");

@@ -22,7 +22,8 @@ public final class MonthEndFlowController {
         );
         SangoServices.session().setLastTurnReport(resolutionResult.getReport());
         boolean campaignVictory = resolutionResult.getReport().getEvents().stream()
-            .anyMatch(event -> event.getType() == TurnEventType.CAMPAIGN_VICTORY);
+            .anyMatch(event -> event.getType() == TurnEventType.CAMPAIGN_VICTORY
+                || event.getType() == TurnEventType.CAMPAIGN_FACTION_ELIMINATED);
         SangoServices.audio().playMusic(campaignVictory
             ? MusicTrack.VICTORY
             : MusicTrack.forMonth(resolutionResult.getGameState().currentMonth));

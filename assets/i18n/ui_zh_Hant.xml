@@ -68,9 +68,9 @@
         <entry name="lobby_sango" value="SANGO" description="lobby_sango" />
         <entry name="lobby_title" value="簡易三國志" description="lobby_title" />
         <entry name="lobby_tagline" value="漢末群雄 · 天下待定" description="lobby_tagline" />
-        <entry name="lobby_intro" value="六大勢力逐鹿 42 城。治理人口、按需徵兵、分批訓練，在四季樂聲中自由征戰。" description="lobby_intro" />
+        <entry name="lobby_intro" value="從中原 42 城到世界 72 據點。治理人口、按需徵兵、分批訓練，在四季樂聲中自由征戰。" description="lobby_intro" />
         <entry name="lobby_main_menu" value="主選單" description="lobby_main_menu" />
-        <entry name="lobby_vertical_slice" value="六勢力 · 全國 42 城 · 自由征戰" description="lobby_vertical_slice" />
+        <entry name="lobby_vertical_slice" value="雙劇本 · 中原 42 城／世界 72 據點 · 自由征戰" description="lobby_vertical_slice" />
         <entry name="lobby_version" value="Strategy Prototype 0.6.2" description="lobby_version" />
         <entry name="button_continue" value="繼續遊戲" description="button_continue" />
         <entry name="button_new_game" value="開始新局" description="button_new_game" />
@@ -251,6 +251,7 @@
         <entry name="map_objective_victory" value="劇本目標已達成；目前進入自由征戰。" description="map_objective_victory" />
         <entry name="map_objective_defeat" value="劇本目標已失敗；仍可繼續自由征戰。" description="map_objective_defeat" />
         <entry name="map_objective_format" value="目標：攻下 {0}｜期限剩餘 {1} 個月" description="map_objective_format" />
+        <entry name="map_objective_eliminate_faction_format" value="目標：消滅 {0}｜期限剩餘 {1} 個月" description="map_objective_eliminate_faction_format" />
         <entry name="map_marker_player" value="我方" description="map_marker_player" />
         <entry name="map_marker_enemy" value="敵軍" description="map_marker_enemy" />
         <entry name="map_marker_neutral" value="中立" description="map_marker_neutral" />
@@ -322,6 +323,7 @@
         <entry name="report_event_enemy_reinforcing" value="敵軍在 {0} 補充 {1} 兵，出征延後。" description="report_event_enemy_reinforcing" />
         <entry name="report_event_enemy_marching" value="敵軍 {0} 兵已由 {1} 向 {2} 出征，預計 {3} 個月抵達。" description="report_event_enemy_marching" />
         <entry name="report_event_victory" value="劇本目標達成：已攻下目標城池 {0}，可繼續自由征戰。" description="report_event_victory" />
+        <entry name="report_event_faction_eliminated" value="劇本目標達成：{0}已滅亡，可繼續自由征戰。" description="report_event_faction_eliminated" />
         <entry name="report_event_defeat_capital" value="原定劇本目標失敗：我方首都 {0} 失守；若仍有領地，將遷都並繼續征戰。" description="report_event_defeat_capital" />
         <entry name="report_event_defeat_timeout" value="原定劇本目標失敗：未能在 {0} 個月內攻下目標城池；遊戲轉入自由征戰。" description="report_event_defeat_timeout" />
         <entry name="status_campaign_available_slot" value="找到 {0} 個可用存檔；繼續遊戲將讀取槽位 {1}。" description="status_campaign_available_slot" />
@@ -506,6 +508,8 @@
         <entry name="city_status_player_eliminated" value="我方已失去全部城池，不能再下達命令或推進月份。" description="city_status_player_eliminated" />
         <entry name="scenario_china_name" value="漢末群雄・全國征戰" description="scenario_china_name" />
         <entry name="scenario_china_description" value="六個可選勢力同時存在於 42 城示意地圖，另有黃巾與中立城。12 個月內爭取首要目標，之後可自由征戰。城池配置為遊戲化設定，非精確史圖。" description="scenario_china_description" />
+        <entry name="scenario_china_short" value="中原 42 城" description="scenario_china_short" />
+        <entry name="scenario_world_short" value="世界 72 據點" description="scenario_world_short" />
         <entry name="map_china_42" value="全國戰略圖・42 城" description="map_china_42" />
         <entry name="faction_yuan_shao" value="袁紹軍" description="faction_yuan_shao" />
         <entry name="ruler_yuan_shao" value="袁紹" description="ruler_yuan_shao" />
@@ -663,5 +667,90 @@
         <entry name="music_play_once_note" value="播放完目前曲目後停止。" description="music_play_once_note" />
         <entry name="music_repeat_one_note" value="單曲循環播放；切換曲目以兩秒淡入淡出銜接。" description="music_repeat_one_note" />
         <entry name="music_repeat_all_note" value="依清單順序播放，最後一首結束後回到第一首。" description="music_repeat_all_note" />
++        <entry name="scenario_world_name" value="萬域爭霸・世界交會" description="scenario_world_name" />
+        <entry name="scenario_world_description" value="十二大勢力與中立據點分布於 72 據點世界地圖。消滅指定主要敵國後，可繼續自由征服全世界；名稱與年代為遊戲化混合設定。" description="scenario_world_description" />
+        <entry name="map_world_72" value="世界交會圖・72 據點" description="map_world_72" />
+        <entry name="faction_east_sea_states" value="東海諸邦" description="faction_east_sea_states" />
+        <entry name="ruler_east_sea_states" value="東海共主" description="ruler_east_sea_states" />
+        <entry name="faction_east_sea_states_summary" value="立足東北海岸與群島，據點分散但利於跨海擴張。" description="faction_east_sea_states_summary" />
+        <entry name="faction_steppe_khanate" value="蒼原汗庭" description="faction_steppe_khanate" />
+        <entry name="ruler_steppe_khanate" value="蒼原大汗" description="ruler_steppe_khanate" />
+        <entry name="faction_steppe_khanate_summary" value="橫跨草原與商路，以長距離進軍牽動歐亞戰線。" description="faction_steppe_khanate_summary" />
+        <entry name="faction_india_compact" value="天竺盟約" description="faction_india_compact" />
+        <entry name="ruler_india_compact" value="盟約執政" description="ruler_india_compact" />
+        <entry name="faction_india_compact_summary" value="人口與農業基礎穩固，適合累積國力後向多方向擴張。" description="faction_india_compact_summary" />
+        <entry name="faction_persian_court" value="雙河王庭" description="faction_persian_court" />
+        <entry name="ruler_persian_court" value="王庭沙阿" description="ruler_persian_court" />
+        <entry name="faction_persian_court_summary" value="掌握東西交通樞紐，必須同時防備地中海與亞洲勢力。" description="faction_persian_court_summary" />
+        <entry name="faction_western_empire" value="西海帝國" description="faction_western_empire" />
+        <entry name="ruler_western_empire" value="西海皇帝" description="ruler_western_empire" />
+        <entry name="faction_western_empire_summary" value="控制地中海核心據點，商業充足但邊境戰線廣闊。" description="faction_western_empire_summary" />
+        <entry name="faction_northern_league" value="北境議盟" description="faction_northern_league" />
+        <entry name="ruler_northern_league" value="北境議長" description="ruler_northern_league" />
+        <entry name="faction_northern_league_summary" value="據守歐洲北部，能向西海、草原與大西洋多線發展。" description="faction_northern_league_summary" />
+        <entry name="faction_red_earth_kings" value="赤土諸王" description="faction_red_earth_kings" />
+        <entry name="ruler_red_earth_kings" value="赤土盟王" description="ruler_red_earth_kings" />
+        <entry name="faction_red_earth_kings_summary" value="據點縱貫非洲，資源分布廣，需要維持遠距離防線。" description="faction_red_earth_kings_summary" />
+        <entry name="faction_star_feather" value="星羽文明" description="faction_star_feather" />
+        <entry name="ruler_star_feather" value="星羽祭王" description="ruler_star_feather" />
+        <entry name="faction_star_feather_summary" value="橫跨美洲的古老聯盟，可向大西洋與太平洋開拓。" description="faction_star_feather_summary" />
+        <entry name="faction_island_sailors" value="群島航盟" description="faction_island_sailors" />
+        <entry name="ruler_island_sailors" value="首席領航者" description="ruler_island_sailors" />
+        <entry name="faction_island_sailors_summary" value="散布大洋的航海勢力，初期距離遙遠但擁有多條跨海出口。" description="faction_island_sailors_summary" />
+        <entry name="city_pyongyang" value="平壤" description="city_pyongyang" />
+        <entry name="city_seoul" value="漢城" description="city_seoul" />
+        <entry name="city_yamatai" value="邪馬台" description="city_yamatai" />
+        <entry name="city_izumo" value="出雲" description="city_izumo" />
+        <entry name="city_karakorum" value="和林" description="city_karakorum" />
+        <entry name="city_hami" value="哈密" description="city_hami" />
+        <entry name="city_kashgar" value="喀什" description="city_kashgar" />
+        <entry name="city_samarkand" value="撒馬爾罕" description="city_samarkand" />
+        <entry name="city_bukhara" value="布哈拉" description="city_bukhara" />
+        <entry name="city_delhi" value="德里" description="city_delhi" />
+        <entry name="city_mumbai" value="孟買" description="city_mumbai" />
+        <entry name="city_pataliputra" value="華氏城" description="city_pataliputra" />
+        <entry name="city_varanasi" value="瓦拉納西" description="city_varanasi" />
+        <entry name="city_lanka" value="蘭卡" description="city_lanka" />
+        <entry name="city_ctesiphon" value="泰西封" description="city_ctesiphon" />
+        <entry name="city_persepolis" value="波斯波利斯" description="city_persepolis" />
+        <entry name="city_babylon" value="巴比倫" description="city_babylon" />
+        <entry name="city_isfahan" value="伊斯法罕" description="city_isfahan" />
+        <entry name="city_hormuz" value="荷姆茲" description="city_hormuz" />
+        <entry name="city_rome" value="羅馬" description="city_rome" />
+        <entry name="city_athens" value="雅典" description="city_athens" />
+        <entry name="city_constantinople" value="君士坦丁堡" description="city_constantinople" />
+        <entry name="city_alexandria" value="亞歷山卓" description="city_alexandria" />
+        <entry name="city_carthage" value="迦太基" description="city_carthage" />
+        <entry name="city_london" value="倫敦" description="city_london" />
+        <entry name="city_paris" value="巴黎" description="city_paris" />
+        <entry name="city_cologne" value="科隆" description="city_cologne" />
+        <entry name="city_prague" value="布拉格" description="city_prague" />
+        <entry name="city_stockholm" value="斯德哥爾摩" description="city_stockholm" />
+        <entry name="city_aksum" value="阿克蘇姆" description="city_aksum" />
+        <entry name="city_meroe" value="麥羅埃" description="city_meroe" />
+        <entry name="city_timbuktu" value="廷巴克圖" description="city_timbuktu" />
+        <entry name="city_gao" value="加奧" description="city_gao" />
+        <entry name="city_great_zimbabwe" value="大辛巴威" description="city_great_zimbabwe" />
+        <entry name="city_teotihuacan" value="特奧蒂瓦坎" description="city_teotihuacan" />
+        <entry name="city_tikal" value="蒂卡爾" description="city_tikal" />
+        <entry name="city_tenochtitlan" value="特諾奇提特蘭" description="city_tenochtitlan" />
+        <entry name="city_cahokia" value="卡霍基亞" description="city_cahokia" />
+        <entry name="city_cusco" value="庫斯科" description="city_cusco" />
+        <entry name="city_hawaii" value="夏威夷" description="city_hawaii" />
+        <entry name="city_samoa" value="薩摩亞" description="city_samoa" />
+        <entry name="city_tahiti" value="大溪地" description="city_tahiti" />
+        <entry name="city_aotearoa" value="奧特亞羅瓦" description="city_aotearoa" />
+        <entry name="city_uluru" value="烏魯魯" description="city_uluru" />
+        <entry name="city_jerusalem" value="耶路撒冷" description="city_jerusalem" />
+        <entry name="city_antioch" value="安條克" description="city_antioch" />
+        <entry name="city_kyiv" value="基輔" description="city_kyiv" />
+        <entry name="city_moscow" value="莫斯科" description="city_moscow" />
+        <entry name="city_malacca" value="馬六甲" description="city_malacca" />
+        <entry name="city_java" value="爪哇" description="city_java" />
+        <entry name="city_madagascar" value="馬達加斯加" description="city_madagascar" />
+        <entry name="city_chichen_itza" value="奇琴伊察" description="city_chichen_itza" />
+        <entry name="city_alaska" value="阿拉斯加" description="city_alaska" />
+        <entry name="city_iceland" value="冰島" description="city_iceland" />
+        <entry name="city_ryukyu" value="琉球" description="city_ryukyu" />
     </scope>
 </i18n>

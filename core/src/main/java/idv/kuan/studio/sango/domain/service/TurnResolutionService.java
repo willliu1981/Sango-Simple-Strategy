@@ -540,7 +540,9 @@ public final class TurnResolutionService {
             report.add(new TurnEvent(
                 TurnEventType.CAMPAIGN_DEFEAT_TIMEOUT,
                 gameState.playerFactionId,
-                gameState.victoryTargetCityId,
+                gameState.scenarioObjectiveType
+                    == idv.kuan.studio.sango.domain.model.ScenarioObjectiveType.CAPTURE_CITY
+                    ? gameState.victoryTargetCityId : null,
                 null,
                 gameState.turnLimitMonths,
                 0

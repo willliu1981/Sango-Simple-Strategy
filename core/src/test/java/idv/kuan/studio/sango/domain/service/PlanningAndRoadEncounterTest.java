@@ -169,7 +169,8 @@ public final class PlanningAndRoadEncounterTest {
 
         GameState migrated = new GameStateMigrator().migrate(legacy);
 
-        assertEquals(13, migrated.schemaVersion);
+        assertEquals(idv.kuan.studio.sango.SangoVersion.GAME_STATE_SCHEMA_VERSION,
+            migrated.schemaVersion);
         assertNotSame(migrated.cityStates[0], migrated.turnStartCityStates[0]);
         assertNull(migrated.factionStates[0].cityIntelligence[0].defensePolicy);
         assertEquals(PostEncounterOrder.AUTO, migrated.armyStates[0].postEncounterOrder);

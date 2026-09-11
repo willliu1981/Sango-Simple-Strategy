@@ -13,7 +13,9 @@ public final class GameState {
     public String playerFactionId;
     public String opponentFactionId;
     public String neutralFactionId;
+    public ScenarioObjectiveType scenarioObjectiveType;
     public String victoryTargetCityId;
+    public String victoryTargetFactionId;
     /** 同一局手動檔與自動檔的穩定識別；schema 13 起保存。 */
     public String campaignInstanceId;
     /** 每個存檔各自保留的戰略地圖最後焦點城池。 */
@@ -57,7 +59,9 @@ public final class GameState {
         copiedState.playerFactionId = playerFactionId;
         copiedState.opponentFactionId = opponentFactionId;
         copiedState.neutralFactionId = neutralFactionId;
+        copiedState.scenarioObjectiveType = scenarioObjectiveType;
         copiedState.victoryTargetCityId = victoryTargetCityId;
+        copiedState.victoryTargetFactionId = victoryTargetFactionId;
         copiedState.campaignInstanceId = campaignInstanceId;
         copiedState.strategicMapFocusedCityId = strategicMapFocusedCityId;
         copiedState.campaignStatus = campaignStatus;

@@ -627,6 +627,875 @@
         }
       ],
       "backgroundAssetPath": "picture/maps/china_42_terrain.jpg"
+    },
+    {
+      "id": "world_72",
+      "nameKey": "map_world_72",
+      "nodes": [
+        {
+          "cityId": "luoyang",
+          "x": 0.78,
+          "y": 0.65
+        },
+        {
+          "cityId": "xuchang",
+          "x": 0.79,
+          "y": 0.6
+        },
+        {
+          "cityId": "ye",
+          "x": 0.78,
+          "y": 0.7
+        },
+        {
+          "cityId": "chenliu",
+          "x": 0.82,
+          "y": 0.64
+        },
+        {
+          "cityId": "beiping",
+          "x": 0.83,
+          "y": 0.72
+        },
+        {
+          "cityId": "chengdu",
+          "x": 0.72,
+          "y": 0.52
+        },
+        {
+          "cityId": "hanzhong",
+          "x": 0.74,
+          "y": 0.59
+        },
+        {
+          "cityId": "zitong",
+          "x": 0.7,
+          "y": 0.56
+        },
+        {
+          "cityId": "jiangzhou",
+          "x": 0.75,
+          "y": 0.49
+        },
+        {
+          "cityId": "yunnan",
+          "x": 0.7,
+          "y": 0.43
+        },
+        {
+          "cityId": "jianye",
+          "x": 0.83,
+          "y": 0.56
+        },
+        {
+          "cityId": "wu_commandery",
+          "x": 0.86,
+          "y": 0.53
+        },
+        {
+          "cityId": "kuaiji",
+          "x": 0.86,
+          "y": 0.48
+        },
+        {
+          "cityId": "changsha",
+          "x": 0.79,
+          "y": 0.51
+        },
+        {
+          "cityId": "jiaozhi",
+          "x": 0.77,
+          "y": 0.42
+        },
+        {
+          "cityId": "xiangping",
+          "x": 0.86,
+          "y": 0.75
+        },
+        {
+          "cityId": "pyongyang",
+          "x": 0.89,
+          "y": 0.7
+        },
+        {
+          "cityId": "seoul",
+          "x": 0.88,
+          "y": 0.65
+        },
+        {
+          "cityId": "yamatai",
+          "x": 0.93,
+          "y": 0.6
+        },
+        {
+          "cityId": "izumo",
+          "x": 0.93,
+          "y": 0.68
+        },
+        {
+          "cityId": "karakorum",
+          "x": 0.72,
+          "y": 0.75
+        },
+        {
+          "cityId": "hami",
+          "x": 0.69,
+          "y": 0.68
+        },
+        {
+          "cityId": "kashgar",
+          "x": 0.64,
+          "y": 0.64
+        },
+        {
+          "cityId": "samarkand",
+          "x": 0.59,
+          "y": 0.63
+        },
+        {
+          "cityId": "bukhara",
+          "x": 0.56,
+          "y": 0.66
+        },
+        {
+          "cityId": "delhi",
+          "x": 0.64,
+          "y": 0.48
+        },
+        {
+          "cityId": "mumbai",
+          "x": 0.6,
+          "y": 0.39
+        },
+        {
+          "cityId": "pataliputra",
+          "x": 0.68,
+          "y": 0.45
+        },
+        {
+          "cityId": "varanasi",
+          "x": 0.65,
+          "y": 0.42
+        },
+        {
+          "cityId": "lanka",
+          "x": 0.67,
+          "y": 0.3
+        },
+        {
+          "cityId": "ctesiphon",
+          "x": 0.54,
+          "y": 0.55
+        },
+        {
+          "cityId": "persepolis",
+          "x": 0.56,
+          "y": 0.48
+        },
+        {
+          "cityId": "babylon",
+          "x": 0.51,
+          "y": 0.52
+        },
+        {
+          "cityId": "isfahan",
+          "x": 0.57,
+          "y": 0.56
+        },
+        {
+          "cityId": "hormuz",
+          "x": 0.57,
+          "y": 0.41
+        },
+        {
+          "cityId": "rome",
+          "x": 0.43,
+          "y": 0.65
+        },
+        {
+          "cityId": "athens",
+          "x": 0.47,
+          "y": 0.6
+        },
+        {
+          "cityId": "constantinople",
+          "x": 0.5,
+          "y": 0.66
+        },
+        {
+          "cityId": "alexandria",
+          "x": 0.48,
+          "y": 0.51
+        },
+        {
+          "cityId": "carthage",
+          "x": 0.4,
+          "y": 0.55
+        },
+        {
+          "cityId": "london",
+          "x": 0.38,
+          "y": 0.76
+        },
+        {
+          "cityId": "paris",
+          "x": 0.41,
+          "y": 0.7
+        },
+        {
+          "cityId": "cologne",
+          "x": 0.45,
+          "y": 0.72
+        },
+        {
+          "cityId": "prague",
+          "x": 0.48,
+          "y": 0.74
+        },
+        {
+          "cityId": "stockholm",
+          "x": 0.47,
+          "y": 0.83
+        },
+        {
+          "cityId": "aksum",
+          "x": 0.52,
+          "y": 0.38
+        },
+        {
+          "cityId": "meroe",
+          "x": 0.48,
+          "y": 0.34
+        },
+        {
+          "cityId": "timbuktu",
+          "x": 0.36,
+          "y": 0.42
+        },
+        {
+          "cityId": "gao",
+          "x": 0.4,
+          "y": 0.39
+        },
+        {
+          "cityId": "great_zimbabwe",
+          "x": 0.49,
+          "y": 0.18
+        },
+        {
+          "cityId": "teotihuacan",
+          "x": 0.15,
+          "y": 0.55
+        },
+        {
+          "cityId": "tikal",
+          "x": 0.18,
+          "y": 0.47
+        },
+        {
+          "cityId": "tenochtitlan",
+          "x": 0.12,
+          "y": 0.51
+        },
+        {
+          "cityId": "cahokia",
+          "x": 0.18,
+          "y": 0.68
+        },
+        {
+          "cityId": "cusco",
+          "x": 0.25,
+          "y": 0.25
+        },
+        {
+          "cityId": "hawaii",
+          "x": 0.07,
+          "y": 0.4
+        },
+        {
+          "cityId": "samoa",
+          "x": 0.86,
+          "y": 0.16
+        },
+        {
+          "cityId": "tahiti",
+          "x": 0.77,
+          "y": 0.12
+        },
+        {
+          "cityId": "aotearoa",
+          "x": 0.93,
+          "y": 0.09
+        },
+        {
+          "cityId": "uluru",
+          "x": 0.85,
+          "y": 0.25
+        },
+        {
+          "cityId": "changan",
+          "x": 0.76,
+          "y": 0.63
+        },
+        {
+          "cityId": "jerusalem",
+          "x": 0.49,
+          "y": 0.56
+        },
+        {
+          "cityId": "antioch",
+          "x": 0.5,
+          "y": 0.61
+        },
+        {
+          "cityId": "kyiv",
+          "x": 0.52,
+          "y": 0.72
+        },
+        {
+          "cityId": "moscow",
+          "x": 0.56,
+          "y": 0.78
+        },
+        {
+          "cityId": "malacca",
+          "x": 0.74,
+          "y": 0.35
+        },
+        {
+          "cityId": "java",
+          "x": 0.78,
+          "y": 0.27
+        },
+        {
+          "cityId": "madagascar",
+          "x": 0.55,
+          "y": 0.2
+        },
+        {
+          "cityId": "chichen_itza",
+          "x": 0.2,
+          "y": 0.51
+        },
+        {
+          "cityId": "alaska",
+          "x": 0.09,
+          "y": 0.79
+        },
+        {
+          "cityId": "iceland",
+          "x": 0.32,
+          "y": 0.84
+        },
+        {
+          "cityId": "ryukyu",
+          "x": 0.9,
+          "y": 0.55
+        }
+      ],
+      "connections": [
+        {
+          "fromCityId": "changan",
+          "toCityId": "luoyang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "chenliu",
+          "toCityId": "luoyang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "changan",
+          "toCityId": "xuchang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "hanzhong",
+          "toCityId": "changan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "ye",
+          "toCityId": "luoyang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "zitong",
+          "toCityId": "hanzhong",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "zitong",
+          "toCityId": "chengdu",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jiangzhou",
+          "toCityId": "chengdu",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "changsha",
+          "toCityId": "jiangzhou",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "beiping",
+          "toCityId": "ye",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "xiangping",
+          "toCityId": "beiping",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jianye",
+          "toCityId": "xuchang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "wu_commandery",
+          "toCityId": "jianye",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "ryukyu",
+          "toCityId": "wu_commandery",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "kuaiji",
+          "toCityId": "wu_commandery",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "ryukyu",
+          "toCityId": "yamatai",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "xiangping",
+          "toCityId": "pyongyang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "izumo",
+          "toCityId": "pyongyang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "seoul",
+          "toCityId": "pyongyang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jiaozhi",
+          "toCityId": "jiangzhou",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jiaozhi",
+          "toCityId": "yunnan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "pataliputra",
+          "toCityId": "yunnan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "varanasi",
+          "toCityId": "pataliputra",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "delhi",
+          "toCityId": "pataliputra",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "mumbai",
+          "toCityId": "varanasi",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "hormuz",
+          "toCityId": "mumbai",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "aksum",
+          "toCityId": "hormuz",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "meroe",
+          "toCityId": "aksum",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "persepolis",
+          "toCityId": "hormuz",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "persepolis",
+          "toCityId": "babylon",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "alexandria",
+          "toCityId": "babylon",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "babylon",
+          "toCityId": "ctesiphon",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "isfahan",
+          "toCityId": "ctesiphon",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jerusalem",
+          "toCityId": "babylon",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jerusalem",
+          "toCityId": "athens",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "antioch",
+          "toCityId": "athens",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "antioch",
+          "toCityId": "constantinople",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "constantinople",
+          "toCityId": "bukhara",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "bukhara",
+          "toCityId": "samarkand",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "samarkand",
+          "toCityId": "kashgar",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "kyiv",
+          "toCityId": "constantinople",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "kyiv",
+          "toCityId": "prague",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "prague",
+          "toCityId": "cologne",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "cologne",
+          "toCityId": "paris",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "paris",
+          "toCityId": "rome",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "kashgar",
+          "toCityId": "hami",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "london",
+          "toCityId": "paris",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "moscow",
+          "toCityId": "kyiv",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "hami",
+          "toCityId": "karakorum",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "malacca",
+          "toCityId": "jiaozhi",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "carthage",
+          "toCityId": "athens",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "malacca",
+          "toCityId": "lanka",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "malacca",
+          "toCityId": "java",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "java",
+          "toCityId": "uluru",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "stockholm",
+          "toCityId": "prague",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "samoa",
+          "toCityId": "uluru",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "gao",
+          "toCityId": "meroe",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "gao",
+          "toCityId": "timbuktu",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "tahiti",
+          "toCityId": "samoa",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "aotearoa",
+          "toCityId": "samoa",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "iceland",
+          "toCityId": "london",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "madagascar",
+          "toCityId": "lanka",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "madagascar",
+          "toCityId": "great_zimbabwe",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "timbuktu",
+          "toCityId": "chichen_itza",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "chichen_itza",
+          "toCityId": "tikal",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "chichen_itza",
+          "toCityId": "teotihuacan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "tenochtitlan",
+          "toCityId": "teotihuacan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "hawaii",
+          "toCityId": "tenochtitlan",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "cahokia",
+          "toCityId": "teotihuacan",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "alaska",
+          "toCityId": "cahokia",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "cusco",
+          "toCityId": "timbuktu",
+          "travelMonths": 3
+        },
+        {
+          "fromCityId": "chenliu",
+          "toCityId": "xuchang",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "varanasi",
+          "toCityId": "yunnan",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "kuaiji",
+          "toCityId": "changsha",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "changsha",
+          "toCityId": "jianye",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "izumo",
+          "toCityId": "seoul",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "yamatai",
+          "toCityId": "seoul",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "karakorum",
+          "toCityId": "ye",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "delhi",
+          "toCityId": "varanasi",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "lanka",
+          "toCityId": "java",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "isfahan",
+          "toCityId": "babylon",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "rome",
+          "toCityId": "athens",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "jerusalem",
+          "toCityId": "alexandria",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "carthage",
+          "toCityId": "alexandria",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "london",
+          "toCityId": "cologne",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "stockholm",
+          "toCityId": "moscow",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "timbuktu",
+          "toCityId": "carthage",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "great_zimbabwe",
+          "toCityId": "meroe",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "tenochtitlan",
+          "toCityId": "tikal",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "cusco",
+          "toCityId": "gao",
+          "travelMonths": 3
+        },
+        {
+          "fromCityId": "hawaii",
+          "toCityId": "tikal",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "tahiti",
+          "toCityId": "java",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "aotearoa",
+          "toCityId": "tahiti",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "moscow",
+          "toCityId": "prague",
+          "travelMonths": 1
+        },
+        {
+          "fromCityId": "alaska",
+          "toCityId": "iceland",
+          "travelMonths": 3
+        },
+        {
+          "fromCityId": "iceland",
+          "toCityId": "stockholm",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "alaska",
+          "toCityId": "hawaii",
+          "travelMonths": 3
+        },
+        {
+          "fromCityId": "cusco",
+          "toCityId": "tahiti",
+          "travelMonths": 3
+        },
+        {
+          "fromCityId": "uluru",
+          "toCityId": "aotearoa",
+          "travelMonths": 2
+        },
+        {
+          "fromCityId": "moscow",
+          "toCityId": "karakorum",
+          "travelMonths": 2
+        }
+      ],
+      "backgroundAssetPath": "picture/maps/world_72_terrain.jpg"
     }
   ]
 }

@@ -10,9 +10,14 @@
                 <table width="600" height="645" pad="28" backgroundColor="0.070,0.057,0.047,0.98">
                     <label fontKey="title" fontSize="48" width="530" height="60" color="0.90,0.72,0.40,1">${text:new_game_scenario_heading}</label>
                     <row />
+                    <table width="530" height="62">
+                        <textButton id="scenario_china_button" fontSize="25" width="250" height="56">${text:scenario_china_short}</textButton>
+                        <textButton id="scenario_world_button" fontSize="25" width="250" height="56" padLeft="16">${text:scenario_world_short}</textButton>
+                    </table>
+                    <row />
                     <label id="scenario_name_label" fontSize="34" width="530" height="62" wrap="true">${text:scenario_china_name}</label>
                     <row />
-                    <label id="scenario_description_label" fontSize="26" width="530" height="175"
+                    <label id="scenario_description_label" fontSize="24" width="530" height="115"
                         align="left" textAlign="left" wrap="true" color="0.76,0.70,0.61,1">${text:scenario_china_description}</label>
                     <row />
                     <label fontKey="title" fontSize="34" width="530" height="50" color="0.88,0.70,0.39,1">${text:new_game_save_slot_heading}</label>
@@ -23,7 +28,7 @@
                     <row />
                     <textButton id="new_game_slot_3_button" fontSize="28" width="520" height="66" padTop="10">${text:new_game_slot_3_placeholder}</textButton>
                     <row />
-                    <label id="selected_slot_label" fontSize="25" width="530" height="52" color="0.74,0.68,0.58,1">${text:new_game_selected_slot_placeholder}</label>
+                    <label id="selected_slot_label" fontSize="24" width="530" height="42" color="0.74,0.68,0.58,1">${text:new_game_selected_slot_placeholder}</label>
                 </table>
                 <table width="34"></table>
                 <table width="1035" height="645" pad="28" backgroundColor="0.060,0.049,0.041,0.98">

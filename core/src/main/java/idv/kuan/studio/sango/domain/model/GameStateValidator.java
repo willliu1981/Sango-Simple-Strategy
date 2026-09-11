@@ -33,7 +33,9 @@ public final class GameStateValidator {
         requireText(gameState.playerFactionId, "playerFactionId");
         requireText(gameState.opponentFactionId, "opponentFactionId");
         requireText(gameState.neutralFactionId, "neutralFactionId");
-        requireText(gameState.victoryTargetCityId, "victoryTargetCityId");
+        if (gameState.scenarioObjectiveType == null) {
+            throw new IllegalArgumentException("scenarioObjectiveType 不可為 null。");
+        }
         requireText(gameState.campaignInstanceId, "campaignInstanceId");
         requireText(gameState.lastActionCode, "lastActionCode");
         if (gameState.scenarioObjectiveStatus == null) {
@@ -114,10 +116,21 @@ public final class GameStateValidator {
                 "CityState.ownerFactionId"
             );
         }
-        if (!cityStatesById.containsKey(gameState.victoryTargetCityId)) {
-            throw new IllegalArgumentException(
-                "victoryTargetCityId 沒有對應城池：" + gameState.victoryTargetCityId
-            );
+        if (gameState.scenarioObjectiveType == ScenarioObjectiveType.CAPTURE_CITY) {
+            requireText(gameState.victoryTargetCityId, "victoryTargetCityId");
+            if (!cityStatesById.containsKey(gameState.victoryTargetCityId)) {
+                throw new IllegalArgumentException(
+                    "victoryTargetCityId 沒有對應城池：" + gameState.victoryTargetCityId
+                );
+            }
+        } else {
+            requireText(gameState.victoryTargetFactionId, "victoryTargetFactionId");
+            requireFactionReference(factionIds, gameState.victoryTargetFactionId,
+                "victoryTargetFactionId");
+            if (gameState.playerFactionId.equals(gameState.victoryTargetFactionId)
+                || gameState.neutralFactionId.equals(gameState.victoryTargetFactionId)) {
+                throw new IllegalArgumentException("消滅勢力目標不可指向玩家或中立勢力。");
+            }
         }
         requireCityReference(cityStatesById, gameState.strategicMapFocusedCityId,
             "strategicMapFocusedCityId");

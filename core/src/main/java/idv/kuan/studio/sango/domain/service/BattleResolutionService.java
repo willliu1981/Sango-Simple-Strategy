@@ -17,6 +17,7 @@ import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
+import idv.kuan.studio.sango.domain.model.ScenarioObjectiveType;
 import idv.kuan.studio.sango.domain.rule.BattleTactic;
 import idv.kuan.studio.sango.domain.rule.MilitaryRules;
 import idv.kuan.studio.sango.domain.rule.DefensePolicy;
@@ -394,12 +395,21 @@ public final class BattleResolutionService {
     private void evaluateScenarioAfterCapture(GameState gameState, String attackingFactionId,
         String defendingFactionId, String capturedCityId, boolean capturedDefendingCapital,
         TurnResolutionReport turnResolutionReport) {
-        if (gameState.playerFactionId.equals(attackingFactionId)
+        if (gameState.scenarioObjectiveType == ScenarioObjectiveType.CAPTURE_CITY
+            && gameState.playerFactionId.equals(attackingFactionId)
             && gameState.victoryTargetCityId.equals(capturedCityId)
             && gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.IN_PROGRESS) {
             gameState.scenarioObjectiveStatus = ScenarioObjectiveStatus.ACHIEVED;
             turnResolutionReport.add(new TurnEvent(TurnEventType.CAMPAIGN_VICTORY,
                 attackingFactionId, capturedCityId, null, 0, 0));
+        }
+        if (gameState.scenarioObjectiveType == ScenarioObjectiveType.ELIMINATE_FACTION
+            && gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.IN_PROGRESS
+            && gameState.victoryTargetFactionId.equals(defendingFactionId)
+            && !gameState.requireFactionState(defendingFactionId).active) {
+            gameState.scenarioObjectiveStatus = ScenarioObjectiveStatus.ACHIEVED;
+            turnResolutionReport.add(new TurnEvent(TurnEventType.CAMPAIGN_FACTION_ELIMINATED,
+                defendingFactionId, capturedCityId, null, 0, 0));
         }
         if (!gameState.playerFactionId.equals(defendingFactionId)) {
             return;
@@ -416,7 +426,8 @@ public final class BattleResolutionService {
             return;
         }
         if (capturedDefendingCapital) {
-            if (gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.IN_PROGRESS) {
+            if (gameState.scenarioObjectiveType == ScenarioObjectiveType.CAPTURE_CITY
+                && gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.IN_PROGRESS) {
                 gameState.scenarioObjectiveStatus = ScenarioObjectiveStatus.FAILED;
                 turnResolutionReport.add(new TurnEvent(TurnEventType.CAMPAIGN_DEFEAT_CAPITAL,
                     attackingFactionId, capturedCityId, null, 0, 0));

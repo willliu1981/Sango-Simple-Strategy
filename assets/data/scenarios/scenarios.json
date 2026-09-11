@@ -181,6 +181,218 @@
           ]
         }
       ]
+    },
+    {
+      "id": "world_convergence",
+      "nameKey": "scenario_world_name",
+      "descriptionKey": "scenario_world_description",
+      "startYear": 190,
+      "startMonth": 1,
+      "initialTurn": 1,
+      "actionPointsPerTurn": 3,
+      "mapId": "world_72",
+      "factionIds": [
+        "cao_cao",
+        "liu_bei",
+        "sun_ce",
+        "steppe_khanate",
+        "western_empire",
+        "star_feather"
+      ],
+      "opponentFactionId": "steppe_khanate",
+      "neutralFactionId": "neutral",
+      "turnLimitMonths": 60,
+      "enemyAttackDelayMonths": 3,
+      "playerStarts": [
+        {
+          "playerFactionId": "cao_cao",
+          "startCityId": "luoyang",
+          "objectiveType": "ELIMINATE_FACTION",
+          "targetFactionId": "liu_bei"
+        },
+        {
+          "playerFactionId": "liu_bei",
+          "startCityId": "chengdu",
+          "objectiveType": "ELIMINATE_FACTION",
+          "targetFactionId": "cao_cao"
+        },
+        {
+          "playerFactionId": "sun_ce",
+          "startCityId": "jianye",
+          "objectiveType": "ELIMINATE_FACTION",
+          "targetFactionId": "cao_cao"
+        },
+        {
+          "playerFactionId": "steppe_khanate",
+          "startCityId": "karakorum",
+          "objectiveType": "ELIMINATE_FACTION",
+          "targetFactionId": "cao_cao"
+        },
+        {
+          "playerFactionId": "western_empire",
+          "startCityId": "rome",
+          "objectiveType": "ELIMINATE_FACTION",
+          "targetFactionId": "persian_court"
+        },
+        {
+          "playerFactionId": "star_feather",
+          "startCityId": "teotihuacan",
+          "objectiveType": "ELIMINATE_FACTION",
+          "targetFactionId": "island_sailors"
+        }
+      ],
+      "initialFactions": [
+        {
+          "factionId": "cao_cao",
+          "capitalCityId": "luoyang",
+          "cityIds": [
+            "luoyang",
+            "xuchang",
+            "ye",
+            "chenliu",
+            "beiping"
+          ]
+        },
+        {
+          "factionId": "liu_bei",
+          "capitalCityId": "chengdu",
+          "cityIds": [
+            "chengdu",
+            "hanzhong",
+            "zitong",
+            "jiangzhou",
+            "yunnan"
+          ]
+        },
+        {
+          "factionId": "sun_ce",
+          "capitalCityId": "jianye",
+          "cityIds": [
+            "jianye",
+            "wu_commandery",
+            "kuaiji",
+            "changsha",
+            "jiaozhi"
+          ]
+        },
+        {
+          "factionId": "east_sea_states",
+          "capitalCityId": "xiangping",
+          "cityIds": [
+            "xiangping",
+            "pyongyang",
+            "seoul",
+            "yamatai",
+            "izumo"
+          ]
+        },
+        {
+          "factionId": "steppe_khanate",
+          "capitalCityId": "karakorum",
+          "cityIds": [
+            "karakorum",
+            "hami",
+            "kashgar",
+            "samarkand",
+            "bukhara"
+          ]
+        },
+        {
+          "factionId": "india_compact",
+          "capitalCityId": "delhi",
+          "cityIds": [
+            "delhi",
+            "mumbai",
+            "pataliputra",
+            "varanasi",
+            "lanka"
+          ]
+        },
+        {
+          "factionId": "persian_court",
+          "capitalCityId": "ctesiphon",
+          "cityIds": [
+            "ctesiphon",
+            "persepolis",
+            "babylon",
+            "isfahan",
+            "hormuz"
+          ]
+        },
+        {
+          "factionId": "western_empire",
+          "capitalCityId": "rome",
+          "cityIds": [
+            "rome",
+            "athens",
+            "constantinople",
+            "alexandria",
+            "carthage"
+          ]
+        },
+        {
+          "factionId": "northern_league",
+          "capitalCityId": "paris",
+          "cityIds": [
+            "london",
+            "paris",
+            "cologne",
+            "prague",
+            "stockholm"
+          ]
+        },
+        {
+          "factionId": "red_earth_kings",
+          "capitalCityId": "aksum",
+          "cityIds": [
+            "aksum",
+            "meroe",
+            "timbuktu",
+            "gao",
+            "great_zimbabwe"
+          ]
+        },
+        {
+          "factionId": "star_feather",
+          "capitalCityId": "teotihuacan",
+          "cityIds": [
+            "teotihuacan",
+            "tikal",
+            "tenochtitlan",
+            "cahokia",
+            "cusco"
+          ]
+        },
+        {
+          "factionId": "island_sailors",
+          "capitalCityId": "samoa",
+          "cityIds": [
+            "hawaii",
+            "samoa",
+            "tahiti",
+            "aotearoa",
+            "uluru"
+          ]
+        },
+        {
+          "factionId": "neutral",
+          "capitalCityId": "changan",
+          "cityIds": [
+            "changan",
+            "jerusalem",
+            "antioch",
+            "kyiv",
+            "moscow",
+            "malacca",
+            "java",
+            "madagascar",
+            "chichen_itza",
+            "alaska",
+            "iceland",
+            "ryukyu"
+          ]
+        }
+      ]
     }
   ]
 }

@@ -21,6 +21,7 @@ import idv.kuan.studio.sango.domain.definition.MapCityNodeDefinition;
 import idv.kuan.studio.sango.domain.definition.ScenarioDefinition;
 import idv.kuan.studio.sango.domain.definition.StrategicMapDefinition;
 import idv.kuan.studio.sango.domain.rule.CampaignBalance;
+import idv.kuan.studio.sango.domain.model.ScenarioObjectiveType;
 import idv.kuan.studio.sango.repository.GameDefinitionRepository;
 
 /**
@@ -239,7 +240,13 @@ public final class AssetJsonGameDefinitionRepository implements GameDefinitionRe
                 "CampaignStartDefinition.playerFactionId"
             );
             requireText(playerStartDefinition.startCityId, "CampaignStartDefinition.startCityId");
-            requireText(playerStartDefinition.targetCityId, "CampaignStartDefinition.targetCityId");
+            ScenarioObjectiveType objectiveType = effectiveObjectiveType(playerStartDefinition);
+            if (objectiveType == ScenarioObjectiveType.CAPTURE_CITY) {
+                requireText(playerStartDefinition.targetCityId, "CampaignStartDefinition.targetCityId");
+            } else {
+                requireText(playerStartDefinition.targetFactionId,
+                    "CampaignStartDefinition.targetFactionId");
+            }
             if (!playerFactionIds.add(playerStartDefinition.playerFactionId)) {
                 throw new IllegalStateException(
                     "CampaignStartDefinition.playerFactionId 重複："
@@ -382,15 +389,20 @@ public final class AssetJsonGameDefinitionRepository implements GameDefinitionRe
             for (CampaignStartDefinition playerStartDefinition : scenarioDefinition.playerStarts) {
                 requireFaction(playerStartDefinition.playerFactionId);
                 mapDefinition.requireNode(playerStartDefinition.startCityId);
-                mapDefinition.requireNode(playerStartDefinition.targetCityId);
-                if (mapDefinition.findConnection(
-                    playerStartDefinition.startCityId,
-                    playerStartDefinition.targetCityId
-                ) == null) {
-                    throw new IllegalStateException(
-                        "玩家起始城與目標城必須直接相鄰："
-                            + playerStartDefinition.playerFactionId
-                    );
+                if (effectiveObjectiveType(playerStartDefinition)
+                    == ScenarioObjectiveType.CAPTURE_CITY) {
+                    mapDefinition.requireNode(playerStartDefinition.targetCityId);
+                    if (mapDefinition.findConnection(
+                        playerStartDefinition.startCityId,
+                        playerStartDefinition.targetCityId
+                    ) == null) {
+                        throw new IllegalStateException(
+                            "玩家起始城與目標城必須直接相鄰："
+                                + playerStartDefinition.playerFactionId
+                        );
+                    }
+                } else {
+                    requireFaction(playerStartDefinition.targetFactionId);
                 }
             }
         }
@@ -458,11 +470,24 @@ public final class AssetJsonGameDefinitionRepository implements GameDefinitionRe
         }
         for (String factionId : scenario.factionIds) {
             CampaignStartDefinition playerStart = scenario.requirePlayerStart(factionId);
-            if (!playerStart.startCityId.equals(capitalsByFactionId.get(factionId))
-                || factionId.equals(ownersByCityId.get(playerStart.targetCityId))) {
+            if (!playerStart.startCityId.equals(capitalsByFactionId.get(factionId))) {
                 throw new IllegalStateException("玩家首都或勝利目標的歸屬不正確：" + factionId);
             }
+            if (effectiveObjectiveType(playerStart) == ScenarioObjectiveType.CAPTURE_CITY) {
+                if (factionId.equals(ownersByCityId.get(playerStart.targetCityId))) {
+                    throw new IllegalStateException("玩家勝利目標不可是己方城池：" + factionId);
+                }
+            } else if (!factionIds.contains(playerStart.targetFactionId)
+                || factionId.equals(playerStart.targetFactionId)
+                || scenario.neutralFactionId.equals(playerStart.targetFactionId)) {
+                throw new IllegalStateException("消滅勢力目標的歸屬不正確：" + factionId);
+            }
         }
+    }
+
+    private ScenarioObjectiveType effectiveObjectiveType(CampaignStartDefinition playerStart) {
+        return playerStart.objectiveType == null
+            ? ScenarioObjectiveType.CAPTURE_CITY : playerStart.objectiveType;
     }
 
     private void validateUniqueTextArray(String[] values, String fieldName) {

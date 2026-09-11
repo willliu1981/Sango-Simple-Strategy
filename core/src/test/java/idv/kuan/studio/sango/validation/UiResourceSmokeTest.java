@@ -242,7 +242,7 @@ public final class UiResourceSmokeTest {
             }
             checkedMaps += 1;
         }
-        check(checkedMaps == 2, "六城舊存檔與 42 城新局都有各自底圖");
+        check(checkedMaps == 3, "六城、42 城與 72 據點世界地圖都有各自底圖");
         String cityXml = Files.readString(assetsPath.resolve("ui/city.xml"));
         String mapXml = Files.readString(assetsPath.resolve("ui/strategic_map.xml"));
         check(cityXml.contains("id=\"national_order_label\""), "內政可查看全城民心，不只顯示目前城池");

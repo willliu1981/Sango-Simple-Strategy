@@ -79,6 +79,96 @@
       "initialGold": 1000,
       "initialFood": 2400,
       "playable": true
+    },
+    {
+      "id": "east_sea_states",
+      "nameKey": "faction_east_sea_states",
+      "rulerNameKey": "ruler_east_sea_states",
+      "summaryKey": "faction_east_sea_states_summary",
+      "capitalCityId": "xiangping",
+      "initialGold": 1150,
+      "initialFood": 2300,
+      "playable": true
+    },
+    {
+      "id": "steppe_khanate",
+      "nameKey": "faction_steppe_khanate",
+      "rulerNameKey": "ruler_steppe_khanate",
+      "summaryKey": "faction_steppe_khanate_summary",
+      "capitalCityId": "karakorum",
+      "initialGold": 1050,
+      "initialFood": 2500,
+      "playable": true
+    },
+    {
+      "id": "india_compact",
+      "nameKey": "faction_india_compact",
+      "rulerNameKey": "ruler_india_compact",
+      "summaryKey": "faction_india_compact_summary",
+      "capitalCityId": "delhi",
+      "initialGold": 1350,
+      "initialFood": 2700,
+      "playable": true
+    },
+    {
+      "id": "persian_court",
+      "nameKey": "faction_persian_court",
+      "rulerNameKey": "ruler_persian_court",
+      "summaryKey": "faction_persian_court_summary",
+      "capitalCityId": "ctesiphon",
+      "initialGold": 1300,
+      "initialFood": 2400,
+      "playable": true
+    },
+    {
+      "id": "western_empire",
+      "nameKey": "faction_western_empire",
+      "rulerNameKey": "ruler_western_empire",
+      "summaryKey": "faction_western_empire_summary",
+      "capitalCityId": "rome",
+      "initialGold": 1450,
+      "initialFood": 2500,
+      "playable": true
+    },
+    {
+      "id": "northern_league",
+      "nameKey": "faction_northern_league",
+      "rulerNameKey": "ruler_northern_league",
+      "summaryKey": "faction_northern_league_summary",
+      "capitalCityId": "paris",
+      "initialGold": 1200,
+      "initialFood": 2300,
+      "playable": true
+    },
+    {
+      "id": "red_earth_kings",
+      "nameKey": "faction_red_earth_kings",
+      "rulerNameKey": "ruler_red_earth_kings",
+      "summaryKey": "faction_red_earth_kings_summary",
+      "capitalCityId": "aksum",
+      "initialGold": 1100,
+      "initialFood": 2600,
+      "playable": true
+    },
+    {
+      "id": "star_feather",
+      "nameKey": "faction_star_feather",
+      "rulerNameKey": "ruler_star_feather",
+      "summaryKey": "faction_star_feather_summary",
+      "capitalCityId": "teotihuacan",
+      "initialGold": 1200,
+      "initialFood": 2500,
+      "playable": true
+    },
+    {
+      "id": "island_sailors",
+      "nameKey": "faction_island_sailors",
+      "rulerNameKey": "ruler_island_sailors",
+      "summaryKey": "faction_island_sailors_summary",
+      "capitalCityId": "samoa",
+      "initialGold": 1000,
+      "initialFood": 2400,
+      "playable": true
     }
   ]
 }

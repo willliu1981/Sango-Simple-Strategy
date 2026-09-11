@@ -89,6 +89,7 @@ public final class TurnReportTextFormatter {
 
     private boolean isPlayerEvent(TurnEvent event, String playerFactionId) {
         return switch (event.getType()) {
+            case CAMPAIGN_FACTION_ELIMINATED -> true;
             case BATTLE_ATTACKER_WON, BATTLE_DEFENDER_WON, CITY_OCCUPIED_UNOPPOSED,
                 CITY_CAPTURED, AI_ACTIONS_USED, ENEMY_PREPARING, ENEMY_REINFORCING, ENEMY_MARCHING -> false;
             default -> event.getFactionId() == null || playerFactionId.equals(event.getFactionId());
@@ -252,6 +253,11 @@ public final class TurnReportTextFormatter {
                 "report_event_victory",
                 "劇本目標達成：已攻下 {0}。戰局進入自由征戰模式。",
                 optionalCityName(turnEvent.getCityId())
+            );
+            case CAMPAIGN_FACTION_ELIMINATED -> text(
+                "report_event_faction_eliminated",
+                "劇本目標達成：{0}已滅亡。戰局進入自由征戰模式。",
+                factionName(turnEvent.getFactionId())
             );
             case CAMPAIGN_DEFEAT_CAPITAL -> text(
                 "report_event_defeat_capital",

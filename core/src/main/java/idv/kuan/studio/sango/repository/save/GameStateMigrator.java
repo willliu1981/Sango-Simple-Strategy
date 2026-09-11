@@ -15,11 +15,12 @@ import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
+import idv.kuan.studio.sango.domain.model.ScenarioObjectiveType;
 import idv.kuan.studio.sango.domain.rule.DefensePolicy;
 import idv.kuan.studio.sango.domain.service.CityIntelligenceService;
 
 /**
- * 逐版遷移 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13。
+ * 逐版遷移 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> 14。
  * 僅遷移狀態結構，不替換舊劇本、刷新情報或回算既有戰報。
  */
 @SuppressWarnings("deprecation")
@@ -61,6 +62,9 @@ public final class GameStateMigrator {
         }
         if (migratedState.schemaVersion == 12) {
             migrateSchemaTwelveToThirteen(migratedState);
+        }
+        if (migratedState.schemaVersion == 13) {
+            migrateSchemaThirteenToFourteen(migratedState);
         }
         if (migratedState.schemaVersion != SangoVersion.GAME_STATE_SCHEMA_VERSION) {
             throw new IllegalArgumentException(
@@ -308,6 +312,12 @@ public final class GameStateMigrator {
             }
         }
         gameState.schemaVersion = 13;
+    }
+
+    private void migrateSchemaThirteenToFourteen(GameState gameState) {
+        gameState.scenarioObjectiveType = ScenarioObjectiveType.CAPTURE_CITY;
+        gameState.victoryTargetFactionId = null;
+        gameState.schemaVersion = 14;
     }
 
     private void scaleCityPopulations(CityState[] cityStates) {

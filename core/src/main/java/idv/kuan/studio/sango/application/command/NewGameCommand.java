@@ -24,6 +24,7 @@ import idv.kuan.studio.sango.domain.model.FactionState;
 import idv.kuan.studio.sango.domain.model.GameState;
 import idv.kuan.studio.sango.domain.model.GameplayStatus;
 import idv.kuan.studio.sango.domain.model.ScenarioObjectiveStatus;
+import idv.kuan.studio.sango.domain.model.ScenarioObjectiveType;
 import idv.kuan.studio.sango.domain.rule.DefensePolicy;
 import idv.kuan.studio.sango.domain.model.GameStateValidator;
 import idv.kuan.studio.sango.domain.rule.FactionActionPointRules;
@@ -150,7 +151,7 @@ public final class NewGameCommand {
         gameState.playerFactionId = playerFactionDefinition.id;
         gameState.opponentFactionId = opponentFactionDefinition.id;
         gameState.neutralFactionId = neutralFactionDefinition.id;
-        gameState.victoryTargetCityId = campaignStartDefinition.targetCityId;
+        applyObjective(gameState, campaignStartDefinition);
         gameState.campaignInstanceId = UUID.randomUUID().toString();
         gameState.strategicMapFocusedCityId = campaignStartDefinition.startCityId;
         gameState.scenarioObjectiveStatus = ScenarioObjectiveStatus.IN_PROGRESS;
@@ -210,7 +211,7 @@ public final class NewGameCommand {
         gameState.playerFactionId = playerFaction.id;
         gameState.opponentFactionId = scenarioDefinition.opponentFactionId;
         gameState.neutralFactionId = scenarioDefinition.neutralFactionId;
-        gameState.victoryTargetCityId = playerStart.targetCityId;
+        applyObjective(gameState, playerStart);
         gameState.campaignInstanceId = UUID.randomUUID().toString();
         gameState.strategicMapFocusedCityId = playerStart.startCityId;
         gameState.scenarioObjectiveStatus = ScenarioObjectiveStatus.IN_PROGRESS;
@@ -229,6 +230,13 @@ public final class NewGameCommand {
         gameState.armyStates = new ArmyState[0];
         gameState.battleReports = new BattleReport[0];
         return gameState;
+    }
+
+    private void applyObjective(GameState gameState, CampaignStartDefinition playerStart) {
+        gameState.scenarioObjectiveType = playerStart.objectiveType == null
+            ? ScenarioObjectiveType.CAPTURE_CITY : playerStart.objectiveType;
+        gameState.victoryTargetCityId = playerStart.targetCityId;
+        gameState.victoryTargetFactionId = playerStart.targetFactionId;
     }
 
     private FactionState createFactionState(

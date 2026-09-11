@@ -38,7 +38,8 @@ public final class ScreenMusic {
         }
         TurnResolutionReport report = SangoServices.session().getLastTurnReport();
         return report != null && report.getEvents().stream()
-            .anyMatch(event -> event.getType() == TurnEventType.CAMPAIGN_VICTORY);
+            .anyMatch(event -> event.getType() == TurnEventType.CAMPAIGN_VICTORY
+                || event.getType() == TurnEventType.CAMPAIGN_FACTION_ELIMINATED);
     }
 
     public static void play(ScreenId screenId) {
