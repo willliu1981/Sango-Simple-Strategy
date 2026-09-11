@@ -80,8 +80,8 @@ def load_contract(path: Path) -> dict[str, Any]:
     required = {
         "contractVersion",
         "moduleId",
-        "requiredInstallerVersion",
-        "installationMode",
+        "syncMode",
+        "promptVersion",
         "sourcePackage",
         "targetPackage",
         "versionSource",
@@ -92,12 +92,17 @@ def load_contract(path: Path) -> dict[str, Any]:
     missing = sorted(required - contract.keys())
     if missing:
         raise ExportError(f"契約缺少欄位：{', '.join(missing)}")
-    if contract["installationMode"] != "preflight-only":
-        raise ExportError("第一階段契約的 installationMode 必須是 preflight-only")
+    if contract["syncMode"] != "codex-assisted":
+        raise ExportError("同步契約的 syncMode 必須是 codex-assisted")
+    if not isinstance(contract["promptVersion"], int) or contract["promptVersion"] < 1:
+        raise ExportError("promptVersion 必須是正整數")
     safe_relative_path(contract["versionSource"], "versionSource")
+    allowed_managed_states = {"replace-entire-tree", "copy-listed-files"}
     for index, item in enumerate(contract["managedPaths"]):
-        if not isinstance(item, dict) or item.get("state") != "candidate-only":
-            raise ExportError(f"managedPaths[{index}] 必須標示 state=candidate-only")
+        if not isinstance(item, dict) or item.get("state") not in allowed_managed_states:
+            raise ExportError(
+                f"managedPaths[{index}] 必須標示 state=replace-entire-tree 或 copy-listed-files"
+            )
         safe_relative_path(item.get("path", ""), f"managedPaths[{index}].path")
     for index, item in enumerate(contract["protectedPaths"]):
         safe_relative_path(item, f"protectedPaths[{index}]")
@@ -119,6 +124,14 @@ def load_contract(path: Path) -> dict[str, Any]:
             for pattern in source_set[key]:
                 if not isinstance(pattern, str) or not pattern or "\\" in pattern or ".." in PurePosixPath(pattern).parts:
                     raise ExportError(f"sourceSets[{index}].{key} 含不安全 pattern：{pattern!r}")
+        target_hint = source_set["targetHint"]
+        if not any(
+            target_hint == item["path"] or target_hint.startswith(item["path"] + "/")
+            for item in contract["managedPaths"]
+        ):
+            raise ExportError(
+                f"sourceSets[{index}].targetHint 未落在任何 managed path：{target_hint}"
+            )
     return contract
 
 
@@ -247,11 +260,11 @@ def build_manifest(
     game_version, save_schema, state_schema = parse_versions(ensure_inside_repo(repo, contract["versionSource"]))
     commit = run_git(repo, "rev-parse", "HEAD").stdout.decode("ascii").strip()
     return {
-        "manifestVersion": 1,
+        "manifestVersion": 2,
         "moduleId": contract["moduleId"],
         "contractVersion": contract["contractVersion"],
-        "requiredInstallerVersion": contract["requiredInstallerVersion"],
-        "installationMode": contract["installationMode"],
+        "syncMode": contract["syncMode"],
+        "promptVersion": contract["promptVersion"],
         "gameVersion": game_version,
         "saveDocumentSchemaVersion": save_schema,
         "gameStateSchemaVersion": state_schema,
@@ -311,7 +324,7 @@ def write_codex_prompt(output: Path) -> Path:
     prompt_path = codex_prompt_path(output)
     content = f"""# Curated「群島紀元」同步 Sango 策略核心
 
-此檔由 Sango exporter 產生。請先把第一階段貼到 Curated 專案的 Codex；確認盤點方案後，再於同一個任務貼上第二階段。
+此檔由 Sango exporter 產生。同步模式固定為 Codex-assisted：不建立固定安裝器，也不使用通用 `--apply`。請先把第一階段貼到 Curated 專案的 Codex；確認盤點方案後，再於同一個任務貼上第二階段。
 
 ## 第一階段：只盤點
 
@@ -326,16 +339,17 @@ Sango 同步來源包：
 SHA-256 驗證檔：
 {sha256_path}
 
-請先使用同名 .sha256 驗證 ZIP 完整性；不符時停止。接著讀取 ZIP 內的 manifest.json、package-contract.json 與 payload，並實際比對目前 Curated 程式、UI、資料、存檔及測試。
+請先使用同名 .sha256 驗證 ZIP 完整性；不符時停止。接著讀取 ZIP 內的 manifest.json、package-contract.json 與 payload，並確認 Curated 中準備被整體替換的群島策略程式、UI、資料及測試範圍。
 
 同步原則：
 1. Sango 是玩法、UI 行為、AI、戰鬥、月份結算、存檔 schema 與回歸測試的唯一上游。
-2. Curated 不保留自行分岔的玩法；需要時以 Sango 現況重建群島策略核心。
-3. Curated 只保留群島名詞、島民人口尺度、島嶼地圖／劇本／素材、宿主導航與獨立存檔／偏好路徑。
-4. 不可直接覆寫 Curadia、塔防、學習功能、宿主 provider、全域字型、Skin、圖片、音訊或玩家資料。
-5. 不要只做文字取代；必須辨識資料模型、資源路徑、畫面生命週期及存檔差異。
-6. 先提出可直接同步、需要 adapter、需要遷移及需要我決定的項目。
-7. 本次只盤點與提出方案，不修改、不 commit。
+2. Curated 舊群島策略核心不做逐檔合併；依 package-contract.json 的 managedPaths 整體替換為 Sango payload。
+3. 替換完成後只套用 Curated 群島名詞，並接回宿主導航與 Curated 專用存檔／偏好路徑；不得保留 Curated 舊玩法分岔。
+4. Curated 舊群島存檔不遷移、不刪除，但視為與新版不相容；新版要求開新局。
+5. 不可覆寫 Curadia、塔防、學習功能、宿主 provider、World Gate、全域字型、Skin、圖片、音訊或實際玩家資料。
+6. 本流程長期採 Codex-assisted sync；不得規劃固定 installer、通用 --apply 或無人判斷的自動覆寫。
+7. 只需列出將刪除／替換的精確根目錄、package／資源路徑改寫、名詞替換、宿主接線與測試方式；不要設計玩法 adapter 或舊檔 migration。
+8. 本次只盤點與提出方案，不修改、不 commit。
 ```
 
 ## 第二階段：確認後執行
@@ -348,14 +362,16 @@ SHA-256 驗證檔：
 
 請：
 1. 再次驗證 {sha256_path}；驗證不符時停止。
-2. 保留 Curated 專用名詞、人口尺度、島嶼資料、素材、宿主接線及獨立存檔位置。
-3. 其餘玩法以 Sango 為準，不保留 Curated 舊有玩法分岔。
-4. 完成必要的 package、資源路徑及資料 adapter。
-5. 處理舊存檔遷移，但不得修改或刪除實際玩家存檔。
-6. 移植並執行 Sango 回歸測試，再執行 Curated 編譯與既有測試。
-7. 記錄實際套用的 Sango gameVersion、sourceCommit、adapter 版本及未套用差異。
-8. 報告無法自動判斷的差異及剩餘風險。
-9. 不要自動 commit，等我確認後再 commit。
+2. 只執行本次經確認的 Codex-assisted sync；不要建立固定 installer 或 --apply 流程。
+3. 依 package-contract.json 的 managedPaths 刪除 Curated 舊群島策略核心，完整放入 Sango payload；不要逐檔合併兩套玩法。
+4. 改寫必要的 Java package 與資源根路徑，然後套用 Curated 群島名詞；不得保留 Curated 舊玩法、AI、戰鬥或規則常數。
+5. 只建立最薄的宿主接線，使群島模式能從 Curated 進入並返回 World Gate，且使用 Curated 專用存檔／偏好路徑。
+6. Curated 舊群島存檔不遷移、不刪除，也不得載入新版；新版要求玩家開新局。
+7. 不可修改 Curadia、塔防、學習功能、宿主 provider、全域字型、Skin、圖片、音訊或實際玩家資料。
+8. 移植並執行 Sango 回歸測試，再執行 Curated 編譯與既有測試。
+9. 記錄實際套用的 Sango gameVersion、sourceCommit、名詞對照版本及未套用差異。
+10. 報告無法自動判斷的差異及剩餘風險。
+11. 不要自動 commit，等我確認後再 commit。
 ```
 """
     prompt_path.write_text(content, encoding="utf-8", newline="\n")
@@ -399,7 +415,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.dry_run:
             print(
-                f"OK preflight-only: {manifest['moduleId']} {manifest['gameVersion']}, "
+                f"OK codex-assisted: {manifest['moduleId']} {manifest['gameVersion']}, "
                 f"commit {manifest['sourceCommit']}, {len(files)} files"
             )
             return 0
@@ -409,7 +425,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"已輸出：{output}")
         print(f"Codex prompt：{prompt_path}")
         print(f"SHA-256：{digest}")
-        print("安裝模式：preflight-only（Curated 不得 live overwrite）")
+        print("同步模式：codex-assisted（不提供固定安裝器或 --apply）")
         return 0
     except ExportError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)

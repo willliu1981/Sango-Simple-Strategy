@@ -1,8 +1,8 @@
 # Sango 策略模組包
 
-這套工具把 Sango 的策略玩法來源整理成可稽核、可重現的 ZIP，供 Curated 端 Codex 協助同步「群島紀元」。它不是把 Curated 當成另一套規則維護；Sango 仍是玩法、UI、AI、存檔格式與回歸測試的唯一上游。
+這套工具把 Sango 的策略玩法來源整理成可稽核、可重現的 ZIP，供 Curated 端 Codex 整體替換「群島紀元」。它不是把 Curated 當成另一套規則維護；Sango 仍是玩法、UI、AI、資料、存檔格式與回歸測試的唯一上游。
 
-目前契約的 `installationMode` 固定為 `preflight-only`，表示同步包本身不能直接覆寫 Curated。匯出器會另外產生已填好完整路徑的兩階段 Codex prompt；Codex 必須先實際比對並提出方案，取得使用者確認後才可修改 Curated。
+契約的 `syncMode` 固定為 `codex-assisted`。同步包不提供固定安裝器或通用 `--apply`；匯出器會另外產生已填好完整路徑的兩階段 Codex prompt。第一階段確認精確替換範圍，第二階段刪除 Curated 舊群島策略核心、完整放入 Sango，再套用群島名詞與最薄的宿主接線。
 
 ## 內容與邊界
 
@@ -16,9 +16,9 @@
 
 - Android、Desktop launcher、`META-INF/services` 與 Curated 主程式註冊流程。
 - 字型、Skin、圖片、音效等由 Curated 保有的外觀與宿主資產。
-- 玩家存檔、偏好設定、Gradle/build output、產生式 assets index 與任何執行期資料。
+- 玩家存檔、偏好設定、Gradle/build output、產生式 assets index 與任何執行期資料。Curated 舊群島存檔保留原檔但不遷移，新版要求開新局。
 
-候選 managed paths 與不可觸碰的 protected paths 都寫在 `tools/sango-module/package-contract.json`，並複製進 ZIP 與 manifest。`candidate-only` 不代表已取得覆寫權。
+可整體替換或只複製列出檔案的 managed paths，以及不可觸碰的 protected paths，都寫在 `tools/sango-module/package-contract.json`，並複製進 ZIP 與 manifest。實際替換仍需先完成第一階段盤點並取得使用者確認。
 
 ## 使用方式
 
@@ -58,7 +58,7 @@ ZIP 依 archive path 排序，所有 entry 使用固定時間、固定 Unix 權�
 
 `manifest.json` 記錄：
 
-- 契約版本、最低安裝器版本與安裝模式。
+- manifest／契約版本、Codex prompt 版本與同步模式。
 - Sango 遊戲版本、存檔文件 schema、遊戲狀態 schema 及來源 commit。
 - 契約 SHA-256。
 - contract／exporter 是否已由來源 commit 完整追蹤，以及是否使用開發 override。

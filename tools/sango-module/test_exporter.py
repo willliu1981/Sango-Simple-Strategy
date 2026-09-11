@@ -57,10 +57,10 @@ class ExporterTest(unittest.TestCase):
 
     def _contract(self) -> dict:
         return {
-            "contractVersion": 1,
+            "contractVersion": 2,
             "moduleId": "fixture",
-            "requiredInstallerVersion": "0.1.0",
-            "installationMode": "preflight-only",
+            "syncMode": "codex-assisted",
+            "promptVersion": 1,
             "sourcePackage": "idv.kuan.studio.sango",
             "targetPackage": "example.target",
             "versionSource": "core/src/main/java/idv/kuan/studio/sango/SangoVersion.java",
@@ -84,7 +84,10 @@ class ExporterTest(unittest.TestCase):
                     "transform": "copy",
                 },
             ],
-            "managedPaths": [{"path": "target/java", "state": "candidate-only"}],
+            "managedPaths": [
+                {"path": "target/java", "state": "replace-entire-tree"},
+                {"path": "target/ui", "state": "replace-entire-tree"},
+            ],
             "protectedPaths": ["host/Main.java"],
             "excludedContent": ["fixture"],
         }
@@ -113,10 +116,14 @@ class ExporterTest(unittest.TestCase):
             self.assertNotIn("payload/core/src/main/java/idv/kuan/studio/sango/Main.java", names)
             self.assertFalse(any("/provider/" in name or "META-INF" in name for name in names))
             manifest = json.loads(archive.read("manifest.json"))
+            self.assertEqual(2, manifest["manifestVersion"])
             self.assertEqual("9.8.7", manifest["gameVersion"])
             self.assertEqual(2, manifest["saveDocumentSchemaVersion"])
             self.assertEqual(13, manifest["gameStateSchemaVersion"])
-            self.assertEqual("preflight-only", manifest["installationMode"])
+            self.assertEqual("codex-assisted", manifest["syncMode"])
+            self.assertEqual(1, manifest["promptVersion"])
+            self.assertNotIn("requiredInstallerVersion", manifest)
+            self.assertNotIn("installationMode", manifest)
             self.assertTrue(manifest["toolingProvenance"]["releaseInputsTrackedAtSourceCommit"])
             for item in manifest["files"]:
                 payload = archive.read(item["archivePath"])
@@ -131,6 +138,10 @@ class ExporterTest(unittest.TestCase):
         self.assertIn(str(Path(str(first) + ".sha256").resolve()), prompt_text)
         self.assertIn("!plan", prompt_text)
         self.assertIn("!exec", prompt_text)
+        self.assertIn("不得規劃固定 installer", prompt_text)
+        self.assertIn("不要建立固定 installer", prompt_text)
+        self.assertIn("整體替換", prompt_text)
+        self.assertIn("舊群島存檔不遷移、不刪除", prompt_text)
         self.assertNotEqual(
             prompt_text,
             second.with_name("second-codex-prompt.md").read_text(encoding="utf-8"),
@@ -145,7 +156,7 @@ class ExporterTest(unittest.TestCase):
         self.assertFalse(output.with_name("should-not-exist-codex-prompt.md").exists())
         dry_run = self._run("--dry-run", "--output", str(output))
         self.assertEqual(0, dry_run.returncode, dry_run.stderr)
-        self.assertIn("preflight-only", dry_run.stdout)
+        self.assertIn("codex-assisted", dry_run.stdout)
         self.assertFalse(output.exists())
         self.assertFalse(output.with_name("should-not-exist-codex-prompt.md").exists())
 
@@ -164,6 +175,14 @@ class ExporterTest(unittest.TestCase):
         failed = self._run("--dry-run")
         self.assertEqual(2, failed.returncode)
         self.assertIn("路徑跳脫", failed.stderr)
+
+    def test_target_hint_outside_managed_paths_is_rejected(self) -> None:
+        contract = self._contract()
+        contract["sourceSets"][1]["targetHint"] = "outside/ui"
+        self.contract.write_text(json.dumps(contract), encoding="utf-8")
+        failed = self._run("--dry-run")
+        self.assertEqual(2, failed.returncode)
+        self.assertIn("未落在任何 managed path", failed.stderr)
 
     def test_untracked_contract_requires_explicit_development_override(self) -> None:
         self._write("untracked-contract.json", json.dumps(self._contract()))

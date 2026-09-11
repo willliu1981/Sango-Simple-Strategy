@@ -1,6 +1,6 @@
 # Sango module tools
 
-此目錄把 Sango 的策略玩法、UI、AI、存檔格式與回歸測試整理成可稽核的同步來源包，供 Curated 端 Codex 協助同步「群島紀元」。Sango 是唯一玩法上游；Curated 只保留名詞、島嶼情境與素材、宿主整合，以及獨立存檔／偏好位置。
+此目錄把 Sango 的策略玩法、UI、AI、資料、存檔格式與回歸測試整理成可稽核的同步來源包，供 Curated 端 Codex 整體替換「群島紀元」。Sango 是唯一玩法上游；Curated 只在替換後套用群島名詞，並接回宿主入口與獨立存檔／偏好位置。
 
 ## 目錄內容
 
@@ -58,12 +58,14 @@ python -m unittest tools/sango-module/test_exporter.py
 
 ## 交給 Curated 端 Codex 同步
 
-ZIP 是可追溯的「Sango 策略核心同步來源包」，不是可直接雙擊或無條件覆寫 Curated 的安裝程式。匯出後請開啟同目錄的 `-codex-prompt.md`：先把「第一階段」貼到 Curated 專案的 Codex，確認盤點方案後，再於同一個任務貼上「第二階段」。檔案內已填入 ZIP 與 SHA-256 的完整路徑，不需手動修改。
+ZIP 是可追溯的「Sango 策略核心同步來源包」，不是可直接雙擊的安裝程式。Curated 端不合併舊玩法，而是在使用者確認後整體替換群島策略核心，再套用名詞並接回宿主。同步契約固定採 `codex-assisted`，不建立固定安裝器或通用 `--apply`。匯出後請開啟同目錄的 `-codex-prompt.md`：先貼「第一階段」，確認盤點方案後，再於同一個任務貼上「第二階段」。檔案內已填入 ZIP 與 SHA-256 的完整路徑，不需手動修改。
 
 ## 目前限制
 
-目前同步包只提供來源內容、完整性、版本、schema、目標提示與轉換需求，不負責自動覆寫 Curated。實際同步必須由 Curated 端 Codex 先比對現況、提出方案，再依使用者確認執行。
+同步包只提供來源內容、完整性、版本、schema、替換範圍與轉換提示，不負責自動覆寫 Curated。實際同步由 Curated 端 Codex 先確認精確替換範圍，再依使用者確認執行。Curated 舊群島存檔不遷移、不刪除，但新版不再載入，玩家需開新局。
 
 正式匯出要求 exporter 與 contract 已由目前 Git commit 追蹤且沒有修改。只有開發工具本身、尚未 commit 時的端到端測試，才可明確加上 `--allow-uncommitted-tooling`；這種包會被標示為 development bundle，不能當作 release package。
+
+`__pycache__` 是 Python 執行時產生的快取，可忽略：它不會影響上述正式匯出判定，也不會被打包進模組包。
 
 工具不會打包或修改玩家存檔、preferences、Curated 的 Curadia／塔防／學習模組、宿主 provider、全域字型、Skin、圖片或執行期資料，也不會自動 commit。
