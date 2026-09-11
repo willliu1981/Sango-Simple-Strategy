@@ -85,7 +85,7 @@
       "nameKey": "faction_east_sea_states",
       "rulerNameKey": "ruler_east_sea_states",
       "summaryKey": "faction_east_sea_states_summary",
-      "capitalCityId": "xiangping",
+      "capitalCityId": "pyongyang",
       "initialGold": 1150,
       "initialFood": 2300,
       "playable": true
@@ -105,7 +105,7 @@
       "nameKey": "faction_india_compact",
       "rulerNameKey": "ruler_india_compact",
       "summaryKey": "faction_india_compact_summary",
-      "capitalCityId": "delhi",
+      "capitalCityId": "pataliputra",
       "initialGold": 1350,
       "initialFood": 2700,
       "playable": true
@@ -155,7 +155,7 @@
       "nameKey": "faction_star_feather",
       "rulerNameKey": "ruler_star_feather",
       "summaryKey": "faction_star_feather_summary",
-      "capitalCityId": "teotihuacan",
+      "capitalCityId": "tenochtitlan",
       "initialGold": 1200,
       "initialFood": 2500,
       "playable": true

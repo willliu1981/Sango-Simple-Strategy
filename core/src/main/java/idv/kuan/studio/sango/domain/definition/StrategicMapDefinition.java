@@ -11,6 +11,9 @@ public final class StrategicMapDefinition {
     public String id;
     public String nameKey;
     public String backgroundAssetPath;
+    public String[] backgroundTileAssetPaths;
+    public int backgroundTileColumns;
+    public int backgroundTileRows;
     public MapCityNodeDefinition[] nodes;
     public CityConnectionDefinition[] connections;
 

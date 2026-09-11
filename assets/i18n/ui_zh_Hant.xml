@@ -66,8 +66,8 @@
         <entry name="help_expedition_title" value="聯合出征說明" />
         <entry name="help_expedition_body" value="選擇敵方或中立目標城，再逐城加入直接相鄰的我方來源城。每城至少派 200 兵並保留 200 守軍，每個來源消耗 1 AP 與 100 糧。\n\n出征戰術可選強攻、誘敵或穩進；另設定道路接戰獲勝後繼續攻城、自動判斷或返城。士氣低於 40 仍可出兵，只是自動判斷條件之一。\n\n敵對部隊在同一道路相向且本月路程交會時先接戰；敗方與平手返城，勝方依命令行動。" />
         <entry name="lobby_sango" value="SANGO" description="lobby_sango" />
-        <entry name="lobby_title" value="簡易三國志" description="lobby_title" />
-        <entry name="lobby_tagline" value="漢末群雄 · 天下待定" description="lobby_tagline" />
+        <entry name="lobby_title" value="征服世界" description="lobby_title" />
+        <entry name="lobby_tagline" value="從三國延伸至世界的征服之路" description="lobby_tagline" />
         <entry name="lobby_intro" value="從中原 42 城到世界 72 據點。治理人口、按需徵兵、分批訓練，在四季樂聲中自由征戰。" description="lobby_intro" />
         <entry name="lobby_main_menu" value="主選單" description="lobby_main_menu" />
         <entry name="lobby_vertical_slice" value="雙劇本 · 中原 42 城／世界 72 據點 · 自由征戰" description="lobby_vertical_slice" />
@@ -667,36 +667,37 @@
         <entry name="music_play_once_note" value="播放完目前曲目後停止。" description="music_play_once_note" />
         <entry name="music_repeat_one_note" value="單曲循環播放；切換曲目以兩秒淡入淡出銜接。" description="music_repeat_one_note" />
         <entry name="music_repeat_all_note" value="依清單順序播放，最後一首結束後回到第一首。" description="music_repeat_all_note" />
-+        <entry name="scenario_world_name" value="萬域爭霸・世界交會" description="scenario_world_name" />
-        <entry name="scenario_world_description" value="十二大勢力與中立據點分布於 72 據點世界地圖。消滅指定主要敵國後，可繼續自由征服全世界；名稱與年代為遊戲化混合設定。" description="scenario_world_description" />
-        <entry name="map_world_72" value="世界交會圖・72 據點" description="map_world_72" />
-        <entry name="faction_east_sea_states" value="東海諸邦" description="faction_east_sea_states" />
-        <entry name="ruler_east_sea_states" value="東海共主" description="ruler_east_sea_states" />
-        <entry name="faction_east_sea_states_summary" value="立足東北海岸與群島，據點分散但利於跨海擴張。" description="faction_east_sea_states_summary" />
-        <entry name="faction_steppe_khanate" value="蒼原汗庭" description="faction_steppe_khanate" />
-        <entry name="ruler_steppe_khanate" value="蒼原大汗" description="ruler_steppe_khanate" />
-        <entry name="faction_steppe_khanate_summary" value="橫跨草原與商路，以長距離進軍牽動歐亞戰線。" description="faction_steppe_khanate_summary" />
-        <entry name="faction_india_compact" value="天竺盟約" description="faction_india_compact" />
-        <entry name="ruler_india_compact" value="盟約執政" description="ruler_india_compact" />
-        <entry name="faction_india_compact_summary" value="人口與農業基礎穩固，適合累積國力後向多方向擴張。" description="faction_india_compact_summary" />
-        <entry name="faction_persian_court" value="雙河王庭" description="faction_persian_court" />
-        <entry name="ruler_persian_court" value="王庭沙阿" description="ruler_persian_court" />
-        <entry name="faction_persian_court_summary" value="掌握東西交通樞紐，必須同時防備地中海與亞洲勢力。" description="faction_persian_court_summary" />
-        <entry name="faction_western_empire" value="西海帝國" description="faction_western_empire" />
-        <entry name="ruler_western_empire" value="西海皇帝" description="ruler_western_empire" />
-        <entry name="faction_western_empire_summary" value="控制地中海核心據點，商業充足但邊境戰線廣闊。" description="faction_western_empire_summary" />
-        <entry name="faction_northern_league" value="北境議盟" description="faction_northern_league" />
-        <entry name="ruler_northern_league" value="北境議長" description="ruler_northern_league" />
-        <entry name="faction_northern_league_summary" value="據守歐洲北部，能向西海、草原與大西洋多線發展。" description="faction_northern_league_summary" />
-        <entry name="faction_red_earth_kings" value="赤土諸王" description="faction_red_earth_kings" />
-        <entry name="ruler_red_earth_kings" value="赤土盟王" description="ruler_red_earth_kings" />
-        <entry name="faction_red_earth_kings_summary" value="據點縱貫非洲，資源分布廣，需要維持遠距離防線。" description="faction_red_earth_kings_summary" />
-        <entry name="faction_star_feather" value="星羽文明" description="faction_star_feather" />
-        <entry name="ruler_star_feather" value="星羽祭王" description="ruler_star_feather" />
-        <entry name="faction_star_feather_summary" value="橫跨美洲的古老聯盟，可向大西洋與太平洋開拓。" description="faction_star_feather_summary" />
-        <entry name="faction_island_sailors" value="群島航盟" description="faction_island_sailors" />
-        <entry name="ruler_island_sailors" value="首席領航者" description="ruler_island_sailors" />
-        <entry name="faction_island_sailors_summary" value="散布大洋的航海勢力，初期距離遙遠但擁有多條跨海出口。" description="faction_island_sailors_summary" />
+        <entry name="scenario_world_name" value="征服世界・交匯紀元" description="scenario_world_name" />
+        <entry name="scenario_world_description" value="十二個歷史勢力跨越時代，共同出現在 72 據點世界地圖。消滅指定主要敵國後，可繼續自由征服全世界。" description="scenario_world_description" />
+        <entry name="map_world_72" value="世界征服圖・72 據點" description="map_world_72" />
+        <entry name="map_world_date_format" value="交匯紀元｜第 {0} 月" description="map_world_date_format" />
+        <entry name="faction_east_sea_states" value="高句麗" description="faction_east_sea_states" />
+        <entry name="ruler_east_sea_states" value="廣開土王" description="ruler_east_sea_states" />
+        <entry name="faction_east_sea_states_summary" value="以平壤為主城，控制東北海岸與東方群島，適合跨海擴張。" description="faction_east_sea_states_summary" />
+        <entry name="faction_steppe_khanate" value="蒙古帝國" description="faction_steppe_khanate" />
+        <entry name="ruler_steppe_khanate" value="成吉思汗" description="ruler_steppe_khanate" />
+        <entry name="faction_steppe_khanate_summary" value="以和林為主城，橫跨草原與商路，擅長長距離進軍。" description="faction_steppe_khanate_summary" />
+        <entry name="faction_india_compact" value="孔雀帝國" description="faction_india_compact" />
+        <entry name="ruler_india_compact" value="阿育王" description="ruler_india_compact" />
+        <entry name="faction_india_compact_summary" value="以華氏城為主城，人口與農業基礎穩固，可向多個方向擴張。" description="faction_india_compact_summary" />
+        <entry name="faction_persian_court" value="薩珊帝國" description="faction_persian_court" />
+        <entry name="ruler_persian_court" value="阿爾達希爾一世" description="ruler_persian_court" />
+        <entry name="faction_persian_court_summary" value="以泰西封為主城，掌握東西交通要道，面對地中海與亞洲兩方威脅。" description="faction_persian_court_summary" />
+        <entry name="faction_western_empire" value="羅馬帝國" description="faction_western_empire" />
+        <entry name="ruler_western_empire" value="奧古斯都" description="ruler_western_empire" />
+        <entry name="faction_western_empire_summary" value="以羅馬為主城，控制地中海重要據點，資源充足但戰線廣闊。" description="faction_western_empire_summary" />
+        <entry name="faction_northern_league" value="法蘭克王國" description="faction_northern_league" />
+        <entry name="ruler_northern_league" value="克洛維一世" description="ruler_northern_league" />
+        <entry name="faction_northern_league_summary" value="以巴黎為主城，據守西歐與北方通道，可向大西洋或中歐發展。" description="faction_northern_league_summary" />
+        <entry name="faction_red_earth_kings" value="阿克蘇姆王國" description="faction_red_earth_kings" />
+        <entry name="ruler_red_earth_kings" value="卡萊布王" description="ruler_red_earth_kings" />
+        <entry name="faction_red_earth_kings_summary" value="以阿克蘇姆為主城，控制非洲與紅海通道，需要維持遠距離防線。" description="faction_red_earth_kings_summary" />
+        <entry name="faction_star_feather" value="阿茲特克帝國" description="faction_star_feather" />
+        <entry name="ruler_star_feather" value="蒙特祖馬二世" description="ruler_star_feather" />
+        <entry name="faction_star_feather_summary" value="以特諾奇提特蘭為主城，在美洲建立據點並向兩大洋擴張。" description="faction_star_feather_summary" />
+        <entry name="faction_island_sailors" value="圖伊東加帝國" description="faction_island_sailors" />
+        <entry name="ruler_island_sailors" value="阿霍埃圖" description="ruler_island_sailors" />
+        <entry name="faction_island_sailors_summary" value="以穆阿為主城，依靠大洋航線連結群島，適合從海上拓展勢力。" description="faction_island_sailors_summary" />
         <entry name="city_pyongyang" value="平壤" description="city_pyongyang" />
         <entry name="city_seoul" value="漢城" description="city_seoul" />
         <entry name="city_yamatai" value="邪馬台" description="city_yamatai" />
@@ -737,7 +738,7 @@
         <entry name="city_cahokia" value="卡霍基亞" description="city_cahokia" />
         <entry name="city_cusco" value="庫斯科" description="city_cusco" />
         <entry name="city_hawaii" value="夏威夷" description="city_hawaii" />
-        <entry name="city_samoa" value="薩摩亞" description="city_samoa" />
+        <entry name="city_samoa" value="穆阿" description="city_samoa" />
         <entry name="city_tahiti" value="大溪地" description="city_tahiti" />
         <entry name="city_aotearoa" value="奧特亞羅瓦" description="city_aotearoa" />
         <entry name="city_uluru" value="烏魯魯" description="city_uluru" />

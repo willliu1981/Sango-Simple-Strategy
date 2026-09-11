@@ -186,7 +186,7 @@
       "id": "world_convergence",
       "nameKey": "scenario_world_name",
       "descriptionKey": "scenario_world_description",
-      "startYear": 190,
+      "startYear": 1,
       "startMonth": 1,
       "initialTurn": 1,
       "actionPointsPerTurn": 3,
@@ -236,7 +236,7 @@
         },
         {
           "playerFactionId": "star_feather",
-          "startCityId": "teotihuacan",
+          "startCityId": "tenochtitlan",
           "objectiveType": "ELIMINATE_FACTION",
           "targetFactionId": "island_sailors"
         }
@@ -277,7 +277,7 @@
         },
         {
           "factionId": "east_sea_states",
-          "capitalCityId": "xiangping",
+          "capitalCityId": "pyongyang",
           "cityIds": [
             "xiangping",
             "pyongyang",
@@ -299,7 +299,7 @@
         },
         {
           "factionId": "india_compact",
-          "capitalCityId": "delhi",
+          "capitalCityId": "pataliputra",
           "cityIds": [
             "delhi",
             "mumbai",
@@ -354,7 +354,7 @@
         },
         {
           "factionId": "star_feather",
-          "capitalCityId": "teotihuacan",
+          "capitalCityId": "tenochtitlan",
           "cityIds": [
             "teotihuacan",
             "tikal",

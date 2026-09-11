@@ -90,6 +90,16 @@ public final class SangoUiStyles {
         return drawable(Sui.resources.manager().getSkin(), MAP_LINE);
     }
 
+    public static Drawable createMapCityMarkerDrawable(MapNodeTone nodeTone, boolean selected) {
+        if (nodeTone == null) {
+            throw new IllegalArgumentException("nodeTone 不可為 null。");
+        }
+        Color markerColor = selected ? MAP_SELECTED
+            : nodeTone == MapNodeTone.PLAYER ? MAP_PLAYER
+            : nodeTone == MapNodeTone.ENEMY ? MAP_ENEMY : MAP_NEUTRAL;
+        return drawable(Sui.resources.manager().getSkin(), markerColor.cpy().lerp(Color.WHITE, 0.18f));
+    }
+
     public static Drawable createMapOutlineDrawable(boolean selected) {
         return drawable(Sui.resources.manager().getSkin(), selected
             ? new Color(1f, 0.96f, 0.76f, 1f)

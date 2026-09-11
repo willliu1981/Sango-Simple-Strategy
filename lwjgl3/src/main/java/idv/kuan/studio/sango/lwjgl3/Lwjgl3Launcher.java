@@ -40,7 +40,7 @@ public final class Lwjgl3Launcher {
 
     private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
         Lwjgl3ApplicationConfiguration configuration = new Lwjgl3ApplicationConfiguration();
-        configuration.setTitle("Sango — 簡易三國志");
+        configuration.setTitle("Sango — 征服世界");
         configuration.useVsync(true);
         configuration.setForegroundFPS(
             Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate

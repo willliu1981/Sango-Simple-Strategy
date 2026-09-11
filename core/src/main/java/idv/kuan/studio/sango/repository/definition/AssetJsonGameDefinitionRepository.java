@@ -305,6 +305,7 @@ public final class AssetJsonGameDefinitionRepository implements GameDefinitionRe
         for (StrategicMapDefinition mapDefinition : mapDefinitions) {
             requireText(mapDefinition.id, "StrategicMapDefinition.id");
             requireText(mapDefinition.nameKey, "StrategicMapDefinition.nameKey");
+            validateMapTerrainTiles(mapDefinition);
             if (mapDefinition.nodes == null || mapDefinition.nodes.length < 2) {
                 throw new IllegalStateException("StrategicMapDefinition.nodes 至少需要兩座城。");
             }
@@ -334,6 +335,24 @@ public final class AssetJsonGameDefinitionRepository implements GameDefinitionRe
             }
             validateMapConnectivity(mapDefinition, nodeCityIds);
             putUnique(mapsById, mapDefinition.id, mapDefinition, "地圖");
+        }
+    }
+
+    private void validateMapTerrainTiles(StrategicMapDefinition mapDefinition) {
+        if (mapDefinition.backgroundTileAssetPaths == null
+            || mapDefinition.backgroundTileAssetPaths.length == 0) {
+            if (mapDefinition.backgroundTileColumns != 0 || mapDefinition.backgroundTileRows != 0) {
+                throw new IllegalStateException("地圖沒有細節圖塊時，圖塊列數與欄數必須為 0。");
+            }
+            return;
+        }
+        if (mapDefinition.backgroundTileColumns <= 0 || mapDefinition.backgroundTileRows <= 0
+            || mapDefinition.backgroundTileAssetPaths.length
+                != mapDefinition.backgroundTileColumns * mapDefinition.backgroundTileRows) {
+            throw new IllegalStateException("地圖細節圖塊數量必須符合列數與欄數。");
+        }
+        for (String assetPath : mapDefinition.backgroundTileAssetPaths) {
+            requireText(assetPath, "StrategicMapDefinition.backgroundTileAssetPaths");
         }
     }
 

@@ -170,6 +170,14 @@ public final class NationalCampaignSmokeTest {
         GameStateValidator.validate(gameState);
         check(gameState.cityStates.length == 72, "世界新局建立全部據點狀態");
         check(gameState.factionStates.length == 13, "十二大勢力加中立勢力");
+        check(gameState.currentYear == 1 && gameState.currentMonth == 1,
+            "世界劇本從交匯紀元第一月開始");
+        check(gameState.requireFactionState("east_sea_states").capitalCityId.equals("pyongyang"),
+            "高句麗以平壤為主城");
+        check(gameState.requireFactionState("india_compact").capitalCityId.equals("pataliputra"),
+            "孔雀帝國以華氏城為主城");
+        check(gameState.requireFactionState("star_feather").capitalCityId.equals("tenochtitlan"),
+            "阿茲特克帝國以特諾奇提特蘭為主城");
         check(gameState.scenarioObjectiveType == ScenarioObjectiveType.ELIMINATE_FACTION,
             "世界劇本使用消滅勢力目標");
         check(gameState.victoryTargetFactionId.equals("liu_bei"), "曹魏首要目標為消滅蜀漢");

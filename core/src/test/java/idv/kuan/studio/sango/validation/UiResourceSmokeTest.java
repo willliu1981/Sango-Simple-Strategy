@@ -3,8 +3,10 @@ package idv.kuan.studio.sango.validation;
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -24,8 +26,10 @@ import org.w3c.dom.NodeList;
 
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.math.Rectangle;
 
 import idv.kuan.studio.sango.ui.widget.MapCameraState;
+import idv.kuan.studio.sango.ui.widget.MapLabelLayout;
 
 /**
  * XML、i18n、靜態 Actor ID 與純 Java 相機測試；不宣稱取代實際 UI 排版與輸入測試。
@@ -117,6 +121,7 @@ public final class UiResourceSmokeTest {
         check(!Files.exists(assetsPath.resolve("ui/prototype_campaign.xml")), "淘汰 Prototype XML 不可回歸");
         validateTerrainAssets(assetsPath);
         validateCamera();
+        validateMapLabelLayout();
         System.out.println("Sango UI resources and map camera: PASS; checks=" + checks);
     }
 
@@ -222,6 +227,36 @@ public final class UiResourceSmokeTest {
             check(terrain.getWidth() == 2040 && terrain.getHeight() == 1360,
                 "底圖保持 3:2，長邊不超過 2048，控制行動裝置貼圖大小");
             check(Files.size(terrainPath) < 1500000L, "壓縮底圖大小應小於 1.5 MB");
+            if ("world_72".equals(map.getString("id"))) {
+                for (JsonValue node = map.get("nodes").child; node != null; node = node.next) {
+                    int anchorX = Math.round(node.getFloat("x") * terrain.getWidth());
+                    int anchorY = Math.round((1f - node.getFloat("y")) * terrain.getHeight());
+                    check(hasLandNear(terrain, anchorX, anchorY, 24),
+                        "世界地圖據點必須落在對應陸地或島嶼附近：" + node.getString("cityId"));
+                }
+            }
+            JsonValue tilePaths = map.get("backgroundTileAssetPaths");
+            int tileColumns = map.getInt("backgroundTileColumns", 0);
+            int tileRows = map.getInt("backgroundTileRows", 0);
+            if (tilePaths != null) {
+                check(tileColumns > 0 && tileRows > 0 && tilePaths.size == tileColumns * tileRows,
+                    "細節圖塊數量必須符合列數與欄數：" + map.getString("id"));
+                for (JsonValue tilePathValue = tilePaths.child;
+                    tilePathValue != null; tilePathValue = tilePathValue.next) {
+                    String tileAssetPath = tilePathValue.asString();
+                    check(tileAssetPath.startsWith("picture/maps/") && !tileAssetPath.contains(".."),
+                        "細節圖塊只指向已封裝資產");
+                    Path tilePath = assetsPath.resolve(tileAssetPath).normalize();
+                    check(Files.isRegularFile(tilePath), "細節圖塊必須存在：" + tileAssetPath);
+                    BufferedImage tile = ImageIO.read(tilePath.toFile());
+                    check(tile != null && tile.getWidth() == 1024 && tile.getHeight() == 1024,
+                        "細節圖塊必須是可解碼的 1024 × 1024 影像：" + tileAssetPath);
+                    check(Files.size(tilePath) < 1500000L,
+                        "單張細節圖塊大小應小於 1.5 MB：" + tileAssetPath);
+                }
+            } else {
+                check(tileColumns == 0 && tileRows == 0, "沒有細節圖塊時列數與欄數必須為 0");
+            }
             MapCameraState terrainCamera = new MapCameraState();
             terrainCamera.configure(1040f, 428f, 4200f, 2800f);
             for (float requestedZoom : new float[] {0.1f, 0.5f, 1.0f, 1.75f}) {
@@ -247,6 +282,30 @@ public final class UiResourceSmokeTest {
         String mapXml = Files.readString(assetsPath.resolve("ui/strategic_map.xml"));
         check(cityXml.contains("id=\"national_order_label\""), "內政可查看全城民心，不只顯示目前城池");
         check(mapXml.contains("id=\"map_national_order_label\""), "戰略地圖可查看全城民心及下月預估");
+    }
+
+    private static boolean hasLandNear(BufferedImage terrain, int anchorX, int anchorY, int radius) {
+        int radiusSquared = radius * radius;
+        for (int offsetY = -radius; offsetY <= radius; offsetY += 2) {
+            for (int offsetX = -radius; offsetX <= radius; offsetX += 2) {
+                if (offsetX * offsetX + offsetY * offsetY > radiusSquared) {
+                    continue;
+                }
+                int x = anchorX + offsetX;
+                int y = anchorY + offsetY;
+                if (x < 0 || x >= terrain.getWidth() || y < 0 || y >= terrain.getHeight()) {
+                    continue;
+                }
+                int rgb = terrain.getRGB(x, y);
+                int red = rgb >>> 16 & 0xff;
+                int green = rgb >>> 8 & 0xff;
+                int blue = rgb & 0xff;
+                if (red > 105 && red - blue > 28 && red - green > 10) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static void validateCamera() {
@@ -286,6 +345,31 @@ public final class UiResourceSmokeTest {
             invalidSizeRejected = true;
         }
         check(invalidSizeRejected, "零尺寸相機必須拒絕");
+    }
+
+    private static void validateMapLabelLayout() {
+        check(close(MapLabelLayout.detailScale(0.55f), 0.72f),
+            "剛進入細節模式時，城池標籤可略微縮小");
+        check(close(MapLabelLayout.detailScale(MapCameraState.MAXIMUM_ZOOM), 1f),
+            "地圖放到最大時，城池標籤不可繼續放大");
+        List<Rectangle> occupied = new ArrayList<>();
+        Rectangle first = MapLabelLayout.place(500f, 300f, 100f, 34f, 1040f, 428f, occupied);
+        Rectangle second = MapLabelLayout.place(500f, 300f, 100f, 34f, 1040f, 428f, occupied);
+        Rectangle edge = MapLabelLayout.place(-20f, 500f, 120f, 34f, 1040f, 428f, occupied);
+        check(!first.overlaps(second), "同座標的地圖標籤必須自動避讓");
+        check(edge.x >= 0f && edge.y >= 0f
+            && edge.x + edge.width <= 1040f && edge.y + edge.height <= 428f,
+            "地圖標籤不可超出地圖視窗");
+
+        List<Rectangle> denseCluster = new ArrayList<>();
+        for (int index = 0; index < 12; index++) {
+            Rectangle placed = MapLabelLayout.place(
+                1024f, 580f, 160f, 74f, 2048f, 1161f, denseCluster);
+            for (int previous = 0; previous < denseCluster.size() - 1; previous++) {
+                check(!placed.overlaps(denseCluster.get(previous)),
+                    "放大後的密集城池標籤也必須逐一避讓");
+            }
+        }
     }
 
     private static boolean close(float firstValue, float secondValue) {

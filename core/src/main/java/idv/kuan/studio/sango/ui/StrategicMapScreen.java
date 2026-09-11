@@ -3,9 +3,11 @@ package idv.kuan.studio.sango.ui;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -80,6 +82,7 @@ import idv.kuan.studio.sango.ui.widget.StrategicMapWidget;
  */
 public final class StrategicMapScreen extends SuiScreen {
     private static final String BACKGROUND_PATH = "picture/lobby/sango_lobby_background.png";
+    private static final String WORLD_SCENARIO_ID = "world_convergence";
     private static final Color STATUS_NORMAL_COLOR = new Color(0.79f, 0.72f, 0.61f, 1f);
     private static final Color STATUS_SUCCESS_COLOR = new Color(0.94f, 0.76f, 0.38f, 1f);
     private static final Color STATUS_ERROR_COLOR = new Color(0.95f, 0.43f, 0.30f, 1f);
@@ -234,7 +237,7 @@ public final class StrategicMapScreen extends SuiScreen {
         screenBackground.remove();
         if (strategicMapWidget != null) {
             strategicMapWidget.cancelPendingFactionHighlightTimers();
-            strategicMapWidget.setTerrainDrawable(null);
+            strategicMapWidget.setTerrainTileProvider(null);
         }
         mapTerrainBackground.dispose();
         if (contextHelpOverlay != null) {
@@ -460,18 +463,22 @@ public final class StrategicMapScreen extends SuiScreen {
             gameState.mapId
         );
         String selectedCityId = ensureSelectedCity(gameState);
-        strategicMapWidget.setTerrainDrawable(
-            mapTerrainBackground.getOrLoad(mapDefinition.backgroundAssetPath)
-        );
+        mapTerrainBackground.configure(mapDefinition);
+        strategicMapWidget.setTerrainTileProvider(mapTerrainBackground);
 
         label("map_scenario_label").setText(
             text("map_scenario_prefix", "劇本：")
                 + localized(scenarioDefinition.nameKey, scenarioDefinition.id)
         );
-        label("map_date_label").setText(
-            gameState.currentYear + text("city_year_suffix", " 年 ")
-                + gameState.currentMonth + text("city_month_suffix", " 月")
-        );
+        if (WORLD_SCENARIO_ID.equals(gameState.scenarioId)) {
+            label("map_date_label").setText(text(
+                "map_world_date_format", "交匯紀元｜第 {0} 月", gameState.elapsedMonths + 1));
+        } else {
+            label("map_date_label").setText(
+                gameState.currentYear + text("city_year_suffix", " 年 ")
+                    + gameState.currentMonth + text("city_month_suffix", " 月")
+            );
+        }
         label("map_turn_label").setText(
             text("city_turn_prefix", "回合：第 ") + gameState.currentTurn
                 + text("city_turn_suffix", " 回合") + "　"
@@ -614,6 +621,12 @@ public final class StrategicMapScreen extends SuiScreen {
         Map<String, MapNodeTone> tonesByCityId = new LinkedHashMap<>();
         Map<String, Integer> unreadBattlesByCityId = new LinkedHashMap<>();
         Map<String, String> factionIdsByCityId = new LinkedHashMap<>();
+        Set<String> capitalCityIds = new LinkedHashSet<>();
+        for (FactionState factionState : gameState.factionStates) {
+            if (factionState.active && factionState.capitalCityId != null) {
+                capitalCityIds.add(factionState.capitalCityId);
+            }
+        }
         for (BattleReport battleReport : BattleReportCatalog.latestCities(gameState)) {
             if (!battleReport.read && battleReport.resolvedTurn == gameState.currentTurn - 1) {
                 unreadBattlesByCityId.merge(battleReport.targetCityId, 1, Integer::sum);
@@ -653,6 +666,7 @@ public final class StrategicMapScreen extends SuiScreen {
             tonesByCityId,
             unreadBattlesByCityId,
             factionIdsByCityId,
+            capitalCityIds,
             gameState.playerFactionId,
             gameState.neutralFactionId,
             selectedCityId

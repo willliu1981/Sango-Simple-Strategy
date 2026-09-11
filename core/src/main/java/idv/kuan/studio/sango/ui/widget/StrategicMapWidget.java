@@ -1,6 +1,8 @@
 package idv.kuan.studio.sango.ui.widget;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +14,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -37,8 +40,12 @@ import idv.kuan.studio.sango.ui.theme.SangoUiStyles;
  * 總覽時縮成城名標籤；拉近後顯示勢力、目標與未讀戰事。
  */
 public final class StrategicMapWidget extends WidgetGroup {
-    private static final float LARGE_WORLD_WIDTH = 4200f;
-    private static final float LARGE_WORLD_HEIGHT = 2800f;
+    private static final float REGIONAL_WORLD_WIDTH = 4200f;
+    private static final float REGIONAL_WORLD_HEIGHT = 2800f;
+    private static final float GLOBAL_WORLD_WIDTH = 8400f;
+    private static final float GLOBAL_WORLD_HEIGHT = 5600f;
+    private static final float OVERVIEW_ZOOM_THRESHOLD = 0.55f;
+    private static final float DETAIL_TERRAIN_ZOOM_THRESHOLD = 0.42f;
     private static final float DRAG_THRESHOLD = 12f;
     private final BitmapFont nodeFont;
     private final Consumer<String> citySelectionHandler;
@@ -52,13 +59,16 @@ public final class StrategicMapWidget extends WidgetGroup {
     private final Map<String, MapNodeTone> tonesByCityId = new LinkedHashMap<>();
     private final Map<String, Integer> unreadBattlesByCityId = new LinkedHashMap<>();
     private final Map<String, String> factionIdsByCityId = new LinkedHashMap<>();
+    private final Set<String> capitalCityIds = new HashSet<>();
     private final Map<String, TextButton> buttonsByCityId = new LinkedHashMap<>();
+    private final Map<String, Image> markersByCityId = new LinkedHashMap<>();
     private final Map<String, Image> outlinesByCityId = new LinkedHashMap<>();
+    private final Map<String, Image> labelLeadersByCityId = new LinkedHashMap<>();
     private final List<Image> roadImages = new ArrayList<>();
     private final List<ClickListener> nodeClickListeners = new ArrayList<>();
     private final Map<Integer, PointerPosition> pointers = new LinkedHashMap<>();
     private StrategicMapDefinition mapDefinition;
-    private Drawable terrainDrawable;
+    private TerrainTileProvider terrainTileProvider;
     private String selectedCityId;
     private String playerFactionId;
     private String neutralFactionId;
@@ -111,7 +121,7 @@ public final class StrategicMapWidget extends WidgetGroup {
         String selectedCityId
     ) {
         setMapData(mapDefinition, captionsByCityId, tonesByCityId, unreadBattlesByCityId,
-            Map.of(), null, null, selectedCityId);
+            Map.of(), Set.of(), null, null, selectedCityId);
     }
 
     public void setMapData(
@@ -120,13 +130,14 @@ public final class StrategicMapWidget extends WidgetGroup {
         Map<String, MapNodeTone> tonesByCityId,
         Map<String, Integer> unreadBattlesByCityId,
         Map<String, String> factionIdsByCityId,
+        Set<String> capitalCityIds,
         String playerFactionId,
         String neutralFactionId,
         String selectedCityId
     ) {
         if (mapDefinition == null || captionsByCityId == null
             || tonesByCityId == null || unreadBattlesByCityId == null
-            || factionIdsByCityId == null) {
+            || factionIdsByCityId == null || capitalCityIds == null) {
             throw new IllegalArgumentException("地圖顯示資料不可為 null。");
         }
         if (this.mapDefinition != mapDefinition) {
@@ -141,6 +152,8 @@ public final class StrategicMapWidget extends WidgetGroup {
         this.unreadBattlesByCityId.putAll(unreadBattlesByCityId);
         this.factionIdsByCityId.clear();
         this.factionIdsByCityId.putAll(factionIdsByCityId);
+        this.capitalCityIds.clear();
+        this.capitalCityIds.addAll(capitalCityIds);
         this.playerFactionId = playerFactionId;
         this.neutralFactionId = neutralFactionId;
         highlightedFactionId = null;
@@ -152,8 +165,8 @@ public final class StrategicMapWidget extends WidgetGroup {
         invalidate();
     }
 
-    public void setTerrainDrawable(Drawable terrainDrawable) {
-        this.terrainDrawable = terrainDrawable;
+    public void setTerrainTileProvider(TerrainTileProvider terrainTileProvider) {
+        this.terrainTileProvider = terrainTileProvider;
     }
 
     public void zoomBy(float factor) {
@@ -190,9 +203,12 @@ public final class StrategicMapWidget extends WidgetGroup {
         if (mapDefinition == null || getWidth() <= 0f || getHeight() <= 0f) {
             return;
         }
-        boolean largeMap = mapDefinition.nodes.length > 12;
-        worldWidth = largeMap ? LARGE_WORLD_WIDTH : getWidth();
-        worldHeight = largeMap ? LARGE_WORLD_HEIGHT : getHeight();
+        boolean globalMap = mapDefinition.nodes.length >= 60;
+        boolean regionalMap = !globalMap && mapDefinition.nodes.length > 12;
+        worldWidth = globalMap ? GLOBAL_WORLD_WIDTH
+            : regionalMap ? REGIONAL_WORLD_WIDTH : getWidth();
+        worldHeight = globalMap ? GLOBAL_WORLD_HEIGHT
+            : regionalMap ? REGIONAL_WORLD_HEIGHT : getHeight();
         camera.configure(getWidth(), getHeight(), worldWidth, worldHeight);
         if (initialFocusPending && selectedCityId != null) {
             initialFocusPending = false;
@@ -219,20 +235,48 @@ public final class StrategicMapWidget extends WidgetGroup {
     }
 
     private void drawTerrain(Batch batch, float parentAlpha) {
-        if (terrainDrawable == null || worldWidth <= 0f || worldHeight <= 0f) {
+        if (terrainTileProvider == null || worldWidth <= 0f || worldHeight <= 0f) {
             return;
         }
         float originalPackedColor = batch.getPackedColor();
         batch.setColor(getColor().r, getColor().g, getColor().b, getColor().a * parentAlpha);
-        // 與城池和道路完全共用同一組世界轉螢幕座標，並在同一裁切範圍內繪製。
-        terrainDrawable.draw(
-            batch,
-            camera.screenX(0f),
-            camera.screenY(0f),
-            worldWidth * camera.getZoom(),
-            worldHeight * camera.getZoom()
-        );
+        if (terrainTileProvider.hasDetailTiles()
+            && camera.getZoom() >= DETAIL_TERRAIN_ZOOM_THRESHOLD) {
+            drawVisibleTerrainTiles(batch);
+        } else {
+            Drawable overview = terrainTileProvider.overviewDrawable();
+            if (overview != null) {
+                overview.draw(batch, camera.screenX(0f), camera.screenY(0f),
+                    worldWidth * camera.getZoom(), worldHeight * camera.getZoom());
+            }
+        }
         batch.setPackedColor(originalPackedColor);
+    }
+
+    private void drawVisibleTerrainTiles(Batch batch) {
+        int columns = terrainTileProvider.tileColumns();
+        int rows = terrainTileProvider.tileRows();
+        float tileWorldWidth = worldWidth / columns;
+        float tileWorldHeight = worldHeight / rows;
+        float drawWidth = tileWorldWidth * camera.getZoom();
+        float drawHeight = tileWorldHeight * camera.getZoom();
+        for (int row = 0; row < rows; row++) {
+            float worldY = worldHeight - (row + 1) * tileWorldHeight;
+            float drawY = camera.screenY(worldY);
+            if (drawY + drawHeight < 0f || drawY > getHeight()) {
+                continue;
+            }
+            for (int column = 0; column < columns; column++) {
+                float drawX = camera.screenX(column * tileWorldWidth);
+                if (drawX + drawWidth < 0f || drawX > getWidth()) {
+                    continue;
+                }
+                Drawable tile = terrainTileProvider.detailTileDrawable(column, row);
+                if (tile != null) {
+                    tile.draw(batch, drawX, drawY, drawWidth, drawHeight);
+                }
+            }
+        }
     }
 
     @Override
@@ -248,7 +292,9 @@ public final class StrategicMapWidget extends WidgetGroup {
         cancelPendingHighlights();
         clearChildren();
         buttonsByCityId.clear();
+        markersByCityId.clear();
         outlinesByCityId.clear();
+        labelLeadersByCityId.clear();
         roadImages.clear();
         nodeClickListeners.clear();
         for (CityConnectionDefinition connection : mapDefinition.connections) {
@@ -258,6 +304,21 @@ public final class StrategicMapWidget extends WidgetGroup {
             addActor(lineImage);
         }
         for (MapCityNodeDefinition node : mapDefinition.nodes) {
+            Image marker = new Image(SangoUiStyles.createMapCityMarkerDrawable(
+                tonesByCityId.getOrDefault(node.cityId, MapNodeTone.NEUTRAL),
+                node.cityId.equals(selectedCityId)));
+            marker.setTouchable(Touchable.disabled);
+            marker.setOrigin(Align.center);
+            marker.setRotation(45f);
+            markersByCityId.put(node.cityId, marker);
+            addActor(marker);
+        }
+        for (MapCityNodeDefinition node : mapDefinition.nodes) {
+            Image labelLeader = new Image(SangoUiStyles.createMapLineDrawable());
+            labelLeader.setTouchable(Touchable.disabled);
+            labelLeader.setVisible(false);
+            labelLeadersByCityId.put(node.cityId, labelLeader);
+            addActor(labelLeader);
             Image outline = new Image(SangoUiStyles.createMapOutlineDrawable(false));
             outline.setTouchable(Touchable.disabled);
             outline.setVisible(false);
@@ -431,7 +492,8 @@ public final class StrategicMapWidget extends WidgetGroup {
     }
 
     private void positionConnections() {
-        float thickness = Math.max(1.5f, 5f * camera.getZoom());
+        boolean overview = camera.getZoom() < OVERVIEW_ZOOM_THRESHOLD;
+        float thickness = MathUtils.clamp(5f * camera.getZoom(), 1.5f, 5f);
         for (int i = 0; i < mapDefinition.connections.length; i++) {
             CityConnectionDefinition connection = mapDefinition.connections[i];
             MapCityNodeDefinition fromNode = mapDefinition.requireNode(connection.fromCityId);
@@ -441,6 +503,7 @@ public final class StrategicMapWidget extends WidgetGroup {
             float deltaX = camera.screenX(toNode.x * worldWidth) - fromX;
             float deltaY = camera.screenY(toNode.y * worldHeight) - fromY;
             Image lineImage = roadImages.get(i);
+            lineImage.setVisible(!overview);
             lineImage.setBounds(fromX, fromY - thickness / 2f,
                 (float) Math.sqrt(deltaX * deltaX + deltaY * deltaY), thickness);
             lineImage.setOrigin(0f, thickness / 2f);
@@ -450,27 +513,144 @@ public final class StrategicMapWidget extends WidgetGroup {
 
     private void positionNodes() {
         float zoom = camera.getZoom();
-        boolean overview = zoom < 0.55f;
-        float nodeWidth = overview ? Math.max(62f, 170f * zoom) : 224f * zoom;
-        float nodeHeight = overview ? 32f : 106f * zoom;
-        for (MapCityNodeDefinition node : mapDefinition.nodes) {
+        boolean overview = zoom < OVERVIEW_ZOOM_THRESHOLD;
+        if (overview) {
+            positionOverviewNodes();
+            return;
+        }
+        boolean globalMap = mapDefinition.nodes.length >= 60;
+        float labelScale = MapLabelLayout.detailScale(zoom);
+        float nodeWidth = (globalMap ? 156f : 208f) * labelScale;
+        float nodeHeight = (globalMap ? 72f : 96f) * labelScale;
+        List<Rectangle> occupied = new ArrayList<>();
+        List<MapCityNodeDefinition> orderedNodes = new ArrayList<>(Arrays.asList(mapDefinition.nodes));
+        orderedNodes.sort(Comparator.comparingInt(this::detailPriority));
+        for (MapCityNodeDefinition node : orderedNodes) {
             TextButton nodeButton = buttonsByCityId.get(node.cityId);
+            Image marker = markersByCityId.get(node.cityId);
             Image outline = outlinesByCityId.get(node.cityId);
+            Image labelLeader = labelLeadersByCityId.get(node.cityId);
+            nodeButton.setVisible(true);
+            labelLeader.setVisible(false);
             String fullCaption = captionsByCityId.getOrDefault(node.cityId, node.cityId);
-            String caption = overview ? fullCaption.split("\\n", 2)[0] : fullCaption;
-            nodeButton.setText(caption);
-            nodeButton.getLabel().setFontScale(overview ? 0.50f : Math.min(1.15f, zoom));
-            nodeButton.setBounds(
-                camera.screenX(node.x * worldWidth) - nodeWidth / 2f,
-                camera.screenY(node.y * worldHeight) - nodeHeight / 2f,
-                nodeWidth, nodeHeight
-            );
+            nodeButton.setText(fullCaption);
+            nodeButton.getLabel().setFontScale((globalMap ? 0.82f : 1.02f) * labelScale);
+            float anchorX = camera.screenX(node.x * worldWidth);
+            float anchorY = camera.screenY(node.y * worldHeight);
+            positionCityMarker(marker, anchorX, anchorY, Math.max(9f, 13f * Math.min(1f, zoom)));
+            Rectangle placement = new Rectangle(
+                anchorX - nodeWidth / 2f, anchorY - nodeHeight / 2f, nodeWidth, nodeHeight);
+            if (intersectsViewport(placement)) {
+                placement = MapLabelLayout.place(
+                    anchorX, anchorY, nodeWidth, nodeHeight, getWidth(), getHeight(), occupied);
+                positionLabelLeader(labelLeader, anchorX, anchorY,
+                    placement.x + placement.width / 2f, placement.y + placement.height / 2f);
+            }
+            nodeButton.setBounds(placement.x, placement.y, placement.width, placement.height);
             if (outline != null) {
                 float border = Math.max(4f, 7f * zoom);
                 outline.setBounds(nodeButton.getX() - border, nodeButton.getY() - border,
                     nodeWidth + border * 2f, nodeHeight + border * 2f);
+                outline.setVisible(pinnedFactionId != null
+                    && pinnedFactionId.equals(factionIdsByCityId.get(node.cityId)));
             }
         }
+    }
+
+    private boolean intersectsViewport(Rectangle rectangle) {
+        return rectangle.x + rectangle.width >= 0f && rectangle.x <= getWidth()
+            && rectangle.y + rectangle.height >= 0f && rectangle.y <= getHeight();
+    }
+
+    private int detailPriority(MapCityNodeDefinition node) {
+        if (node.cityId.equals(selectedCityId)) {
+            return 0;
+        }
+        if (unreadBattlesByCityId.getOrDefault(node.cityId, 0) > 0) {
+            return 1;
+        }
+        if (playerFactionId != null && playerFactionId.equals(factionIdsByCityId.get(node.cityId))) {
+            return 2;
+        }
+        if (capitalCityIds.contains(node.cityId)) {
+            return 3;
+        }
+        return 4;
+    }
+
+    private void positionOverviewNodes() {
+        List<Rectangle> occupied = new ArrayList<>();
+        List<MapCityNodeDefinition> orderedNodes = new ArrayList<>(Arrays.asList(mapDefinition.nodes));
+        orderedNodes.sort(Comparator.comparingInt(this::overviewPriority));
+        for (MapCityNodeDefinition node : orderedNodes) {
+            TextButton nodeButton = buttonsByCityId.get(node.cityId);
+            Image marker = markersByCityId.get(node.cityId);
+            Image outline = outlinesByCityId.get(node.cityId);
+            Image labelLeader = labelLeadersByCityId.get(node.cityId);
+            boolean visible = capitalCityIds.contains(node.cityId)
+                || node.cityId.equals(selectedCityId)
+                || unreadBattlesByCityId.getOrDefault(node.cityId, 0) > 0;
+            float anchorX = camera.screenX(node.x * worldWidth);
+            float anchorY = camera.screenY(node.y * worldHeight);
+            positionCityMarker(marker, anchorX, anchorY, 7f);
+            nodeButton.setVisible(visible);
+            outline.setVisible(false);
+            labelLeader.setVisible(false);
+            if (!visible) {
+                continue;
+            }
+            String caption = captionsByCityId.getOrDefault(node.cityId, node.cityId)
+                .split("\\n", 2)[0];
+            float nodeWidth = Math.min(124f, Math.max(72f, 16f + caption.length() * 12f));
+            float nodeHeight = 34f;
+            Rectangle placement = MapLabelLayout.place(
+                anchorX, anchorY, nodeWidth, nodeHeight, getWidth(), getHeight(), occupied);
+            nodeButton.setText(caption);
+            nodeButton.getLabel().setFontScale(0.50f);
+            nodeButton.setBounds(placement.x, placement.y, placement.width, placement.height);
+            positionLabelLeader(labelLeader, anchorX, anchorY,
+                placement.x + placement.width / 2f, placement.y + placement.height / 2f);
+        }
+    }
+
+    private int overviewPriority(MapCityNodeDefinition node) {
+        if (node.cityId.equals(selectedCityId)) {
+            return 0;
+        }
+        if (unreadBattlesByCityId.getOrDefault(node.cityId, 0) > 0) {
+            return 1;
+        }
+        if (playerFactionId != null && playerFactionId.equals(factionIdsByCityId.get(node.cityId))) {
+            return 2;
+        }
+        return 3;
+    }
+
+    private void positionLabelLeader(
+        Image leader,
+        float anchorX,
+        float anchorY,
+        float labelX,
+        float labelY
+    ) {
+        float deltaX = labelX - anchorX;
+        float deltaY = labelY - anchorY;
+        float length = (float) Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        if (length < 8f) {
+            leader.setVisible(false);
+            return;
+        }
+        leader.setVisible(true);
+        leader.setBounds(anchorX, anchorY - 1f, length, 2f);
+        leader.setOrigin(0f, 1f);
+        leader.setRotation(MathUtils.atan2(deltaY, deltaX) * MathUtils.radiansToDegrees);
+    }
+
+    private void positionCityMarker(Image marker, float anchorX, float anchorY, float size) {
+        marker.setVisible(anchorX + size >= 0f && anchorX - size <= getWidth()
+            && anchorY + size >= 0f && anchorY - size <= getHeight());
+        marker.setBounds(anchorX - size / 2f, anchorY - size / 2f, size, size);
+        marker.setOrigin(Align.center);
     }
 
     private InputListener createNavigationListener() {
