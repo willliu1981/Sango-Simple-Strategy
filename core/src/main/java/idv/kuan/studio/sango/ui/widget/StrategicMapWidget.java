@@ -61,6 +61,7 @@ public final class StrategicMapWidget extends WidgetGroup {
     private final Map<String, String> factionIdsByCityId = new LinkedHashMap<>();
     private final Set<String> capitalCityIds = new HashSet<>();
     private final Map<String, TextButton> buttonsByCityId = new LinkedHashMap<>();
+    private final Map<String, Image> markerHalosByCityId = new LinkedHashMap<>();
     private final Map<String, Image> markersByCityId = new LinkedHashMap<>();
     private final Map<String, Image> outlinesByCityId = new LinkedHashMap<>();
     private final Map<String, Image> labelLeadersByCityId = new LinkedHashMap<>();
@@ -292,6 +293,7 @@ public final class StrategicMapWidget extends WidgetGroup {
         cancelPendingHighlights();
         clearChildren();
         buttonsByCityId.clear();
+        markerHalosByCityId.clear();
         markersByCityId.clear();
         outlinesByCityId.clear();
         labelLeadersByCityId.clear();
@@ -303,6 +305,16 @@ public final class StrategicMapWidget extends WidgetGroup {
             roadImages.add(lineImage);
             addActor(lineImage);
         }
+        for (MapCityNodeDefinition node : mapDefinition.nodes) {
+            Image markerHalo = new Image(SangoUiStyles.createMapCityMarkerHaloDrawable(
+                node.cityId.equals(selectedCityId)));
+            markerHalo.setTouchable(Touchable.disabled);
+            markerHalo.setOrigin(Align.center);
+            markerHalo.setRotation(45f);
+            markerHalosByCityId.put(node.cityId, markerHalo);
+            addActor(markerHalo);
+        }
+        // 所有勢力色核心都位於外層之上，密集節點互相靠近時也不會被別城外層蓋住。
         for (MapCityNodeDefinition node : mapDefinition.nodes) {
             Image marker = new Image(SangoUiStyles.createMapCityMarkerDrawable(
                 tonesByCityId.getOrDefault(node.cityId, MapNodeTone.NEUTRAL),
@@ -527,6 +539,7 @@ public final class StrategicMapWidget extends WidgetGroup {
         orderedNodes.sort(Comparator.comparingInt(this::detailPriority));
         for (MapCityNodeDefinition node : orderedNodes) {
             TextButton nodeButton = buttonsByCityId.get(node.cityId);
+            Image markerHalo = markerHalosByCityId.get(node.cityId);
             Image marker = markersByCityId.get(node.cityId);
             Image outline = outlinesByCityId.get(node.cityId);
             Image labelLeader = labelLeadersByCityId.get(node.cityId);
@@ -534,15 +547,24 @@ public final class StrategicMapWidget extends WidgetGroup {
             labelLeader.setVisible(false);
             String fullCaption = captionsByCityId.getOrDefault(node.cityId, node.cityId);
             nodeButton.setText(fullCaption);
-            nodeButton.getLabel().setFontScale((globalMap ? 0.82f : 1.02f) * labelScale);
             float anchorX = camera.screenX(node.x * worldWidth);
             float anchorY = camera.screenY(node.y * worldHeight);
-            positionCityMarker(marker, anchorX, anchorY, Math.max(9f, 13f * Math.min(1f, zoom)));
+            float edgeScale = MapLabelLayout.labelScaleForAnchor(
+                anchorX, anchorY, getWidth(), getHeight());
+            float markerSize = Math.max(9f, 12f * Math.min(1f, zoom));
+            float haloSize = markerSize + (node.cityId.equals(selectedCityId) ? 10f : 6f);
+            positionCityMarker(markerHalo, anchorX, anchorY, haloSize);
+            positionCityMarker(marker, anchorX, anchorY, markerSize);
+            nodeButton.getLabel().setFontScale(
+                (globalMap ? 0.82f : 1.02f) * labelScale * edgeScale);
+            float placedWidth = nodeWidth * edgeScale;
+            float placedHeight = nodeHeight * edgeScale;
             Rectangle placement = new Rectangle(
                 anchorX - nodeWidth / 2f, anchorY - nodeHeight / 2f, nodeWidth, nodeHeight);
             if (intersectsViewport(placement)) {
                 placement = MapLabelLayout.place(
-                    anchorX, anchorY, nodeWidth, nodeHeight, getWidth(), getHeight(), occupied);
+                    anchorX, anchorY, placedWidth, placedHeight,
+                    getWidth(), getHeight(), occupied);
                 positionLabelLeader(labelLeader, anchorX, anchorY,
                     placement.x + placement.width / 2f, placement.y + placement.height / 2f);
             }
@@ -550,7 +572,7 @@ public final class StrategicMapWidget extends WidgetGroup {
             if (outline != null) {
                 float border = Math.max(4f, 7f * zoom);
                 outline.setBounds(nodeButton.getX() - border, nodeButton.getY() - border,
-                    nodeWidth + border * 2f, nodeHeight + border * 2f);
+                    placedWidth + border * 2f, placedHeight + border * 2f);
                 outline.setVisible(pinnedFactionId != null
                     && pinnedFactionId.equals(factionIdsByCityId.get(node.cityId)));
             }
@@ -563,19 +585,16 @@ public final class StrategicMapWidget extends WidgetGroup {
     }
 
     private int detailPriority(MapCityNodeDefinition node) {
-        if (node.cityId.equals(selectedCityId)) {
+        if (unreadBattlesByCityId.getOrDefault(node.cityId, 0) > 0) {
             return 0;
         }
-        if (unreadBattlesByCityId.getOrDefault(node.cityId, 0) > 0) {
+        if (playerFactionId != null && playerFactionId.equals(factionIdsByCityId.get(node.cityId))) {
             return 1;
         }
-        if (playerFactionId != null && playerFactionId.equals(factionIdsByCityId.get(node.cityId))) {
+        if (capitalCityIds.contains(node.cityId)) {
             return 2;
         }
-        if (capitalCityIds.contains(node.cityId)) {
-            return 3;
-        }
-        return 4;
+        return 3;
     }
 
     private void positionOverviewNodes() {
@@ -584,6 +603,7 @@ public final class StrategicMapWidget extends WidgetGroup {
         orderedNodes.sort(Comparator.comparingInt(this::overviewPriority));
         for (MapCityNodeDefinition node : orderedNodes) {
             TextButton nodeButton = buttonsByCityId.get(node.cityId);
+            Image markerHalo = markerHalosByCityId.get(node.cityId);
             Image marker = markersByCityId.get(node.cityId);
             Image outline = outlinesByCityId.get(node.cityId);
             Image labelLeader = labelLeadersByCityId.get(node.cityId);
@@ -592,7 +612,9 @@ public final class StrategicMapWidget extends WidgetGroup {
                 || unreadBattlesByCityId.getOrDefault(node.cityId, 0) > 0;
             float anchorX = camera.screenX(node.x * worldWidth);
             float anchorY = camera.screenY(node.y * worldHeight);
-            positionCityMarker(marker, anchorX, anchorY, 7f);
+            boolean selected = node.cityId.equals(selectedCityId);
+            positionCityMarker(markerHalo, anchorX, anchorY, selected ? 19f : 15f);
+            positionCityMarker(marker, anchorX, anchorY, selected ? 10f : 9f);
             nodeButton.setVisible(visible);
             outline.setVisible(false);
             labelLeader.setVisible(false);
@@ -601,12 +623,15 @@ public final class StrategicMapWidget extends WidgetGroup {
             }
             String caption = captionsByCityId.getOrDefault(node.cityId, node.cityId)
                 .split("\\n", 2)[0];
-            float nodeWidth = Math.min(124f, Math.max(72f, 16f + caption.length() * 12f));
-            float nodeHeight = 34f;
+            float edgeScale = MapLabelLayout.labelScaleForAnchor(
+                anchorX, anchorY, getWidth(), getHeight());
+            float nodeWidth = Math.min(124f, Math.max(72f, 16f + caption.length() * 12f))
+                * edgeScale;
+            float nodeHeight = 34f * edgeScale;
             Rectangle placement = MapLabelLayout.place(
                 anchorX, anchorY, nodeWidth, nodeHeight, getWidth(), getHeight(), occupied);
             nodeButton.setText(caption);
-            nodeButton.getLabel().setFontScale(0.50f);
+            nodeButton.getLabel().setFontScale(0.50f * edgeScale);
             nodeButton.setBounds(placement.x, placement.y, placement.width, placement.height);
             positionLabelLeader(labelLeader, anchorX, anchorY,
                 placement.x + placement.width / 2f, placement.y + placement.height / 2f);
@@ -614,16 +639,13 @@ public final class StrategicMapWidget extends WidgetGroup {
     }
 
     private int overviewPriority(MapCityNodeDefinition node) {
-        if (node.cityId.equals(selectedCityId)) {
+        if (unreadBattlesByCityId.getOrDefault(node.cityId, 0) > 0) {
             return 0;
         }
-        if (unreadBattlesByCityId.getOrDefault(node.cityId, 0) > 0) {
+        if (playerFactionId != null && playerFactionId.equals(factionIdsByCityId.get(node.cityId))) {
             return 1;
         }
-        if (playerFactionId != null && playerFactionId.equals(factionIdsByCityId.get(node.cityId))) {
-            return 2;
-        }
-        return 3;
+        return 2;
     }
 
     private void positionLabelLeader(

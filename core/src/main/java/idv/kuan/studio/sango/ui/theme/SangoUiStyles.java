@@ -100,6 +100,16 @@ public final class SangoUiStyles {
         return drawable(Sui.resources.manager().getSkin(), markerColor.cpy().lerp(Color.WHITE, 0.18f));
     }
 
+    /**
+     * 城池點的高對比外層。一般狀態使用米白色，選取狀態改用較醒目的金色；
+     * 與內層勢力色分開繪製，避免深色節點融入地形與道路。
+     */
+    public static Drawable createMapCityMarkerHaloDrawable(boolean selected) {
+        return drawable(Sui.resources.manager().getSkin(), selected
+            ? new Color(1f, 0.78f, 0.25f, 1f)
+            : new Color(0.98f, 0.89f, 0.66f, 1f));
+    }
+
     public static Drawable createMapOutlineDrawable(boolean selected) {
         return drawable(Sui.resources.manager().getSkin(), selected
             ? new Color(1f, 0.96f, 0.76f, 1f)

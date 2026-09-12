@@ -352,6 +352,10 @@ public final class UiResourceSmokeTest {
             "剛進入細節模式時，城池標籤可略微縮小");
         check(close(MapLabelLayout.detailScale(MapCameraState.MAXIMUM_ZOOM), 1f),
             "地圖放到最大時，城池標籤不可繼續放大");
+        check(close(MapLabelLayout.labelScaleForAnchor(500f, 300f, 1040f, 428f), 1f),
+            "畫面內城池必須使用完整標籤尺寸");
+        check(close(MapLabelLayout.labelScaleForAnchor(-1f, 300f, 1040f, 428f), 0.85f),
+            "畫面外城池的邊界提示標籤必須略小");
         List<Rectangle> occupied = new ArrayList<>();
         Rectangle first = MapLabelLayout.place(500f, 300f, 100f, 34f, 1040f, 428f, occupied);
         Rectangle second = MapLabelLayout.place(500f, 300f, 100f, 34f, 1040f, 428f, occupied);

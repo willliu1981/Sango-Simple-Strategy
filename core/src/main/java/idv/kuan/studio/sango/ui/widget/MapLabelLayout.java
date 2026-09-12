@@ -10,6 +10,7 @@ public final class MapLabelLayout {
     private static final float LABEL_GAP = 5f;
     private static final int MAXIMUM_SEARCH_RING = 8;
     private static final float MINIMUM_DETAIL_SCALE = 0.72f;
+    private static final float EDGE_PREVIEW_SCALE = 0.85f;
 
     private MapLabelLayout() {
     }
@@ -20,6 +21,22 @@ public final class MapLabelLayout {
             throw new IllegalArgumentException("地圖縮放倍率必須是有限正數。");
         }
         return clamp(mapZoom, MINIMUM_DETAIL_SCALE, 1f);
+    }
+
+    /** 當城池錨點仍在畫面外時，將夾在邊界上的提示標籤略微縮小。 */
+    public static float labelScaleForAnchor(
+        float anchorX,
+        float anchorY,
+        float viewportWidth,
+        float viewportHeight
+    ) {
+        if (!Float.isFinite(anchorX) || !Float.isFinite(anchorY)
+            || viewportWidth <= 0f || viewportHeight <= 0f) {
+            throw new IllegalArgumentException("城池錨點與視窗尺寸必須有效。");
+        }
+        boolean inside = anchorX >= 0f && anchorX <= viewportWidth
+            && anchorY >= 0f && anchorY <= viewportHeight;
+        return inside ? 1f : EDGE_PREVIEW_SCALE;
     }
 
     public static Rectangle place(
