@@ -639,6 +639,11 @@ public final class StrategicMapWidget extends WidgetGroup {
     }
 
     private int overviewPriority(MapCityNodeDefinition node) {
+        // 因選取而臨時出現的標籤最後放置，不擠動原有首都／戰事標籤。
+        if (!capitalCityIds.contains(node.cityId)
+            && unreadBattlesByCityId.getOrDefault(node.cityId, 0) == 0) {
+            return 3;
+        }
         if (unreadBattlesByCityId.getOrDefault(node.cityId, 0) > 0) {
             return 0;
         }

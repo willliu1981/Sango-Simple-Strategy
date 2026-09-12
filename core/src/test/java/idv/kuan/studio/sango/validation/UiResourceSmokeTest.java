@@ -361,9 +361,17 @@ public final class UiResourceSmokeTest {
         Rectangle second = MapLabelLayout.place(500f, 300f, 100f, 34f, 1040f, 428f, occupied);
         Rectangle edge = MapLabelLayout.place(-20f, 500f, 120f, 34f, 1040f, 428f, occupied);
         check(!first.overlaps(second), "同座標的地圖標籤必須自動避讓");
+        check(close(second.x, first.x)
+                && close(Math.abs(second.y - first.y), first.height + 5f),
+            "密集城池應選最近的上下空位，不可優先跳到遠方的對角位置");
         check(edge.x >= 0f && edge.y >= 0f
             && edge.x + edge.width <= 1040f && edge.y + edge.height <= 428f,
             "地圖標籤不可超出地圖視窗");
+        List<Rectangle> edgeCluster = new ArrayList<>();
+        Rectangle edgeFirst = MapLabelLayout.place(-20f, 200f, 120f, 34f, 1040f, 428f, edgeCluster);
+        Rectangle edgeSecond = MapLabelLayout.place(-20f, 200f, 120f, 34f, 1040f, 428f, edgeCluster);
+        check(close(edgeFirst.x, edgeSecond.x) && !edgeFirst.overlaps(edgeSecond),
+            "畫面外城池只能沿對應邊界避讓，不可擠入地圖中央");
 
         List<Rectangle> denseCluster = new ArrayList<>();
         for (int index = 0; index < 12; index++) {

@@ -52,6 +52,8 @@ public final class MapLabelLayout {
             || occupied == null) {
             throw new IllegalArgumentException("地圖標籤尺寸、視窗與已占用區域必須有效。");
         }
+        Rectangle closest = null;
+        float closestDistance = Float.POSITIVE_INFINITY;
         for (int ring = 0; ring <= MAXIMUM_SEARCH_RING; ring++) {
             for (int offsetY = -ring; offsetY <= ring; offsetY++) {
                 for (int offsetX = -ring; offsetX <= ring; offsetX++) {
@@ -59,24 +61,32 @@ public final class MapLabelLayout {
                         continue;
                     }
                     Rectangle candidate = candidate(
-                        anchorX + offsetX * (width + LABEL_GAP),
-                        anchorY + offsetY * (height + LABEL_GAP),
+                        anchorX < 0f || anchorX > viewportWidth ? anchorX
+                            : anchorX + offsetX * (width + LABEL_GAP),
+                        anchorY < 0f || anchorY > viewportHeight ? anchorY
+                            : anchorY + offsetY * (height + LABEL_GAP),
                         width,
                         height,
                         viewportWidth,
                         viewportHeight
                     );
                     if (!overlaps(candidate, occupied)) {
-                        occupied.add(new Rectangle(candidate));
-                        return candidate;
+                        float dx = candidate.x + width / 2f - anchorX;
+                        float dy = candidate.y + height / 2f - anchorY;
+                        float distance = dx * dx + dy * dy;
+                        // 不採用掃描時最先遇到的左下角，避免城名被無謂地拉離城池。
+                        if (distance < closestDistance) {
+                            closest = candidate;
+                            closestDistance = distance;
+                        }
                     }
                 }
             }
         }
-        Rectangle fallback = candidate(
+        Rectangle placement = closest != null ? closest : candidate(
             anchorX, anchorY, width, height, viewportWidth, viewportHeight);
-        occupied.add(new Rectangle(fallback));
-        return fallback;
+        occupied.add(new Rectangle(placement));
+        return placement;
     }
 
     private static Rectangle candidate(
