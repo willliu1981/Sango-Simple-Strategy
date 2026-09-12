@@ -42,6 +42,8 @@ public final class MusicPlaybackSmokeTest {
         testRapidSwitchAndPause();
         testCompletionBehavior();
         testFailures();
+        testTransitionFailureCleanup();
+        testBackendFailures();
         System.out.println("Sango music state-machine regression: PASS; checks=" + checks);
     }
 
@@ -149,15 +151,16 @@ public final class MusicPlaybackSmokeTest {
         loader.failedTrack = MusicTrack.SUMMER;
         controller.request(MusicTrack.SUMMER);
         controller.update(2f, true, 1f);
-        check(controller.hasRequestedTrackFailure() && controller.activeStreamCount() == 1, "載入失敗保留舊曲不崩潰");
-        check(close(loader.latest(MusicTrack.SPRING).volume, 0.70f), "失敗回退保留季節曲目 gain");
+        check(controller.hasRequestedTrackFailure() && controller.activeStreamCount() == 0, "載入失敗停止全部串流");
+        check(loader.latest(MusicTrack.SPRING).disposed && !loader.latest(MusicTrack.SPRING).playing,
+            "載入失敗不繼續播放舊曲");
         int attempts = loader.attempts;
         for (int i = 0; i < 10; i++) {
             controller.update(1f, true, 1f);
         }
         check(loader.attempts == attempts, "載入失敗不每幀重試");
         loader.failedTrack = null;
-        controller.retryRequestedTrack();
+        controller.request(MusicTrack.SUMMER);
         controller.update(2f, true, 1f);
         check(!controller.hasRequestedTrackFailure() && loader.latest(MusicTrack.SUMMER).playing, "顯式重新選曲可重試");
         FakeMusic broken = loader.latest(MusicTrack.SUMMER);
@@ -167,6 +170,70 @@ public final class MusicPlaybackSmokeTest {
             "串流執行中失敗仍釋放並回報");
         controller.dispose();
         check(loader.allDisposedExactlyOnce(), "失敗流程無資源遺留");
+    }
+
+    private static void testTransitionFailureCleanup() {
+        FakeLoader loader = new FakeLoader();
+        MusicPlaybackController controller = new MusicPlaybackController(loader::load, 2f);
+        List<MusicTrack> completions = new ArrayList<>();
+        controller.request(MusicTrack.SPRING, false, completions::add);
+        controller.update(2f, true, 1f);
+        FakeMusic spring = loader.latest(MusicTrack.SPRING);
+        controller.request(MusicTrack.SUMMER, false, completions::add);
+        controller.update(0.1f, true, 1f);
+        FakeMusic summer = loader.latest(MusicTrack.SUMMER);
+        summer.failVolume = true;
+        controller.update(0.1f, true, 1f);
+        check(controller.activeStreamCount() == 0 && controller.hasRequestedTrackFailure(),
+            "轉場中新曲播放失敗清空所有串流");
+        check(spring.disposed && summer.disposed && !spring.playing && !summer.playing,
+            "轉場中新舊曲都停止");
+        summer.complete();
+        spring.complete();
+        check(completions.isEmpty(), "失敗後舊完成回呼不觸發自動下一首");
+        controller.retryRequestedTrack();
+        controller.update(2f, true, 1f);
+        summer.complete();
+        check(completions.isEmpty(), "同曲重試後仍忽略已釋放實例的回呼");
+        check(loader.latest(MusicTrack.SUMMER).playing && !controller.hasRequestedTrackFailure(),
+            "顯式重試恢復新串流");
+        controller.request(MusicTrack.AUTUMN);
+        controller.update(0.1f, true, 1f);
+        loader.latest(MusicTrack.SUMMER).failVolume = true;
+        controller.update(0.1f, true, 1f);
+        check(!controller.hasRequestedTrackFailure() && loader.latest(MusicTrack.AUTUMN).playing,
+            "淡出舊曲錯誤不誤報目前曲目失敗");
+        controller.dispose();
+        check(loader.allDisposedExactlyOnce(), "失敗和重試串流均只釋放一次");
+    }
+
+    private static void testBackendFailures() {
+        for (String failure : List.of("null", "volume", "looping", "play", "seek")) {
+            FakeLoader loader = new FakeLoader();
+            MusicPlaybackController controller = new MusicPlaybackController(loader::load, 2f);
+            controller.request(MusicTrack.SPRING);
+            controller.update(2f, true, 1f);
+            loader.failure = failure;
+            controller.request(MusicTrack.SUMMER);
+            controller.update(0.1f, true, 1f);
+            if (failure.equals("seek")) {
+                controller.restartRequestedTrack();
+            }
+            check(controller.hasRequestedTrackFailure() && controller.activeStreamCount() == 0,
+                "後端失敗全部停止：" + failure);
+            int attempts = loader.attempts;
+            controller.pause();
+            controller.resume();
+            controller.update(2f, true, 1f);
+            check(loader.attempts == attempts, "平台恢復不自動重試：" + failure);
+            loader.failure = null;
+            controller.request(MusicTrack.WINTER);
+            controller.update(2f, true, 1f);
+            check(!controller.hasRequestedTrackFailure() && loader.latest(MusicTrack.WINTER).playing,
+                "失敗後明確選別曲恢復：" + failure);
+            controller.dispose();
+            check(loader.allDisposedExactlyOnce(), "後端失敗無重複釋放：" + failure);
+        }
     }
 
     private static void testCompletionBehavior() {
@@ -214,6 +281,7 @@ public final class MusicPlaybackSmokeTest {
         private final Map<MusicTrack, List<FakeMusic>> perTrack = new EnumMap<>(MusicTrack.class);
         private final List<FakeMusic> instances = new ArrayList<>();
         private MusicTrack failedTrack;
+        private String failure;
         private int attempts;
 
         private Music load(MusicTrack track) {
@@ -221,7 +289,12 @@ public final class MusicPlaybackSmokeTest {
             if (track == failedTrack) {
                 throw new IllegalStateException("模擬載入失敗");
             }
+            if ("null".equals(failure)) {
+                return null;
+            }
             FakeMusic music = new FakeMusic();
+            music.failVolume = "volume".equals(failure);
+            music.failure = failure;
             instances.add(music);
             perTrack.computeIfAbsent(track, ignored -> new ArrayList<>()).add(music);
             return music;
@@ -251,6 +324,7 @@ public final class MusicPlaybackSmokeTest {
         private boolean looping;
         private boolean disposed;
         private boolean failVolume;
+        private String failure;
         private float volume;
         private float position;
         private int playCalls;
@@ -260,6 +334,9 @@ public final class MusicPlaybackSmokeTest {
 
         @Override
         public void play() {
+            if ("play".equals(failure)) {
+                throw new IllegalStateException("模擬播放失敗");
+            }
             if (disposed) {
                 throw new IllegalStateException("已釋放串流");
             }
@@ -286,6 +363,9 @@ public final class MusicPlaybackSmokeTest {
 
         @Override
         public void setLooping(boolean looping) {
+            if ("looping".equals(failure)) {
+                throw new IllegalStateException("模擬設定失敗");
+            }
             this.looping = looping;
         }
 
@@ -314,6 +394,9 @@ public final class MusicPlaybackSmokeTest {
 
         @Override
         public void setPosition(float position) {
+            if ("seek".equals(failure)) {
+                throw new IllegalStateException("模擬定位失敗");
+            }
             this.position = position;
         }
 

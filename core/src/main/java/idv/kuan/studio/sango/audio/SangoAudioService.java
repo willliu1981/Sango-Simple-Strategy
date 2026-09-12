@@ -79,6 +79,11 @@ public final class SangoAudioService {
     }
 
     public MusicTrack pollCompletedMusicPlayerTrack() {
+        if (playback.hasRequestedTrackFailure()) {
+            completedGalleryTrack = null;
+            galleryCompletionPending = false;
+            return null;
+        }
         if (!galleryCompletionPending) {
             return null;
         }
@@ -91,7 +96,7 @@ public final class SangoAudioService {
     }
 
     public boolean isMusicPlayerPaused() {
-        return playback.isUserPaused() || completedGalleryTrack != null;
+        return playback.isUserPaused() || completedGalleryTrack != null || playback.hasRequestedTrackFailure();
     }
 
     public boolean hasMusicLoadFailure() {

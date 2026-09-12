@@ -1,7 +1,7 @@
 [
   {
     "source": "遠方的燈火 _ Lights in the Distance.mp3",
-    "asset": "audio/music/spring_wind_enters_city.mp3",
+    "asset": "audio/music/lights_in_the_distance.mp3",
     "title": "遠方的燈火",
     "title_en": "Lights in the Distance",
     "duration_seconds": 239.440,
@@ -11,7 +11,7 @@
   },
   {
     "source": "田間四季 _ Seasons in the Fields.mp3",
-    "asset": "audio/music/summer_counsel.mp3",
+    "asset": "audio/music/seasons_in_the_fields.mp3",
     "title": "田間四季",
     "title_en": "Seasons in the Fields",
     "duration_seconds": 239.840,
@@ -21,7 +21,7 @@
   },
   {
     "source": "夜還很長 _ A Long Night Ahead.mp3",
-    "asset": "audio/music/autumn_battlefield.mp3",
+    "asset": "audio/music/a_long_night_ahead.mp3",
     "title": "夜還很長",
     "title_en": "A Long Night Ahead",
     "duration_seconds": 239.840,
@@ -31,7 +31,7 @@
   },
   {
     "source": "冬日長河 _ The Winter River.mp3",
-    "asset": "audio/music/winter_stratagem.mp3",
+    "asset": "audio/music/the_winter_river.mp3",
     "title": "冬日長河",
     "title_en": "The Winter River",
     "duration_seconds": 233.600,

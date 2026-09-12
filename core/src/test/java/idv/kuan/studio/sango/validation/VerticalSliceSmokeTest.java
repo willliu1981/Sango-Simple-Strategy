@@ -657,8 +657,8 @@ public final class VerticalSliceSmokeTest {
 
     private static void validateAudioAssets(Path assetsPath) throws IOException {
         String[] audioAssetPaths = {
-            "audio/music/lobby_theme.mp3",
-            "audio/music/strategy_theme.mp3",
+            "audio/music/hold_this_ground.mp3",
+            "audio/music/under_the_same_sky.mp3",
             "audio/sfx/ui_click.ogg",
             "audio/sfx/confirm.ogg",
             "audio/sfx/cancel.ogg",

@@ -2,12 +2,12 @@ package idv.kuan.studio.sango.audio;
 
 /** 音樂資產與顯示名稱分離；鑑賞曲目均使用完整 MP3，不裁切來源。 */
 public enum MusicTrack {
-    LOBBY("audio/music/lobby_theme.mp3", "music_lobby", "music_menu", 208.760f, 1f),
-    VICTORY("audio/music/strategy_theme.mp3", "music_victory", "music_victory_scene", 117.600f, 1f),
-    SPRING("audio/music/spring_wind_enters_city.mp3", "music_spring", "season_spring", 239.440f, 0.70f),
-    SUMMER("audio/music/summer_counsel.mp3", "music_summer", "season_summer", 239.840f, 0.70f),
-    AUTUMN("audio/music/autumn_battlefield.mp3", "music_autumn", "season_autumn", 239.840f, 0.70f),
-    WINTER("audio/music/winter_stratagem.mp3", "music_winter", "season_winter", 233.600f, 0.70f);
+    LOBBY("audio/music/hold_this_ground.mp3", "music_lobby", "music_menu", 208.760f, 1f),
+    VICTORY("audio/music/under_the_same_sky.mp3", "music_victory", "music_victory_scene", 117.600f, 1f),
+    SPRING("audio/music/lights_in_the_distance.mp3", "music_spring", "season_spring", 239.440f, 0.70f),
+    SUMMER("audio/music/seasons_in_the_fields.mp3", "music_summer", "season_summer", 239.840f, 0.70f),
+    AUTUMN("audio/music/a_long_night_ahead.mp3", "music_autumn", "season_autumn", 239.840f, 0.70f),
+    WINTER("audio/music/the_winter_river.mp3", "music_winter", "season_winter", 233.600f, 0.70f);
 
     private final String assetPath;
     private final String titleKey;

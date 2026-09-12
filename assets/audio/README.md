@@ -8,14 +8,14 @@
 
 | 遊戲位置 | 中文曲名 | 英文曲名 | 遊戲資產 | 曲長（秒） |
 | --- | --- | --- | --- | --- |
-| 主選單 | 守住這裡 | Hold This Ground | `music/lobby_theme.mp3` | 208.760 |
-| 勝利／破關 | 同一片天空 | Under the Same Sky | `music/strategy_theme.mp3` | 117.600 |
-| 春季 | 遠方的燈火 | Lights in the Distance | `music/spring_wind_enters_city.mp3` | 239.440 |
-| 夏季 | 田間四季 | Seasons in the Fields | `music/summer_counsel.mp3` | 239.840 |
-| 秋季 | 夜還很長 | A Long Night Ahead | `music/autumn_battlefield.mp3` | 239.840 |
-| 冬季 | 冬日長河 | The Winter River | `music/winter_stratagem.mp3` | 233.600 |
+| 主選單 | 守住這裡 | Hold This Ground | `music/hold_this_ground.mp3` | 208.760 |
+| 勝利／破關 | 同一片天空 | Under the Same Sky | `music/under_the_same_sky.mp3` | 117.600 |
+| 春季 | 遠方的燈火 | Lights in the Distance | `music/lights_in_the_distance.mp3` | 239.440 |
+| 夏季 | 田間四季 | Seasons in the Fields | `music/seasons_in_the_fields.mp3` | 239.840 |
+| 秋季 | 夜還很長 | A Long Night Ahead | `music/a_long_night_ahead.mp3` | 239.840 |
+| 冬季 | 冬日長河 | The Winter River | `music/the_winter_river.mp3` | 233.600 |
 
-音檔取自開發者提供的 `suno v6 (商用)` 資料夾；原始檔名為「中文曲名 _ 英文曲名.mp3」。六首均完整複製，未裁切、轉碼或修改音檔標籤。遊戲沿用既有資產路徑，`strategy_theme.mp3` 對應勝利曲；一般戰局依月份播放四季曲。
+音檔取自開發者提供的 `suno v6 (商用)` 資料夾；原始檔名為「中文曲名 _ 英文曲名.mp3」。六首均完整複製，未裁切、轉碼或修改音檔標籤。遊戲資產檔名採用對應英文曲名，`under_the_same_sky.mp3` 對應勝利曲；一般戰局依月份播放四季曲。
 
 - 舊的 `music/lobby_theme.ogg` 與 `music/strategy_theme.ogg` 已從 repository 移除，目前程式改用上述 MP3。
 - `sfx/*.ogg`：由 `tools/generate-prototype-audio.py` 以基本波形與程序節奏合成的音效。

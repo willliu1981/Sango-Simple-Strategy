@@ -1,6 +1,7 @@
 package idv.kuan.studio.sango.audio;
 
 import java.util.EnumMap;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -48,7 +49,7 @@ public final class MusicPlaybackController {
         requestedLooping = looping;
         requestedCompletionListener = completionListener;
         failedTrack = null;
-        if (trackChanged) {
+        if (trackChanged || !voices.containsKey(track)) {
             transitionPending = true;
         } else {
             configureRequestedVoice();
@@ -81,9 +82,7 @@ public final class MusicPlaybackController {
             voice.music.setPosition(0f);
             voice.completed = false;
         } catch (RuntimeException exception) {
-            failedTrack = requestedTrack;
-            release(voice.music);
-            voices.remove(requestedTrack);
+            failRequestedTrack();
         }
     }
 
@@ -126,9 +125,12 @@ public final class MusicPlaybackController {
                     voice.music.play();
                 }
             } catch (RuntimeException exception) {
-                failedTrack = entry.getKey();
-                release(voice.music);
+                if (entry.getKey() == requestedTrack) {
+                    failRequestedTrack();
+                    return;
+                }
                 iterator.remove();
+                release(voice.music);
             }
         }
     }
@@ -141,14 +143,14 @@ public final class MusicPlaybackController {
             try {
                 loadedMusic = loader.apply(requestedTrack);
                 if (loadedMusic == null) {
-                    failedTrack = requestedTrack;
+                    failRequestedTrack();
                     return;
                 }
                 loadedMusic.setVolume(0f);
                 requestedVoice = new Voice(requestedTrack, loadedMusic);
                 voices.put(requestedTrack, requestedVoice);
             } catch (RuntimeException exception) {
-                failedTrack = requestedTrack;
+                failRequestedTrack();
                 if (loadedMusic != null) {
                     release(loadedMusic);
                 }
@@ -156,6 +158,9 @@ public final class MusicPlaybackController {
             }
         }
         configureRequestedVoice();
+        if (hasRequestedTrackFailure()) {
+            return;
+        }
         transitionElapsed = 0f;
         for (Map.Entry<MusicTrack, Voice> entry : voices.entrySet()) {
             Voice voice = entry.getValue();
@@ -172,7 +177,8 @@ public final class MusicPlaybackController {
         try {
             voice.music.setLooping(requestedLooping);
             voice.music.setOnCompletionListener(music -> {
-                if (requestedTrack != voice.track || requestedLooping) {
+                if (disposed || failedTrack == voice.track || voices.get(voice.track) != voice
+                    || requestedTrack != voice.track || requestedLooping) {
                     return;
                 }
                 voice.completed = true;
@@ -181,9 +187,18 @@ public final class MusicPlaybackController {
                 }
             });
         } catch (RuntimeException exception) {
-            failedTrack = requestedTrack;
+            failRequestedTrack();
+        }
+    }
+
+    /** 失敗不回退舊曲；先移除身份，再釋放，避免後端的延遲完成事件繼續切歌。 */
+    private void failRequestedTrack() {
+        failedTrack = requestedTrack;
+        transitionPending = false;
+        var failedVoices = new ArrayList<>(voices.values());
+        voices.clear();
+        for (Voice voice : failedVoices) {
             release(voice.music);
-            voices.remove(requestedTrack);
         }
     }
 
