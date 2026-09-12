@@ -9,24 +9,27 @@
             <row />
             <table width="1650" height="620">
                 <table width="610" height="600" pad="24" backgroundColor="0.023,0.020,0.018,1">
-                    <textButton id="music_track_0_button" fontSize="30" width="550" height="82">${text:music_track_lobby}</textButton>
+                    <textButton id="music_track_0_button" fontSize="28" width="550" height="82">${text:music_track_lobby}</textButton>
                     <row />
-                    <textButton id="music_track_1_button" fontSize="30" width="550" height="82" padTop="10">${text:music_track_victory}</textButton>
+                    <textButton id="music_track_1_button" fontSize="28" width="550" height="82" padTop="10">${text:music_track_victory}</textButton>
                     <row />
-                    <textButton id="music_track_2_button" fontSize="30" width="550" height="82" padTop="10">${text:music_track_spring}</textButton>
+                    <textButton id="music_track_2_button" fontSize="28" width="550" height="82" padTop="10">${text:music_track_spring}</textButton>
                     <row />
-                    <textButton id="music_track_3_button" fontSize="30" width="550" height="82" padTop="10">${text:music_track_summer}</textButton>
+                    <textButton id="music_track_3_button" fontSize="28" width="550" height="82" padTop="10">${text:music_track_summer}</textButton>
                     <row />
-                    <textButton id="music_track_4_button" fontSize="30" width="550" height="82" padTop="10">${text:music_track_autumn}</textButton>
+                    <textButton id="music_track_4_button" fontSize="28" width="550" height="82" padTop="10">${text:music_track_autumn}</textButton>
                     <row />
-                    <textButton id="music_track_5_button" fontSize="30" width="550" height="82" padTop="10">${text:music_track_winter}</textButton>
+                    <textButton id="music_track_5_button" fontSize="28" width="550" height="82" padTop="10">${text:music_track_winter}</textButton>
                 </table>
                 <table width="32"></table>
                 <table width="1000" height="600" pad="32" backgroundColor="0.064,0.050,0.039,0.98">
                     <label id="music_season_label" fontSize="30" width="900" height="64" color="0.70,0.65,0.53,1">${text:season_spring}</label>
                     <row />
-                    <label id="music_title_label" fontKey="title" fontSize="82" width="900" height="132"
+                    <label id="music_title_label" fontKey="title" fontSize="68" width="900" height="100"
                         color="0.96,0.82,0.53,1">${text:music_spring}</label>
+                    <row />
+                    <label id="music_title_en_label" fontSize="36" width="900" height="54"
+                        color="0.81,0.77,0.68,1">${text:music_spring_en}</label>
                     <row />
                     <label id="music_time_label" fontSize="38" width="900" height="64" color="0.81,0.77,0.68,1">00:00 / 03:29</label>
                     <row />

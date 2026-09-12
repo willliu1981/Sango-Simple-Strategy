@@ -635,24 +635,30 @@
         <entry name="button_music_player" value="音樂鑑賞" description="button_music_player" />
         <entry name="music_player_title" value="四時之聲 · 音樂鑑賞" description="music_player_title" />
         <entry name="music_player_description" value="自由欣賞遊戲曲目，可切換播放模式；離開時恢復大廳 BGM。" description="music_player_description" />
-        <entry name="music_lobby" value="未定的版圖" description="music_lobby" />
+        <entry name="music_lobby" value="守住這裡" description="music_lobby" />
+        <entry name="music_lobby_en" value="Hold This Ground" description="music_lobby_en" />
         <entry name="music_menu" value="主選單" description="music_menu" />
-        <entry name="music_victory" value="此戰之後" description="music_victory" />
-        <entry name="music_victory_scene" value="劇本目標達成" description="music_victory_scene" />
-        <entry name="music_spring" value="春風入城" description="music_spring" />
-        <entry name="music_summer" value="旌旗長路" description="music_summer" />
-        <entry name="music_autumn" value="暮秋望陣" description="music_autumn" />
-        <entry name="music_winter" value="孤城待曉" description="music_winter" />
+        <entry name="music_victory" value="同一片天空" description="music_victory" />
+        <entry name="music_victory_en" value="Under the Same Sky" description="music_victory_en" />
+        <entry name="music_victory_scene" value="全圖征服" description="music_victory_scene" />
+        <entry name="music_spring" value="遠方的燈火" description="music_spring" />
+        <entry name="music_spring_en" value="Lights in the Distance" description="music_spring_en" />
+        <entry name="music_summer" value="田間四季" description="music_summer" />
+        <entry name="music_summer_en" value="Seasons in the Fields" description="music_summer_en" />
+        <entry name="music_autumn" value="夜還很長" description="music_autumn" />
+        <entry name="music_autumn_en" value="A Long Night Ahead" description="music_autumn_en" />
+        <entry name="music_winter" value="冬日長河" description="music_winter" />
+        <entry name="music_winter_en" value="The Winter River" description="music_winter_en" />
         <entry name="season_spring" value="春 · 一月至三月" description="season_spring" />
         <entry name="season_summer" value="夏 · 四月至六月" description="season_summer" />
         <entry name="season_autumn" value="秋 · 七月至九月" description="season_autumn" />
         <entry name="season_winter" value="冬 · 十月至十二月" description="season_winter" />
-        <entry name="music_track_lobby" value="未定的版圖" description="music_track_lobby" />
-        <entry name="music_track_victory" value="此戰之後" description="music_track_victory" />
-        <entry name="music_track_spring" value="春風入城" description="music_track_spring" />
-        <entry name="music_track_summer" value="旌旗長路" description="music_track_summer" />
-        <entry name="music_track_autumn" value="暮秋望陣" description="music_track_autumn" />
-        <entry name="music_track_winter" value="孤城待曉" description="music_track_winter" />
+        <entry name="music_track_lobby" value="守住這裡 | Hold This Ground" description="music_track_lobby" />
+        <entry name="music_track_victory" value="同一片天空 | Under the Same Sky" description="music_track_victory" />
+        <entry name="music_track_spring" value="遠方的燈火 | Lights in the Distance" description="music_track_spring" />
+        <entry name="music_track_summer" value="田間四季 | Seasons in the Fields" description="music_track_summer" />
+        <entry name="music_track_autumn" value="夜還很長 | A Long Night Ahead" description="music_track_autumn" />
+        <entry name="music_track_winter" value="冬日長河 | The Winter River" description="music_track_winter" />
         <entry name="music_previous" value="上一首" description="music_previous" />
         <entry name="music_next" value="下一首" description="music_next" />
         <entry name="music_play" value="播放" description="music_play" />

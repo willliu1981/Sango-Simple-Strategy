@@ -120,6 +120,7 @@ public final class MusicPlayerScreen extends SuiScreen {
         }
         MusicTrack track = tracks[selectedIndex];
         label("music_title_label").setText(text(track.getTitleKey(), track.name()));
+        label("music_title_en_label").setText(text(track.getEnglishTitleKey(), ""));
         label("music_season_label").setText(text(track.getSeasonKey(), ""));
         label("music_time_label").setText(clock(SangoServices.audio().getMusicPositionSeconds())
             + " / " + clock(track.getDurationSeconds()));

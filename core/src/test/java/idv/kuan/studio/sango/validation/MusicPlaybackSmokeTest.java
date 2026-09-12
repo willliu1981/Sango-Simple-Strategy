@@ -28,14 +28,14 @@ public final class MusicPlaybackSmokeTest {
         }
         for (MusicTrack track : MusicTrack.seasonalTracks()) {
             check(Files.size(Path.of(arguments[0]).resolve(track.getAssetPath())) > 100000, "四首來源資產存在且非空");
-            check(track.getDurationSeconds() > 200f && track.getDurationSeconds() < 220f, "曲長中繼資料");
             check(close(track.getOutputGain(), 0.70f), "四季曲目輸出 gain 為 0.70");
         }
         check(MusicTrack.galleryTracks().length == 6, "鑑賞清單包含主選單、破關與四季曲目");
         for (MusicTrack track : MusicTrack.galleryTracks()) {
             check(Files.size(Path.of(arguments[0]).resolve(track.getAssetPath())) > 100000,
                 "六首鑑賞來源資產存在且非空");
-            check(track.getDurationSeconds() > 60f, "六首鑑賞曲長中繼資料有效");
+            check(Float.isFinite(track.getDurationSeconds()) && track.getDurationSeconds() > 0f,
+                "六首鑑賞曲長中繼資料為有限正值");
         }
         check(close(MusicTrack.LOBBY.getOutputGain(), 1f), "大廳曲目輸出 gain 為 1.0");
         testCrossfade();

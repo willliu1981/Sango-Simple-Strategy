@@ -1,34 +1,42 @@
 [
   {
-    "source": "运筹帷幄_1_春風入城.mp3",
+    "source": "遠方的燈火 _ Lights in the Distance.mp3",
     "asset": "audio/music/spring_wind_enters_city.mp3",
-    "title": "春風入城",
+    "title": "遠方的燈火",
+    "title_en": "Lights in the Distance",
+    "duration_seconds": 239.440,
     "season": "SPRING",
-    "sha256": "644421a82b23e2ad029f6818e6b53443e7c2497d4731dd3f622e5eb4c2854240",
+    "sha256": "8d70a828d582ff8f31f5ae6be455976d0f735bacf270285d66d8232489459c58",
     "processing": "Byte-identical copy; filename and UI title only."
   },
   {
-    "source": "运筹帷幄_2_炎日運籌.mp3",
+    "source": "田間四季 _ Seasons in the Fields.mp3",
     "asset": "audio/music/summer_counsel.mp3",
-    "title": "旌旗長路",
+    "title": "田間四季",
+    "title_en": "Seasons in the Fields",
+    "duration_seconds": 239.840,
     "season": "SUMMER",
-    "sha256": "aefec738dde2a02cf36b7e894eaca1063dbf2eae05c9daa33fd38d1092325628",
+    "sha256": "22406115ff365e56f84936fe178de471ad60ef9d55ea72293e85b41c9856874c",
     "processing": "Byte-identical copy; filename and UI title only."
   },
   {
-    "source": "运筹帷幄_3_暮秋望陣.mp3",
+    "source": "夜還很長 _ A Long Night Ahead.mp3",
     "asset": "audio/music/autumn_battlefield.mp3",
-    "title": "暮秋望陣",
+    "title": "夜還很長",
+    "title_en": "A Long Night Ahead",
+    "duration_seconds": 239.840,
     "season": "AUTUMN",
-    "sha256": "dcaec72271b28bb8b6bedd3d22ff8f953ad758eb88b6130633b3e607fa3110d1",
+    "sha256": "387baef2ebc3702663c3a16284dd18e44b9ac758f5f838f862a6bd2731ba7cab",
     "processing": "Byte-identical copy; filename and UI title only."
   },
   {
-    "source": "汉策图谋_1_寒夜圖謀.mp3",
+    "source": "冬日長河 _ The Winter River.mp3",
     "asset": "audio/music/winter_stratagem.mp3",
-    "title": "孤城待曉",
+    "title": "冬日長河",
+    "title_en": "The Winter River",
+    "duration_seconds": 233.600,
     "season": "WINTER",
-    "sha256": "dd55f4e4d24fb0cb04e556102798cdd41422d6b1a8762b4ccad4a752eebece08",
+    "sha256": "d11b43ce2538775d34405dc57589de5df77697ff83262f0354d7bf0956f526c4",
     "processing": "Byte-identical copy; filename and UI title only."
   }
 ]
