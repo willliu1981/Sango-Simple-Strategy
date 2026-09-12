@@ -170,39 +170,45 @@ public final class NationalCampaignSmokeTest {
         GameStateValidator.validate(gameState);
         check(gameState.cityStates.length == 72, "世界新局建立全部據點狀態");
         check(gameState.factionStates.length == 13, "十二大勢力加中立勢力");
-        check(gameState.currentYear == 1 && gameState.currentMonth == 1,
-            "世界劇本從交匯紀元第一月開始");
+        check(gameState.currentYear == 190 && gameState.currentMonth == 1,
+            "世界劇本與群雄割據劇本同從西元 190 年開始");
+        check(gameState.requireFactionState("cao_cao").capitalCityId.equals("chenliu"),
+            "曹操世界劇本起點對齊陳留");
+        check(gameState.requireFactionState("liu_bei").capitalCityId.equals("pingyuan"),
+            "劉備世界劇本起點對齊平原");
+        check(gameState.requireFactionState("sun_ce").capitalCityId.equals("wu_commandery"),
+            "孫策世界劇本起點對齊吳郡");
         check(gameState.requireFactionState("east_sea_states").capitalCityId.equals("pyongyang"),
-            "高句麗以平壤為主城");
-        check(gameState.requireFactionState("india_compact").capitalCityId.equals("pataliputra"),
-            "孔雀帝國以華氏城為主城");
-        check(gameState.requireFactionState("star_feather").capitalCityId.equals("tenochtitlan"),
-            "阿茲特克帝國以特諾奇提特蘭為主城");
+            "高句麗以國內城為主城");
+        check(gameState.requireFactionState("india_compact").capitalCityId.equals("delhi"),
+            "貴霜帝國以富樓沙為主城");
+        check(gameState.requireFactionState("star_feather").capitalCityId.equals("teotihuacan"),
+            "中部美洲諸城邦以特奧蒂瓦坎為主城");
         check(gameState.scenarioObjectiveType == ScenarioObjectiveType.ELIMINATE_FACTION,
             "世界劇本使用消滅勢力目標");
         check(gameState.victoryTargetFactionId.equals("liu_bei"), "曹魏首要目標為消滅蜀漢");
         check(gameState.victoryTargetCityId == null, "消滅勢力目標不偽造單一目標城");
 
-        CityState originalCapital = gameState.requireCityState("luoyang");
+        CityState originalCapital = gameState.requireCityState("chenliu");
         originalCapital.troops = 0;
         new BattleResolutionService().resolveArrival(gameState,
-            army("steppe_khanate", "changan", "luoyang", 900, 60, 70), world,
+            army("steppe_khanate", "luoyang", "chenliu", 900, 60, 70), world,
             new TurnResolutionReport(gameState.currentYear, gameState.currentMonth));
         check(gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.IN_PROGRESS,
             "消滅勢力目標不因我方首都遷移而失敗");
 
         for (CityState cityState : gameState.findCitiesOwnedBy("liu_bei")) {
-            if (!cityState.cityId.equals("chengdu")) {
+            if (!cityState.cityId.equals("pingyuan")) {
                 cityState.ownerFactionId = "neutral";
             }
         }
         FactionState targetFaction = gameState.requireFactionState("liu_bei");
-        targetFaction.capitalCityId = "chengdu";
-        CityState lastTargetCity = gameState.requireCityState("chengdu");
+        targetFaction.capitalCityId = "pingyuan";
+        CityState lastTargetCity = gameState.requireCityState("pingyuan");
         lastTargetCity.troops = 0;
         TurnResolutionReport report = new TurnResolutionReport(gameState.currentYear, gameState.currentMonth);
         new BattleResolutionService().resolveArrival(gameState,
-            army("cao_cao", "xuchang", "chengdu", 1000, 60, 70), world, report);
+            army("cao_cao", "xuchang", "pingyuan", 1000, 60, 70), world, report);
         check(!targetFaction.active, "目標勢力失去最後據點後滅亡");
         check(gameState.scenarioObjectiveStatus == ScenarioObjectiveStatus.ACHIEVED,
             "目標勢力滅亡後達成劇本目標");

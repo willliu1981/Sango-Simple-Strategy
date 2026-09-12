@@ -186,7 +186,7 @@
       "id": "world_convergence",
       "nameKey": "scenario_world_name",
       "descriptionKey": "scenario_world_description",
-      "startYear": 1,
+      "startYear": 190,
       "startMonth": 1,
       "initialTurn": 1,
       "actionPointsPerTurn": 3,
@@ -206,19 +206,19 @@
       "playerStarts": [
         {
           "playerFactionId": "cao_cao",
-          "startCityId": "luoyang",
+          "startCityId": "chenliu",
           "objectiveType": "ELIMINATE_FACTION",
           "targetFactionId": "liu_bei"
         },
         {
           "playerFactionId": "liu_bei",
-          "startCityId": "chengdu",
+          "startCityId": "pingyuan",
           "objectiveType": "ELIMINATE_FACTION",
           "targetFactionId": "cao_cao"
         },
         {
           "playerFactionId": "sun_ce",
-          "startCityId": "jianye",
+          "startCityId": "wu_commandery",
           "objectiveType": "ELIMINATE_FACTION",
           "targetFactionId": "cao_cao"
         },
@@ -236,7 +236,7 @@
         },
         {
           "playerFactionId": "star_feather",
-          "startCityId": "tenochtitlan",
+          "startCityId": "teotihuacan",
           "objectiveType": "ELIMINATE_FACTION",
           "targetFactionId": "island_sailors"
         }
@@ -244,46 +244,34 @@
       "initialFactions": [
         {
           "factionId": "cao_cao",
-          "capitalCityId": "luoyang",
+          "capitalCityId": "chenliu",
           "cityIds": [
-            "luoyang",
-            "xuchang",
-            "ye",
             "chenliu",
-            "beiping"
+            "xuchang"
           ]
         },
         {
           "factionId": "liu_bei",
-          "capitalCityId": "chengdu",
+          "capitalCityId": "pingyuan",
           "cityIds": [
-            "chengdu",
-            "hanzhong",
-            "zitong",
-            "jiangzhou",
-            "yunnan"
+            "pingyuan",
+            "beihai"
           ]
         },
         {
           "factionId": "sun_ce",
-          "capitalCityId": "jianye",
+          "capitalCityId": "wu_commandery",
           "cityIds": [
-            "jianye",
             "wu_commandery",
-            "kuaiji",
-            "changsha",
-            "jiaozhi"
+            "kuaiji"
           ]
         },
         {
           "factionId": "east_sea_states",
           "capitalCityId": "pyongyang",
           "cityIds": [
-            "xiangping",
             "pyongyang",
-            "seoul",
-            "yamatai",
-            "izumo"
+            "seoul"
           ]
         },
         {
@@ -299,7 +287,7 @@
         },
         {
           "factionId": "india_compact",
-          "capitalCityId": "pataliputra",
+          "capitalCityId": "delhi",
           "cityIds": [
             "delhi",
             "mumbai",
@@ -346,21 +334,17 @@
           "capitalCityId": "aksum",
           "cityIds": [
             "aksum",
-            "meroe",
-            "timbuktu",
-            "gao",
-            "great_zimbabwe"
+            "meroe"
           ]
         },
         {
           "factionId": "star_feather",
-          "capitalCityId": "tenochtitlan",
+          "capitalCityId": "teotihuacan",
           "cityIds": [
             "teotihuacan",
             "tikal",
             "tenochtitlan",
-            "cahokia",
-            "cusco"
+            "chichen_itza"
           ]
         },
         {
@@ -379,6 +363,23 @@
           "capitalCityId": "changan",
           "cityIds": [
             "changan",
+            "luoyang",
+            "ye",
+            "beiping",
+            "chengdu",
+            "hanzhong",
+            "jiangzhou",
+            "jianye",
+            "changsha",
+            "jiaozhi",
+            "xiangping",
+            "yamatai",
+            "izumo",
+            "timbuktu",
+            "gao",
+            "great_zimbabwe",
+            "cahokia",
+            "cusco",
             "jerusalem",
             "antioch",
             "kyiv",
@@ -386,7 +387,6 @@
             "malacca",
             "java",
             "madagascar",
-            "chichen_itza",
             "alaska",
             "iceland",
             "ryukyu"

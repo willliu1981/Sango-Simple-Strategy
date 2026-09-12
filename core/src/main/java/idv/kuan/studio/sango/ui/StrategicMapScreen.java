@@ -472,7 +472,8 @@ public final class StrategicMapScreen extends SuiScreen {
         );
         if (WORLD_SCENARIO_ID.equals(gameState.scenarioId)) {
             label("map_date_label").setText(text(
-                "map_world_date_format", "交匯紀元｜第 {0} 月", gameState.elapsedMonths + 1));
+                "map_world_date_format", "{0} 年 {1} 月｜世界局勢",
+                gameState.currentYear, gameState.currentMonth));
         } else {
             label("map_date_label").setText(
                 gameState.currentYear + text("city_year_suffix", " 年 ")

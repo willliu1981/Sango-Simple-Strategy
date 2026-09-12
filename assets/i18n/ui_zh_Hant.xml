@@ -635,7 +635,7 @@
         <entry name="button_music_player" value="音樂鑑賞" description="button_music_player" />
         <entry name="music_player_title" value="四時之聲 · 音樂鑑賞" description="music_player_title" />
         <entry name="music_player_description" value="自由欣賞遊戲曲目，可切換播放模式；離開時恢復大廳 BGM。" description="music_player_description" />
-        <entry name="music_lobby" value="群雄序曲" description="music_lobby" />
+        <entry name="music_lobby" value="未定的版圖" description="music_lobby" />
         <entry name="music_menu" value="主選單" description="music_menu" />
         <entry name="music_victory" value="此戰之後" description="music_victory" />
         <entry name="music_victory_scene" value="劇本目標達成" description="music_victory_scene" />
@@ -647,7 +647,7 @@
         <entry name="season_summer" value="夏 · 四月至六月" description="season_summer" />
         <entry name="season_autumn" value="秋 · 七月至九月" description="season_autumn" />
         <entry name="season_winter" value="冬 · 十月至十二月" description="season_winter" />
-        <entry name="music_track_lobby" value="群雄序曲" description="music_track_lobby" />
+        <entry name="music_track_lobby" value="未定的版圖" description="music_track_lobby" />
         <entry name="music_track_victory" value="此戰之後" description="music_track_victory" />
         <entry name="music_track_spring" value="春風入城" description="music_track_spring" />
         <entry name="music_track_summer" value="旌旗長路" description="music_track_summer" />
@@ -667,91 +667,91 @@
         <entry name="music_play_once_note" value="播放完目前曲目後停止。" description="music_play_once_note" />
         <entry name="music_repeat_one_note" value="單曲循環播放；切換曲目以兩秒淡入淡出銜接。" description="music_repeat_one_note" />
         <entry name="music_repeat_all_note" value="依清單順序播放，最後一首結束後回到第一首。" description="music_repeat_all_note" />
-        <entry name="scenario_world_name" value="征服世界・交匯紀元" description="scenario_world_name" />
-        <entry name="scenario_world_description" value="十二個歷史勢力跨越時代，共同出現在 72 據點世界地圖。消滅指定主要敵國後，可繼續自由征服全世界。" description="scenario_world_description" />
+        <entry name="scenario_world_name" value="征服世界・群雄紀元" description="scenario_world_name" />
+        <entry name="scenario_world_description" value="以西元 190 年為共同起點，十二個同時代勢力與文明分布於 72 個世界據點。版圖經遊戲化整理，消滅主要敵國後可繼續征服全世界。" description="scenario_world_description" />
         <entry name="map_world_72" value="世界征服圖・72 據點" description="map_world_72" />
-        <entry name="map_world_date_format" value="交匯紀元｜第 {0} 月" description="map_world_date_format" />
+        <entry name="map_world_date_format" value="{0} 年 {1} 月｜世界局勢" description="map_world_date_format" />
         <entry name="faction_east_sea_states" value="高句麗" description="faction_east_sea_states" />
-        <entry name="ruler_east_sea_states" value="廣開土王" description="ruler_east_sea_states" />
-        <entry name="faction_east_sea_states_summary" value="以平壤為主城，控制東北海岸與東方群島，適合跨海擴張。" description="faction_east_sea_states_summary" />
-        <entry name="faction_steppe_khanate" value="蒙古帝國" description="faction_steppe_khanate" />
-        <entry name="ruler_steppe_khanate" value="成吉思汗" description="ruler_steppe_khanate" />
-        <entry name="faction_steppe_khanate_summary" value="以和林為主城，橫跨草原與商路，擅長長距離進軍。" description="faction_steppe_khanate_summary" />
-        <entry name="faction_india_compact" value="孔雀帝國" description="faction_india_compact" />
-        <entry name="ruler_india_compact" value="阿育王" description="ruler_india_compact" />
-        <entry name="faction_india_compact_summary" value="以華氏城為主城，人口與農業基礎穩固，可向多個方向擴張。" description="faction_india_compact_summary" />
-        <entry name="faction_persian_court" value="薩珊帝國" description="faction_persian_court" />
-        <entry name="ruler_persian_court" value="阿爾達希爾一世" description="ruler_persian_court" />
+        <entry name="ruler_east_sea_states" value="故國川王" description="ruler_east_sea_states" />
+        <entry name="faction_east_sea_states_summary" value="以國內城為主城，據守遼東東側與鴨綠江流域，適合向半島及東北擴張。" description="faction_east_sea_states_summary" />
+        <entry name="faction_steppe_khanate" value="鮮卑諸部" description="faction_steppe_khanate" />
+        <entry name="ruler_steppe_khanate" value="魁頭" description="ruler_steppe_khanate" />
+        <entry name="faction_steppe_khanate_summary" value="以彈汗山為起始據點，沿北方草原與西域通道展開長距離進軍。" description="faction_steppe_khanate_summary" />
+        <entry name="faction_india_compact" value="貴霜帝國" description="faction_india_compact" />
+        <entry name="ruler_india_compact" value="韋蘇提婆一世" description="ruler_india_compact" />
+        <entry name="faction_india_compact_summary" value="以富樓沙為主城，控制中亞與北印度的重要商路，可向多個方向擴張。" description="faction_india_compact_summary" />
+        <entry name="faction_persian_court" value="安息帝國" description="faction_persian_court" />
+        <entry name="ruler_persian_court" value="沃洛吉斯四世" description="ruler_persian_court" />
         <entry name="faction_persian_court_summary" value="以泰西封為主城，掌握東西交通要道，面對地中海與亞洲兩方威脅。" description="faction_persian_court_summary" />
         <entry name="faction_western_empire" value="羅馬帝國" description="faction_western_empire" />
-        <entry name="ruler_western_empire" value="奧古斯都" description="ruler_western_empire" />
+        <entry name="ruler_western_empire" value="康茂德" description="ruler_western_empire" />
         <entry name="faction_western_empire_summary" value="以羅馬為主城，控制地中海重要據點，資源充足但戰線廣闊。" description="faction_western_empire_summary" />
-        <entry name="faction_northern_league" value="法蘭克王國" description="faction_northern_league" />
-        <entry name="ruler_northern_league" value="克洛維一世" description="ruler_northern_league" />
-        <entry name="faction_northern_league_summary" value="以巴黎為主城，據守西歐與北方通道，可向大西洋或中歐發展。" description="faction_northern_league_summary" />
+        <entry name="faction_northern_league" value="日耳曼諸部" description="faction_northern_league" />
+        <entry name="ruler_northern_league" value="巴洛馬爾" description="ruler_northern_league" />
+        <entry name="faction_northern_league_summary" value="以馬科曼尼為起始據點，連結中歐與北方各部族，適合沿陸路擴張。" description="faction_northern_league_summary" />
         <entry name="faction_red_earth_kings" value="阿克蘇姆王國" description="faction_red_earth_kings" />
-        <entry name="ruler_red_earth_kings" value="卡萊布王" description="ruler_red_earth_kings" />
-        <entry name="faction_red_earth_kings_summary" value="以阿克蘇姆為主城，控制非洲與紅海通道，需要維持遠距離防線。" description="faction_red_earth_kings_summary" />
-        <entry name="faction_star_feather" value="阿茲特克帝國" description="faction_star_feather" />
-        <entry name="ruler_star_feather" value="蒙特祖馬二世" description="ruler_star_feather" />
-        <entry name="faction_star_feather_summary" value="以特諾奇提特蘭為主城，在美洲建立據點並向兩大洋擴張。" description="faction_star_feather_summary" />
-        <entry name="faction_island_sailors" value="圖伊東加帝國" description="faction_island_sailors" />
-        <entry name="ruler_island_sailors" value="阿霍埃圖" description="ruler_island_sailors" />
-        <entry name="faction_island_sailors_summary" value="以穆阿為主城，依靠大洋航線連結群島，適合從海上拓展勢力。" description="faction_island_sailors_summary" />
-        <entry name="city_pyongyang" value="平壤" description="city_pyongyang" />
-        <entry name="city_seoul" value="漢城" description="city_seoul" />
+        <entry name="ruler_red_earth_kings" value="加達拉特" description="ruler_red_earth_kings" />
+        <entry name="faction_red_earth_kings_summary" value="以阿克蘇姆為主城，控制紅海沿岸通道，需在內陸與海岸之間維持補給。" description="faction_red_earth_kings_summary" />
+        <entry name="faction_star_feather" value="中部美洲諸城邦" description="faction_star_feather" />
+        <entry name="ruler_star_feather" value="統治者不詳" description="ruler_star_feather" />
+        <entry name="faction_star_feather_summary" value="以特奧蒂瓦坎為主城，結合中部美洲同時代城邦，逐步向兩大洋擴張。" description="faction_star_feather_summary" />
+        <entry name="faction_island_sailors" value="南島航海諸部" description="faction_island_sailors" />
+        <entry name="ruler_island_sailors" value="諸島酋長" description="ruler_island_sailors" />
+        <entry name="faction_island_sailors_summary" value="以薩摩亞為主城，依靠南太平洋群島航線移動，適合從海上拓展勢力。" description="faction_island_sailors_summary" />
+        <entry name="city_pyongyang" value="國內城" description="city_pyongyang" />
+        <entry name="city_seoul" value="丸都城" description="city_seoul" />
         <entry name="city_yamatai" value="邪馬台" description="city_yamatai" />
         <entry name="city_izumo" value="出雲" description="city_izumo" />
-        <entry name="city_karakorum" value="和林" description="city_karakorum" />
-        <entry name="city_hami" value="哈密" description="city_hami" />
-        <entry name="city_kashgar" value="喀什" description="city_kashgar" />
-        <entry name="city_samarkand" value="撒馬爾罕" description="city_samarkand" />
-        <entry name="city_bukhara" value="布哈拉" description="city_bukhara" />
-        <entry name="city_delhi" value="德里" description="city_delhi" />
-        <entry name="city_mumbai" value="孟買" description="city_mumbai" />
-        <entry name="city_pataliputra" value="華氏城" description="city_pataliputra" />
-        <entry name="city_varanasi" value="瓦拉納西" description="city_varanasi" />
-        <entry name="city_lanka" value="蘭卡" description="city_lanka" />
+        <entry name="city_karakorum" value="彈汗山" description="city_karakorum" />
+        <entry name="city_hami" value="伊吾" description="city_hami" />
+        <entry name="city_kashgar" value="疏勒" description="city_kashgar" />
+        <entry name="city_samarkand" value="康居" description="city_samarkand" />
+        <entry name="city_bukhara" value="烏孫" description="city_bukhara" />
+        <entry name="city_delhi" value="富樓沙" description="city_delhi" />
+        <entry name="city_mumbai" value="塔克西拉" description="city_mumbai" />
+        <entry name="city_pataliputra" value="秣菟羅" description="city_pataliputra" />
+        <entry name="city_varanasi" value="迦畢試" description="city_varanasi" />
+        <entry name="city_lanka" value="巴克特拉" description="city_lanka" />
         <entry name="city_ctesiphon" value="泰西封" description="city_ctesiphon" />
-        <entry name="city_persepolis" value="波斯波利斯" description="city_persepolis" />
-        <entry name="city_babylon" value="巴比倫" description="city_babylon" />
-        <entry name="city_isfahan" value="伊斯法罕" description="city_isfahan" />
-        <entry name="city_hormuz" value="荷姆茲" description="city_hormuz" />
+        <entry name="city_persepolis" value="蘇薩" description="city_persepolis" />
+        <entry name="city_babylon" value="塞琉西亞" description="city_babylon" />
+        <entry name="city_isfahan" value="埃克巴坦那" description="city_isfahan" />
+        <entry name="city_hormuz" value="赫卡通皮洛斯" description="city_hormuz" />
         <entry name="city_rome" value="羅馬" description="city_rome" />
         <entry name="city_athens" value="雅典" description="city_athens" />
-        <entry name="city_constantinople" value="君士坦丁堡" description="city_constantinople" />
+        <entry name="city_constantinople" value="拜占庭" description="city_constantinople" />
         <entry name="city_alexandria" value="亞歷山卓" description="city_alexandria" />
         <entry name="city_carthage" value="迦太基" description="city_carthage" />
-        <entry name="city_london" value="倫敦" description="city_london" />
-        <entry name="city_paris" value="巴黎" description="city_paris" />
-        <entry name="city_cologne" value="科隆" description="city_cologne" />
-        <entry name="city_prague" value="布拉格" description="city_prague" />
-        <entry name="city_stockholm" value="斯德哥爾摩" description="city_stockholm" />
+        <entry name="city_london" value="辛布里" description="city_london" />
+        <entry name="city_paris" value="馬科曼尼" description="city_paris" />
+        <entry name="city_cologne" value="夸迪" description="city_cologne" />
+        <entry name="city_prague" value="赫蒙杜里" description="city_prague" />
+        <entry name="city_stockholm" value="哥特蘭" description="city_stockholm" />
         <entry name="city_aksum" value="阿克蘇姆" description="city_aksum" />
-        <entry name="city_meroe" value="麥羅埃" description="city_meroe" />
-        <entry name="city_timbuktu" value="廷巴克圖" description="city_timbuktu" />
-        <entry name="city_gao" value="加奧" description="city_gao" />
-        <entry name="city_great_zimbabwe" value="大辛巴威" description="city_great_zimbabwe" />
+        <entry name="city_meroe" value="阿杜利斯" description="city_meroe" />
+        <entry name="city_timbuktu" value="傑內－傑諾" description="city_timbuktu" />
+        <entry name="city_gao" value="諾克" description="city_gao" />
+        <entry name="city_great_zimbabwe" value="林波波河谷" description="city_great_zimbabwe" />
         <entry name="city_teotihuacan" value="特奧蒂瓦坎" description="city_teotihuacan" />
         <entry name="city_tikal" value="蒂卡爾" description="city_tikal" />
-        <entry name="city_tenochtitlan" value="特諾奇提特蘭" description="city_tenochtitlan" />
-        <entry name="city_cahokia" value="卡霍基亞" description="city_cahokia" />
-        <entry name="city_cusco" value="庫斯科" description="city_cusco" />
-        <entry name="city_hawaii" value="夏威夷" description="city_hawaii" />
-        <entry name="city_samoa" value="穆阿" description="city_samoa" />
-        <entry name="city_tahiti" value="大溪地" description="city_tahiti" />
-        <entry name="city_aotearoa" value="奧特亞羅瓦" description="city_aotearoa" />
-        <entry name="city_uluru" value="烏魯魯" description="city_uluru" />
+        <entry name="city_tenochtitlan" value="喬盧拉" description="city_tenochtitlan" />
+        <entry name="city_cahokia" value="霍普韋爾" description="city_cahokia" />
+        <entry name="city_cusco" value="卡瓦奇" description="city_cusco" />
+        <entry name="city_hawaii" value="東加" description="city_hawaii" />
+        <entry name="city_samoa" value="薩摩亞" description="city_samoa" />
+        <entry name="city_tahiti" value="斐濟" description="city_tahiti" />
+        <entry name="city_aotearoa" value="萬那杜" description="city_aotearoa" />
+        <entry name="city_uluru" value="新喀里多尼亞" description="city_uluru" />
         <entry name="city_jerusalem" value="耶路撒冷" description="city_jerusalem" />
         <entry name="city_antioch" value="安條克" description="city_antioch" />
-        <entry name="city_kyiv" value="基輔" description="city_kyiv" />
-        <entry name="city_moscow" value="莫斯科" description="city_moscow" />
-        <entry name="city_malacca" value="馬六甲" description="city_malacca" />
-        <entry name="city_java" value="爪哇" description="city_java" />
+        <entry name="city_kyiv" value="奧爾比亞" description="city_kyiv" />
+        <entry name="city_moscow" value="塔奈斯" description="city_moscow" />
+        <entry name="city_malacca" value="吉打" description="city_malacca" />
+        <entry name="city_java" value="葉調" description="city_java" />
         <entry name="city_madagascar" value="馬達加斯加" description="city_madagascar" />
-        <entry name="city_chichen_itza" value="奇琴伊察" description="city_chichen_itza" />
-        <entry name="city_alaska" value="阿拉斯加" description="city_alaska" />
-        <entry name="city_iceland" value="冰島" description="city_iceland" />
-        <entry name="city_ryukyu" value="琉球" description="city_ryukyu" />
+        <entry name="city_chichen_itza" value="蒙特阿爾班" description="city_chichen_itza" />
+        <entry name="city_alaska" value="白令海岸" description="city_alaska" />
+        <entry name="city_iceland" value="圖勒" description="city_iceland" />
+        <entry name="city_ryukyu" value="琉球群島" description="city_ryukyu" />
     </scope>
 </i18n>
