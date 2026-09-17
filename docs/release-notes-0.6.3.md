@@ -8,10 +8,12 @@
 | --- | --- |
 | 主選單 | 守住這裡 · Hold This Ground |
 | 破關 | 同一片天空 · Under the Same Sky |
-| 春季 | 遠方的燈火 · Lights in the Distance |
+| 春季 | 重建 · Building Again |
 | 夏季 | 田間四季 · Seasons in the Fields |
 | 秋季 | 夜還很長 · A Long Night Ahead |
 | 冬季 | 冬日長河 · The Winter River |
+
+曲名更新（2026-09-17）：春季曲原名「遠方的燈火／Lights in the Distance」，現改為「重建／Building Again」，音樂內容不變。既有安裝包仍可能顯示舊名，新名稱需更新後的安裝包才會顯示。
 
 ## 下載與安裝
 
@@ -24,11 +26,15 @@ GitHub 的 Source code ZIP 是原始碼，不是可直接啟動的遊戲。
 
 ## 音樂與專案再利用
 
+本測試版所附六首 BGM，僅供測試其在本遊戲中的播放、音量平衡與場景搭配效果。此用途說明僅針對這六首音樂，不變更原始碼及其他內容的授權；測試用途不取代適用的 Suno 官方條款及授權。
+
 BGM 作者頁面：[willliu1981 · Suno](https://suno.com/@willliu1981)。此為作者個人頁，並非六首 BGM 的專屬播放清單；頁面其他作品不自動納入以下許可。
 
-作者確認此次六首 BGM 為 Suno Pro 方案正式下載，並在其可合法授予的權利範圍內，允許他人下載、修改、再散布與商用，包括其他遊戲用途。此許可不追溯舊版音樂，不保證 AI 音樂具有排他著作權，第三方權利與平台限制仍須遵守。
+作者確認此次六首 BGM 為 Suno Pro 方案正式下載；原曲由自己的帳號於 Pro 期間生成，涉及 Remix 的版本亦由自己於 Pro 期間製作。
 
-公開 V1 專案亦可再利用及商用；另行發布衍生 App 時，必須更換程式 package、Android namespace 與 applicationId，並使用自己的簽章及存檔／設定識別。不得沿用 `idv.kuan.studio.sango` 或冒充原版。私人 V2 不在此授權範圍。
+**BGM 說明更正（2026-09-17）：**六首音樂保留作為遊戲 BGM。先前概括允許他人商用與再散布的說明已調整；本專案暫不另行提供這六首音樂的第三方商用、獨立再散布或再授權許可，相關範圍仍待確認。商用衍生版本請替換音樂或另行取得適用授權；音樂使用範圍以適用的 Suno 官方條款及授權為準。這不代表所有自製 Remix 都不能商用；既有使用者說明見 [使用授權](../LICENSE.md)。
+
+公開 V1 專案中作者有權授權的原始碼與其他內容仍可依使用授權再利用及商用，上述六首 BGM 不納入一般許可。另行發布衍生 App 時，必須更換程式 package、Android namespace 與 applicationId，並使用自己的簽章及存檔／設定識別。不得沿用 `idv.kuan.studio.sango` 或冒充原版。私人 V2 不在此授權範圍。
 
 完整條件見 [使用授權](../LICENSE.md) 與 [素材聲明](../THIRD_PARTY_NOTICES.md)。第三方程式庫及素材仍依各自授權，不會一併變成可任意再散布的內容。
 

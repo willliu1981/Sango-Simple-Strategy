@@ -641,8 +641,8 @@
         <entry name="music_victory" value="同一片天空" description="music_victory" />
         <entry name="music_victory_en" value="Under the Same Sky" description="music_victory_en" />
         <entry name="music_victory_scene" value="全圖征服" description="music_victory_scene" />
-        <entry name="music_spring" value="遠方的燈火" description="music_spring" />
-        <entry name="music_spring_en" value="Lights in the Distance" description="music_spring_en" />
+        <entry name="music_spring" value="重建" description="music_spring" />
+        <entry name="music_spring_en" value="Building Again" description="music_spring_en" />
         <entry name="music_summer" value="田間四季" description="music_summer" />
         <entry name="music_summer_en" value="Seasons in the Fields" description="music_summer_en" />
         <entry name="music_autumn" value="夜還很長" description="music_autumn" />
@@ -655,7 +655,7 @@
         <entry name="season_winter" value="冬 · 十月至十二月" description="season_winter" />
         <entry name="music_track_lobby" value="守住這裡 | Hold This Ground" description="music_track_lobby" />
         <entry name="music_track_victory" value="同一片天空 | Under the Same Sky" description="music_track_victory" />
-        <entry name="music_track_spring" value="遠方的燈火 | Lights in the Distance" description="music_track_spring" />
+        <entry name="music_track_spring" value="重建 | Building Again" description="music_track_spring" />
         <entry name="music_track_summer" value="田間四季 | Seasons in the Fields" description="music_track_summer" />
         <entry name="music_track_autumn" value="夜還很長 | A Long Night Ahead" description="music_track_autumn" />
         <entry name="music_track_winter" value="冬日長河 | The Winter River" description="music_track_winter" />
