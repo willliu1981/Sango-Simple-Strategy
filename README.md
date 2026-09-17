@@ -8,7 +8,7 @@
 
 ## 遊戲影片
 
-[▶ 觀看《征服世界》實際遊玩影片](https://youtu.be/RraldBojNZg)
+[▶ 觀看實際遊玩影片](https://youtu.be/RraldBojNZg)
 
 ## 下載遊戲
 
